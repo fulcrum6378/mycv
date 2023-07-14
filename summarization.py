@@ -9,6 +9,14 @@ dim = 1080
 # Don't create another image, just alter the existing image.
 # WE DON'T NEED 90%+ OF THE DATA WE GET FROM THE CAMERA!
 
+# Humans' caring has a percentage that changes by the amount of stress they have!
+# We should later be able to tweak the "attention to details"!
+# We may even be able to avoid storing images! We just need a summary!
+# CREATE A SIMPLE SUMMARY OF THE IMAGE!
+# So should it be either ... ?!?!?
+#   - SIMPLIFICATION
+#   - SUMMARIZATION  (I CHOOSE THIS, for the great extra performance)
+
 # TODO
 
 plot.imshow(arr)
