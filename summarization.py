@@ -17,6 +17,10 @@ dim = 1080
 #   - SIMPLIFICATION
 #   - SUMMARIZATION  (I CHOOSE THIS, for the great extra performance)
 
+# Human beings SEE 30FPS, but do they UNDERSTAND 30FPS?
+# TODO I think we should lower the frame rate extensively!!
+# See?!? My Android phone can do a shit!!!
+
 # TODO
 
 plot.imshow(arr)
