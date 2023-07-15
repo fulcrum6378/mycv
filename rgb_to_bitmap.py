@@ -5,7 +5,7 @@ width = 1088
 height = 1088
 dimensions = str(width) + 'x' + str(height)
 frame_size = {
-    '1088x1088': 3547136
+    '1088x1088': 3551232
 }
 
 # create a folder with the highest ordinal name
@@ -31,4 +31,3 @@ with open('vis/vis.rgb', 'rb') as rgb:
         with open('vis/' + str(num) + '/' + str(f) + '.bmp', 'wb') as frame:
             frame.write(metadata + frame_data)
         f += 1
-        print(rgb.tell())
