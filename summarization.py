@@ -4,7 +4,7 @@ from PIL import Image
 
 # noinspection PyTypeChecker
 arr: np.ndarray = np.asarray(Image.open('vis/2/1689005849386887.bmp'))
-dim = 1080
+dim = 1088
 
 # WE DON'T NEED 90%+ OF THE DATA WE GET FROM THE CAMERA!
 # Humans' caring has a percentage that changes by the amount of stress they have!
