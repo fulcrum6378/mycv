@@ -3,7 +3,7 @@ import numpy as np
 from PIL import Image
 
 # noinspection PyTypeChecker
-arr: np.ndarray = np.asarray(Image.open('vis/2/1689005849386887.bmp'))
+arr: np.ndarray = np.asarray(Image.open('vis/2/1689005849386887.bmp').convert('HSV'))
 dim = 1088
 
 # WE DON'T NEED 90%+ OF THE DATA WE GET FROM THE CAMERA!
@@ -17,7 +17,7 @@ dim = 1088
 
 # TODO
 
-plot.imshow(arr)
+plot.imshow(Image.fromarray(arr, 'HSV').convert('RGB'))
 plot.show()
 
 # After Summarization, we will either ...
