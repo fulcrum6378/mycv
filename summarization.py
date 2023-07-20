@@ -15,7 +15,17 @@ dim = 1088
 #   - SIMPLIFICATION
 #   - SUMMARIZATION  (I CHOOSE THIS, for the great extra performance)
 
-# TODO
+# Summarization shouldn't detect objects, because it would be a mess!
+# Summarization should only summarize and then let the next stage decide if anything is an object.
+# Maybe all those vectors are 1 single object.
+# We must forget all about the Object Detection shit! It's not how it works.
+# MANY SPECIFIC DETAILS ALSO SHOULD BE OMITTED!
+# Colour is more important than shape.
+# We humans don't process most of the things we see. Everything is reward-based here!
+# What we're programming has no specific target!
+
+# TODO HOW SHOULD MERGEN LEARN THEN?
+# What should Mergen look for? What purpose? Where to start?!?
 
 plot.imshow(Image.fromarray(arr, 'HSV').convert('RGB'))
 plot.show()
@@ -27,6 +37,5 @@ plot.show()
 # I think we should make some kind of database, whose searching can be accomplished by either ...
 #   - shapes
 #   - colours
-# We'll use the Binary Search for this!
 # We'll have to sort shapes and colours. Well sorting colours is piece of cake!
 # But sorting SHAPES...!!
