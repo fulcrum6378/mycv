@@ -26,16 +26,31 @@ dim = 1088
 
 # TODO HOW SHOULD MERGEN LEARN THEN?
 # What should Mergen look for? What purpose? Where to start?!?
+# It can also try to learn everything UNLIKE organisms! It might consume much energy but it'll grow knowledge
+# so faster than human beings.
+# Our options:
+#   1. Learn everything
+#   2. Learn based on rewards
+#   3. Learn specific things?!? (based on certain criteria)
+#   4. Learn randomly
+# It cannot figure out which things it needs to learn which will be useful for [e.g. helping human beings]
+# while it knows absolutely nothing!
+# The third option can only be used in these ways: for example, learn only about red things or loud noises,
+# or hard touch events! which sounds crazy!
 
 plot.imshow(Image.fromarray(arr, 'HSV').convert('RGB'))
 plot.show()
 
-# After Summarization, we will either ...
-#   - Store the objects separately.
-#   - Store the separate objects in ONE file.
-#   - Do no object separation; just store the vector!
+# Vector Index Database (VID):
+# It stores references to vectors and the vectors will reside in the persistent memory.
 # I think we should make some kind of database, whose searching can be accomplished by either ...
 #   - shapes
 #   - colours
 # We'll have to sort shapes and colours. Well sorting colours is piece of cake!
 # But sorting SHAPES...!!
+# We can break down shapes by their attributes.
+
+# Summarization must detect shapes and their (colour/gradient/pattern).
+# Shapes will be related to Visionary Objects (vectors) with probabilistic positions.
+# Vectors will be related to Global Objects (which can relate to audios and touch events),
+# but everything must be PROBABILISTIC!
