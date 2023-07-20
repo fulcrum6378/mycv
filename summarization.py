@@ -1,6 +1,7 @@
 import matplotlib.pyplot as plot
 import numpy as np
 from PIL import Image
+import sqlite3 as sql
 
 # noinspection PyTypeChecker
 arr: np.ndarray = np.asarray(Image.open('vis/2/1689005849386887.bmp').convert('HSV'))
@@ -22,6 +23,7 @@ dim = 1088
 # Colour is more important than shape.
 # We can also instead, collect raster images in the storage and create Shapes summaries of them, which is a bad idea!
 # we could also store a simplified version of those images!
+# Forgetting can be accomplished by setting a last modified timestamp on each shape/vector/object.
 
 plot.imshow(Image.fromarray(arr, 'HSV').convert('RGB'))
 plot.show()
