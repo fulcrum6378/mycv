@@ -36,9 +36,9 @@ status = np.repeat([np.repeat(False, dim)], dim, 0)
 
 
 def is_hue_close(a: np.ndarray, b: np.ndarray) -> bool:
-    return abs(int(a[0]) - int(b[0])) <= 10 \
-        and abs(int(a[1]) - int(b[1])) <= 50 \
-        and abs(int(a[2]) - int(b[2])) <= 50
+    return abs(int(a[0]) - int(b[0])) <= 5 \
+        and abs(int(a[1]) - int(b[1])) <= 5 \
+        and abs(int(a[2]) - int(b[2])) <= 5
 
 
 def neighbours_of(yy: int, xx: int, pixels: List[Tuple[int, int]]):
@@ -59,7 +59,7 @@ thisY, thisX, found_sth_to_analyse = 0, 0, True
 while found_sth_to_analyse:
     found_sth_to_analyse = False
     for y in range(thisY, dim):
-        for x in range(thisX, dim):
+        for x in range(thisX if y == thisY else 0, dim):
             if not status[y, x]:
                 found_sth_to_analyse = True
                 thisY = y
@@ -67,14 +67,31 @@ while found_sth_to_analyse:
                 break
         if found_sth_to_analyse: break
     if not found_sth_to_analyse: break
-    print(thisY, thisX)
+    # print(thisY, thisX)
 
     segment = list()
     neighbours_of(thisY, thisX, segment)
     segments.append(segment)
 
+# TODO Along with adjusting the colour difference method, we must work on omitting small segments!
+
+for seg in range(len(segments)):
+    if len(segments[seg]) < 20:
+        for px in segments[seg]:
+            arr[px[0], px[1]] = 0, 255, 255
+        continue
+    print(seg, ':', len(segments[seg]))
+
 for px in segments[0]:
-    arr[px[0], px[1]] = 0, 255, 255
+    arr[px[0], px[1]] = 50, 255, 255
+for px in segments[1550]:
+    arr[px[0], px[1]] = 100, 255, 255
+for px in segments[21918]:
+    arr[px[0], px[1]] = 150, 255, 255
+for px in segments[30760]:
+    arr[px[0], px[1]] = 200, 255, 255
+
+print('Total segments:', len(segments))
 
 plot.imshow(Image.fromarray(arr, 'HSV').convert('RGB'))
 print(datetime.now() - whole_time)  # mere File->Image->RGB->HSV->RGB->Image->ImShow: 0:00:00.430~~480
