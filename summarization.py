@@ -37,7 +37,7 @@ status = np.repeat([np.repeat(False, dim)], dim, 0)
 
 def is_hue_close(a: np.ndarray, b: np.ndarray) -> bool:
     return abs(int(a[0]) - int(b[0])) <= 5 \
-        and abs(int(a[1]) - int(b[1])) <= 5 \
+        and abs(int(a[1]) - int(b[1])) <= 50 \
         and abs(int(a[2]) - int(b[2])) <= 5
 
 
@@ -54,6 +54,7 @@ def neighbours_of(yy: int, xx: int, pixels: List[Tuple[int, int]]):
         neighbours_of(yy + 1, xx, pixels)
 
 
+segmentation_time = datetime.now()
 segments: List[List[Tuple[int, int]]] = list()
 thisY, thisX, found_sth_to_analyse = 0, 0, True
 while found_sth_to_analyse:
@@ -73,26 +74,33 @@ while found_sth_to_analyse:
     neighbours_of(thisY, thisX, segment)
     segments.append(segment)
 
-# TODO Along with adjusting the colour difference method, we must work on omitting small segments!
+print('Segmentation time:', datetime.now() - segmentation_time)
+
+# FIXME neighbours_of does a lot of repeated work!! Although it might be useful!
+# TODO RESOLVE SMALL SEGMENTS (now 96562)
 
 for seg in range(len(segments)):
-    if len(segments[seg]) < 20:
+    if len(segments[seg]) < 100:
         for px in segments[seg]:
             arr[px[0], px[1]] = 0, 255, 255
         continue
     print(seg, ':', len(segments[seg]))
 
 for px in segments[0]:
-    arr[px[0], px[1]] = 50, 255, 255
-for px in segments[1550]:
-    arr[px[0], px[1]] = 100, 255, 255
-for px in segments[21918]:
-    arr[px[0], px[1]] = 150, 255, 255
-for px in segments[30760]:
+    arr[px[0], px[1]] = 40, 255, 255
+for px in segments[1380]:
+    arr[px[0], px[1]] = 80, 255, 255
+for px in segments[15902]:
+    arr[px[0], px[1]] = 120, 255, 255
+for px in segments[37872]:
+    arr[px[0], px[1]] = 160, 255, 255
+for px in segments[40822]:
     arr[px[0], px[1]] = 200, 255, 255
+for px in segments[54364]:
+    arr[px[0], px[1]] = 240, 255, 255
 
 print('Total segments:', len(segments))
 
 plot.imshow(Image.fromarray(arr, 'HSV').convert('RGB'))
-print(datetime.now() - whole_time)  # mere File->Image->RGB->HSV->RGB->Image->ImShow: 0:00:00.430~~480
+print('Whole time:', datetime.now() - whole_time)  # mere File->Image->RGB->HSV->RGB->Image->ImShow: 0:00:00.430~~480
 plot.show()
