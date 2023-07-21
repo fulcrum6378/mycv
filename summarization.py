@@ -1,12 +1,12 @@
 import sys
 from datetime import datetime
-import sqlite3 as sql
 from typing import List, Tuple
 
 import matplotlib.pyplot as plot
 import numpy as np
 from PIL import Image
 
+# import sqlite3 as sql  # for now practice here, don't add SQLite in C++, we may dislike SQLite later.
 whole_time = datetime.now()
 # noinspection PyTypeChecker
 arr: np.ndarray = np.asarray(Image.open('vis/2/1689005849386887.bmp').convert('HSV')).copy()
@@ -36,22 +36,22 @@ status = np.repeat([np.repeat(False, dim)], dim, 0)
 
 
 def is_hue_close(a: np.ndarray, b: np.ndarray) -> bool:
-    return abs(int(a[0]) - int(b[0])) <= 20
+    return abs(int(a[0]) - int(b[0])) <= 10 \
+        and abs(int(a[1]) - int(b[1])) <= 50 \
+        and abs(int(a[2]) - int(b[2])) <= 50
 
 
-def neighbours_of(yy: int, xx: int) -> List[Tuple[int, int]]:
-    # print(yy, xx)
-    pixels: List[Tuple[int, int]] = [(yy, xx)]
+def neighbours_of(yy: int, xx: int, pixels: List[Tuple[int, int]]):
+    pixels.append((yy, xx))
     status[yy, xx] = True
     if xx > 0 and not status[yy, xx - 1] and is_hue_close(arr[yy, xx], arr[yy, xx - 1]):  # left
-        pixels.extend(neighbours_of(yy, xx - 1))
+        neighbours_of(yy, xx - 1, pixels)
     if yy > 0 and not status[yy - 1, xx] and is_hue_close(arr[yy, xx], arr[yy - 1, xx]):  # top
-        pixels.extend(neighbours_of(yy - 1, xx))
+        neighbours_of(yy - 1, xx, pixels)
     if xx < (dim - 1) and not status[yy, xx + 1] and is_hue_close(arr[yy, xx], arr[yy, xx + 1]):  # right
-        pixels.extend(neighbours_of(yy, xx + 1))
+        neighbours_of(yy, xx + 1, pixels)
     if yy < (dim - 1) and not status[yy + 1, xx] and is_hue_close(arr[yy, xx], arr[yy + 1, xx]):  # bottom
-        pixels.extend(neighbours_of(yy + 1, xx))
-    return pixels
+        neighbours_of(yy + 1, xx, pixels)
 
 
 segments: List[List[Tuple[int, int]]] = list()
@@ -69,10 +69,12 @@ while found_sth_to_analyse:
     if not found_sth_to_analyse: break
     print(thisY, thisX)
 
-    segments.append(neighbours_of(thisY, thisX))
+    segment = list()
+    neighbours_of(thisY, thisX, segment)
+    segments.append(segment)
 
 for px in segments[0]:
-    arr[px[0], px[1]][0, 1, 2] = 0, 255, 255
+    arr[px[0], px[1]] = 0, 255, 255
 
 plot.imshow(Image.fromarray(arr, 'HSV').convert('RGB'))
 print(datetime.now() - whole_time)  # mere File->Image->RGB->HSV->RGB->Image->ImShow: 0:00:00.430~~480
