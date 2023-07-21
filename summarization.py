@@ -1,15 +1,18 @@
+import sys
 from datetime import datetime
+import sqlite3 as sql
+from typing import List, Tuple
+
 import matplotlib.pyplot as plot
 import numpy as np
 from PIL import Image
-import sqlite3 as sql
 
 whole_time = datetime.now()
 # noinspection PyTypeChecker
 arr: np.ndarray = np.asarray(Image.open('vis/2/1689005849386887.bmp').convert('HSV')).copy()
 arr.setflags(write=True)
 dim = 1088
-
+sys.setrecursionlimit(dim * dim)
 
 # Learning methods:
 # 1. Reinforcement Learning (organisms, slow, dangerous!)
@@ -29,48 +32,47 @@ dim = 1088
 # we could also store a simplified version of those images!
 # Forgetting can be accomplished by setting a last modified timestamp on each shape/vector/object.
 
+status = np.repeat([np.repeat(False, dim)], dim, 0)
+
+
 def is_hue_close(a: np.ndarray, b: np.ndarray) -> bool:
     return abs(int(a[0]) - int(b[0])) <= 20
 
 
-status = np.repeat([np.repeat(False, dim)], dim, 0)
-sureY, sureX = 0, 0
-while sureY < dim:
-    print(sureY, sureX)
-    thisY, thisX = 0, 0
-    for y in range(sureY, dim):
-        break_it = False
-        for x in range(sureX, dim):
+def neighbours_of(yy: int, xx: int) -> List[Tuple[int, int]]:
+    # print(yy, xx)
+    pixels: List[Tuple[int, int]] = [(yy, xx)]
+    status[yy, xx] = True
+    if xx > 0 and not status[yy, xx - 1] and is_hue_close(arr[yy, xx], arr[yy, xx - 1]):  # left
+        pixels.extend(neighbours_of(yy, xx - 1))
+    if yy > 0 and not status[yy - 1, xx] and is_hue_close(arr[yy, xx], arr[yy - 1, xx]):  # top
+        pixels.extend(neighbours_of(yy - 1, xx))
+    if xx < (dim - 1) and not status[yy, xx + 1] and is_hue_close(arr[yy, xx], arr[yy, xx + 1]):  # right
+        pixels.extend(neighbours_of(yy, xx + 1))
+    if yy < (dim - 1) and not status[yy + 1, xx] and is_hue_close(arr[yy, xx], arr[yy + 1, xx]):  # bottom
+        pixels.extend(neighbours_of(yy + 1, xx))
+    return pixels
+
+
+segments: List[List[Tuple[int, int]]] = list()
+thisY, thisX, found_sth_to_analyse = 0, 0, True
+while found_sth_to_analyse:
+    found_sth_to_analyse = False
+    for y in range(thisY, dim):
+        for x in range(thisX, dim):
             if not status[y, x]:
+                found_sth_to_analyse = True
                 thisY = y
                 thisX = x
-                break_it = True
                 break
-            else:
-                sureY = y
-                sureX = x
-        if break_it: break
+        if found_sth_to_analyse: break
+    if not found_sth_to_analyse: break
+    print(thisY, thisX)
 
-    is_close: bool
-    for yy in range(thisY, dim):
-        for xx in range(thisX, dim):
-            status[yy, xx] = True
-            if yy == thisY and xx == thisX:
-                continue
+    segments.append(neighbours_of(thisY, thisX))
 
-            if xx == thisX:
-                is_close = is_hue_close(arr[yy - 1, xx], arr[yy, xx])
-            else:
-                is_close = is_hue_close(arr[yy, xx - 1], arr[yy, xx])
-
-            if not is_close:
-                arr[yy, xx] = np.array([0, 255, 255])
-                break
-
-    sureX += 1
-    if sureX == dim:
-        sureX = 0
-        sureY += 1
+for px in segments[0]:
+    arr[px[0], px[1]][0, 1, 2] = 0, 255, 255
 
 plot.imshow(Image.fromarray(arr, 'HSV').convert('RGB'))
 print(datetime.now() - whole_time)  # mere File->Image->RGB->HSV->RGB->Image->ImShow: 0:00:00.430~~480
