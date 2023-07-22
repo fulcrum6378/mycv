@@ -33,7 +33,7 @@ sys.setrecursionlimit(dim * dim)
 # we could also store a simplified version of those images!
 # Forgetting can be accomplished by setting a last modified timestamp on each shape/vector/object.
 
-status: np.ndarray = np.repeat([np.repeat(-1, dim)], dim, 0)
+status: np.ndarray = np.repeat([np.repeat(-1, dim)], dim, 0)  # verified to have no -1 at the end.
 segments: list[list[tuple[int, int]]] = list()
 
 
@@ -89,7 +89,7 @@ while found_sth_to_analyse:
     neighbours_of(thisY, thisX, segment, len(segments))
     segments.append(segment)
 
-# dissolve smaller segments (88575->51150->47 in 500)
+# dissolve smaller segments
 # open('vis/before_dissolution.json', 'w').write(json.dumps(segments, indent=2))  # import json
 for seg in range(len(segments)):
     if len(segments[seg]) == 0: continue
@@ -100,12 +100,9 @@ for seg in range(len(segments)):
         if parent_index is None:
             print('parent_index is None:', segments[seg])
             continue
-        try:
-            parent: list[tuple[int, int]] = segments[status[parent_index[0], parent_index[1]]]
-            parent.extend(segments[seg])
-            segments[seg] = []  # don't call clear() on it!
-        except IndexError:
-            print('index', parent_index, 'of', status[parent_index[0], parent_index[1]], 'in', len(segments))
+        parent: list[tuple[int, int]] = segments[status[parent_index[0], parent_index[1]]]
+        parent.extend(segments[seg])
+        segments[seg].clear()
 # open('vis/after_dissolution.json', 'w').write(json.dumps(segments, indent=2))
 
 # temporary double dissolution FIXME
@@ -118,16 +115,14 @@ for seg in range(len(segments)):
         if parent_index is None:
             print('parent_index is None:', segments[seg])
             continue
-        try:
-            parent: list[tuple[int, int]] = segments[status[parent_index[0], parent_index[1]]]
-            parent.extend(segments[seg])
-            segments[seg] = []  # don't call clear() on it!
-        except IndexError:
-            print('index', parent_index, 'of', status[parent_index[0], parent_index[1]], 'in', len(segments))
+        parent: list[tuple[int, int]] = segments[status[parent_index[0], parent_index[1]]]
+        parent.extend(segments[seg])
+        segments[seg].clear()
 
 print('Segmentation time:', datetime.now() - segmentation_time)
 
 # FIXME neighbours_of does a lot of repeated work!! Although it might be useful!
+# TODO where are the other segments?!?
 
 segments.sort(key=lambda s: len(s), reverse=True)
 
@@ -140,9 +135,9 @@ for seg in range(len(segments)):
     print(seg, ':', len(segments[seg]))
 
 # colour the biggest segments
-for big_sgm in range(8):
+for big_sgm in range(25):
     for px in segments[big_sgm]:
-        arr[px[0], px[1]] = 30 * (big_sgm + 1), 255, 255
+        arr[px[0], px[1]] = 5 + (10 * (big_sgm + 1)), 255, 255
 
 # print a summary
 total_segments = 0
