@@ -1,6 +1,6 @@
 import sys
 from datetime import datetime
-from typing import List, Tuple
+from typing import Optional
 
 import matplotlib.pyplot as plot
 import numpy as np
@@ -12,6 +12,7 @@ whole_time = datetime.now()
 arr: np.ndarray = np.asarray(Image.open('vis/2/1689005849386887.bmp').convert('HSV')).copy()
 arr.setflags(write=True)
 dim = 1088
+min_seg = 1000  # this must change by the degree of stress!
 sys.setrecursionlimit(dim * dim)
 
 # Learning methods:
@@ -32,8 +33,8 @@ sys.setrecursionlimit(dim * dim)
 # we could also store a simplified version of those images!
 # Forgetting can be accomplished by setting a last modified timestamp on each shape/vector/object.
 
-status = np.repeat([np.repeat(-1, dim)], dim, 0)
-# TODO instead of True and False, indicate where did you put these pixels
+status: np.ndarray = np.repeat([np.repeat(-1, dim)], dim, 0)
+segments: list[list[tuple[int, int]]] = list()
 
 
 def is_hue_close(a: np.ndarray, b: np.ndarray) -> bool:
@@ -42,27 +43,40 @@ def is_hue_close(a: np.ndarray, b: np.ndarray) -> bool:
     # and abs(int(a[1]) - int(b[1])) <= 100 \
 
 
-def neighbours_of(yy: int, xx: int, pixels: List[Tuple[int, int]]):
+def neighbours_of(yy: int, xx: int, pixels: list[tuple[int, int]], sgm_idx: int):
     pixels.append((yy, xx))
-    status[yy, xx] = len(pixels) - 1
-    if xx > 0 and status[yy, xx - 1] != -1 and is_hue_close(arr[yy, xx], arr[yy, xx - 1]):  # left
-        neighbours_of(yy, xx - 1, pixels)
-    if yy > 0 and status[yy - 1, xx] != -1 and is_hue_close(arr[yy, xx], arr[yy - 1, xx]):  # top
-        neighbours_of(yy - 1, xx, pixels)
-    if xx < (dim - 1) and status[yy, xx + 1] != -1 and is_hue_close(arr[yy, xx], arr[yy, xx + 1]):  # right
-        neighbours_of(yy, xx + 1, pixels)
-    if yy < (dim - 1) and status[yy + 1, xx] != -1 and is_hue_close(arr[yy, xx], arr[yy + 1, xx]):  # bottom
-        neighbours_of(yy + 1, xx, pixels)
+    status[yy, xx] = sgm_idx
+    if xx > 0 and status[yy, xx - 1] == -1 and is_hue_close(arr[yy, xx], arr[yy, xx - 1]):  # left
+        neighbours_of(yy, xx - 1, pixels, sgm_idx)
+    if yy > 0 and status[yy - 1, xx] == -1 and is_hue_close(arr[yy, xx], arr[yy - 1, xx]):  # top
+        neighbours_of(yy - 1, xx, pixels, sgm_idx)
+    if xx < (dim - 1) and status[yy, xx + 1] == -1 and is_hue_close(arr[yy, xx], arr[yy, xx + 1]):  # right
+        neighbours_of(yy, xx + 1, pixels, sgm_idx)
+    if yy < (dim - 1) and status[yy + 1, xx] == -1 and is_hue_close(arr[yy, xx], arr[yy + 1, xx]):  # bottom
+        neighbours_of(yy + 1, xx, pixels, sgm_idx)
 
 
+# It must become more developed. You can also calculate segments' mean values!
+def find_a_segment_to_dissolve_in(sgm_pixels: list[tuple[int, int]]) -> Optional[tuple[int, int]]:
+    if sgm_pixels[0][0] > 0:
+        return sgm_pixels[0][0] - 1, sgm_pixels[0][1]
+    if sgm_pixels[0][1] > 0:
+        return sgm_pixels[0][0], sgm_pixels[0][1] - 1
+    if sgm_pixels[len(sgm_pixels) - 1][0] < dim - 1:
+        return sgm_pixels[len(sgm_pixels) - 1][0] + 1, sgm_pixels[len(sgm_pixels) - 1][1]
+    if sgm_pixels[len(sgm_pixels) - 1][1] < dim - 1:
+        return sgm_pixels[len(sgm_pixels) - 1][0], sgm_pixels[len(sgm_pixels) - 1][1] + 1
+    return None
+
+
+# detect segments by single-pixel colour differences
 segmentation_time = datetime.now()
-segments: List[List[Tuple[int, int]]] = list()
 thisY, thisX, found_sth_to_analyse = 0, 0, True
 while found_sth_to_analyse:
     found_sth_to_analyse = False
     for y in range(thisY, dim):
         for x in range(thisX if y == thisY else 0, dim):
-            if status[y, x] != -1:
+            if status[y, x] == -1:
                 found_sth_to_analyse = True
                 thisY = y
                 thisX = x
@@ -72,36 +86,72 @@ while found_sth_to_analyse:
     # print(thisY, thisX)
 
     segment = list()
-    neighbours_of(thisY, thisX, segment)
+    neighbours_of(thisY, thisX, segment, len(segments))
     segments.append(segment)
+
+# dissolve smaller segments (88575->51150->47 in 500)
+# open('vis/before_dissolution.json', 'w').write(json.dumps(segments, indent=2))  # import json
+for seg in range(len(segments)):
+    if len(segments[seg]) == 0: continue
+    if len(segments[seg]) < min_seg:
+        segments[seg].sort(key=lambda s: s[1])
+        segments[seg].sort(key=lambda s: s[0])
+        parent_index = find_a_segment_to_dissolve_in(segments[seg])
+        if parent_index is None:
+            print('parent_index is None:', segments[seg])
+            continue
+        try:
+            parent: list[tuple[int, int]] = segments[status[parent_index[0], parent_index[1]]]
+            parent.extend(segments[seg])
+            segments[seg] = []  # don't call clear() on it!
+        except IndexError:
+            print('index', parent_index, 'of', status[parent_index[0], parent_index[1]], 'in', len(segments))
+# open('vis/after_dissolution.json', 'w').write(json.dumps(segments, indent=2))
+
+# temporary double dissolution FIXME
+for seg in range(len(segments)):
+    if len(segments[seg]) == 0: continue
+    if len(segments[seg]) < min_seg:
+        segments[seg].sort(key=lambda s: s[1])
+        segments[seg].sort(key=lambda s: s[0])
+        parent_index = find_a_segment_to_dissolve_in(segments[seg])
+        if parent_index is None:
+            print('parent_index is None:', segments[seg])
+            continue
+        try:
+            parent: list[tuple[int, int]] = segments[status[parent_index[0], parent_index[1]]]
+            parent.extend(segments[seg])
+            segments[seg] = []  # don't call clear() on it!
+        except IndexError:
+            print('index', parent_index, 'of', status[parent_index[0], parent_index[1]], 'in', len(segments))
 
 print('Segmentation time:', datetime.now() - segmentation_time)
 
 # FIXME neighbours_of does a lot of repeated work!! Although it might be useful!
-# TODO RESOLVE SMALL SEGMENTS (now 88575)
 
+segments.sort(key=lambda s: len(s), reverse=True)
+
+# show the persisting small segments
 for seg in range(len(segments)):
-    if len(segments[seg]) < 100:
+    if len(segments[seg]) < min_seg:
         for px in segments[seg]:
             arr[px[0], px[1]] = 0, 255, 255
         continue
     print(seg, ':', len(segments[seg]))
 
-for px in segments[0]:
-    arr[px[0], px[1]] = 40, 255, 255
-for px in segments[1380]:
-    arr[px[0], px[1]] = 80, 255, 255
-for px in segments[15902]:
-    arr[px[0], px[1]] = 120, 255, 255
-for px in segments[37872]:
-    arr[px[0], px[1]] = 160, 255, 255
-for px in segments[40822]:
-    arr[px[0], px[1]] = 200, 255, 255
-for px in segments[54364]:
-    arr[px[0], px[1]] = 240, 255, 255
+# colour the biggest segments
+for big_sgm in range(8):
+    for px in segments[big_sgm]:
+        arr[px[0], px[1]] = 30 * (big_sgm + 1), 255, 255
 
-print('Total segments:', len(segments))
+# print a summary
+total_segments = 0
+for seg in segments:
+    if len(seg) > 0:
+        total_segments += 1
+print('Total segments:', total_segments)
 
+# show the image
 plot.imshow(Image.fromarray(arr, 'HSV').convert('RGB'))
 print('Whole time:', datetime.now() - whole_time)  # mere File->Image->RGB->HSV->RGB->Image->ImShow: 0:00:00.430~~480
 plot.show()
