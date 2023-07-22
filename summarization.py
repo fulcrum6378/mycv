@@ -33,6 +33,7 @@ sys.setrecursionlimit(dim * dim)
 # Forgetting can be accomplished by setting a last modified timestamp on each shape/vector/object.
 
 status = np.repeat([np.repeat(False, dim)], dim, 0)
+neighbour = 3
 
 
 def is_hue_close(a: np.ndarray, b: np.ndarray) -> bool:
@@ -44,14 +45,42 @@ def is_hue_close(a: np.ndarray, b: np.ndarray) -> bool:
 def neighbours_of(yy: int, xx: int, pixels: List[Tuple[int, int]]):
     pixels.append((yy, xx))
     status[yy, xx] = True
-    if xx > 0 and not status[yy, xx - 1] and is_hue_close(arr[yy, xx], arr[yy, xx - 1]):  # left
-        neighbours_of(yy, xx - 1, pixels)
-    if yy > 0 and not status[yy - 1, xx] and is_hue_close(arr[yy, xx], arr[yy - 1, xx]):  # top
-        neighbours_of(yy - 1, xx, pixels)
-    if xx < (dim - 1) and not status[yy, xx + 1] and is_hue_close(arr[yy, xx], arr[yy, xx + 1]):  # right
-        neighbours_of(yy, xx + 1, pixels)
-    if yy < (dim - 1) and not status[yy + 1, xx] and is_hue_close(arr[yy, xx], arr[yy + 1, xx]):  # bottom
-        neighbours_of(yy + 1, xx, pixels)
+
+    # left neighbour(s):
+    nn = neighbour
+    if (xx - nn) < 0: nn = 0
+    if nn != xx and not status[yy, xx - nn] and is_hue_close(arr[yy, xx], arr[yy, xx - nn]):
+        for mid in range(nn - 1):
+            pixels.append((yy, xx - mid))
+            status[yy, xx - mid] = True
+        neighbours_of(yy, xx - neighbour, pixels)
+
+    # top neighbour(s):
+    nn = neighbour
+    if (yy - nn) < 0: nn = 0
+    if nn != yy and not status[yy - nn, xx] and is_hue_close(arr[yy, xx], arr[yy - nn, xx]):
+        for mid in range(nn - 1):
+            pixels.append((yy - mid, xx))
+            status[yy - mid, xx] = True
+        neighbours_of(yy - nn, xx, pixels)
+
+    # right neighbour(s):
+    nn = neighbour
+    if (xx + nn) >= (dim - 1): nn = (dim - 1) - xx
+    if nn != xx and not status[yy, xx + nn] and is_hue_close(arr[yy, xx], arr[yy, xx + nn]):
+        for mid in range(nn - 1):
+            pixels.append((yy, xx + mid))
+            status[yy, xx + mid] = True
+        neighbours_of(yy, xx + nn, pixels)
+
+    # bottom neighbour(s):
+    nn = neighbour
+    if (yy + nn) >= (dim - 1): nn = (dim - 1) - yy
+    if nn != yy and not status[yy + nn, xx] and is_hue_close(arr[yy, xx], arr[yy + nn, xx]):
+        for mid in range(nn - 1):
+            pixels.append((yy + mid, xx))
+            status[yy + mid, xx] = True
+        neighbours_of(yy + nn, xx, pixels)
 
 
 segmentation_time = datetime.now()
@@ -77,7 +106,7 @@ while found_sth_to_analyse:
 print('Segmentation time:', datetime.now() - segmentation_time)
 
 # FIXME neighbours_of does a lot of repeated work!! Although it might be useful!
-# TODO RESOLVE SMALL SEGMENTS (now 96562)
+# TODO RESOLVE SMALL SEGMENTS (now 88921)
 
 for seg in range(len(segments)):
     if len(segments[seg]) < 100:
