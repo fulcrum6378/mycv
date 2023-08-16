@@ -105,7 +105,7 @@ for seg in range(len(segments)):
         segments[seg].clear()
 # open('vis/after_dissolution.json', 'w').write(json.dumps(segments, indent=2))
 
-# temporary double dissolution FIXME
+# temporary double dissolution FIX-ME
 for seg in range(len(segments)):
     if len(segments[seg]) == 0: continue
     if len(segments[seg]) < min_seg:
@@ -121,8 +121,8 @@ for seg in range(len(segments)):
 
 print('Segmentation time:', datetime.now() - segmentation_time)
 
-# FIXME neighbours_of does a lot of repeated work!! Although it might be useful!
-# TODO where are the other segments?!?
+# FIX-ME neighbours_of does a lot of repeated work!! Although it might be useful!
+# TO-DO where are the other segments?!?
 
 segments.sort(key=lambda s: len(s), reverse=True)
 
@@ -150,3 +150,5 @@ print('Total segments:', total_segments)
 plot.imshow(Image.fromarray(arr, 'HSV').convert('RGB'))
 print('Whole time:', datetime.now() - whole_time)  # mere File->Image->RGB->HSV->RGB->Image->ImShow: 0:00:00.430~~480
 plot.show()
+
+# I wrote this algorithm days ago, and now I found tin Wikipedia that it is called a "Region-growing" method!!
