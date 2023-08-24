@@ -2,6 +2,7 @@
   <dictionary name="fulcr">
     <words>
       <w>dtype</w>
+      <w>fromarray</w>
       <w>mycv</w>
     </words>
   </dictionary>
