@@ -4,6 +4,7 @@
       <w>dtype</w>
       <w>fromarray</w>
       <w>mycv</w>
+      <w>ndmin</w>
     </words>
   </dictionary>
 </component>
