@@ -11,6 +11,16 @@ arr.setflags(write=True)
 dim = 1088
 
 
+# Perhaps colour is much more important than shape!
+# And size matters too.
+# Simply find small clusters in exclude them by giving their pixels to their nearest neighbours.
+# Keep a cluster's highest and lowest colour values.
+# Shape also can be defined using lines and their strokes, so a box would be a dot with a huge stroke.
+# There's no need for a 3D simulation, you can store multiple shapes and colours for a single object as its aspects.
+# We should detect shapes sooner than we had planned.
+# What humans SEE is different from what they STORE in their brains.
+
+
 class Pixel:
     def __init__(self, _c: np.ndarray, _y: int, _x: int):
         self.c = _c
