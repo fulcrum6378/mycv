@@ -4,10 +4,10 @@ import matplotlib.pyplot as plot
 import numpy as np
 from PIL import Image
 
-
 # print(list(Image.fromarray(np.array([[[255, 255, 255], [0, 0, 0]]], dtype=np.uint8), 'RGB')
 #           .convert('HSV').getdata()))
 # quit()  # [(0, 0, 255), (0, 0, 0)]
+# Make sure this happens in C++ too!
 MIN_S = 5
 
 
@@ -23,7 +23,7 @@ def sort_by_brightness(a: list[int], b: list[int]) -> int:
 
 def sort_by_hue(a: list[int], b: list[int]) -> int:
     dif = a[0] - b[0]
-    if a[1] < MIN_S:# or b[1] < MIN_S:
+    if a[1] < MIN_S:
         return 0
     if dif < 0:
         return -1
@@ -74,6 +74,15 @@ colours: list[list[int]] = [
 colours.sort(key=cmp_to_key(sort_by_brightness))
 colours.sort(key=cmp_to_key(sort_by_hue))
 colours.sort(key=cmp_to_key(sort_by_saturation))
+
+bw_colours: list[list[int]] = list()
+bw_min = len(colours)
+for i in range(0, bw_min, -1):
+    print(i)  # TODO
+    if colours[i][1] < MIN_S:
+        bw_min -= 1
+bw_colours = colours[bw_min:]
+colour = colours[:bw_min]
 # now you have to separate the coloured pixels from the black/white one.
 # the former represents a circle, the latter is just a gradient line.
 
