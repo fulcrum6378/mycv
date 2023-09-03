@@ -1,7 +1,10 @@
 import colorsys
 
 import matplotlib.pyplot as plt
+import numpy as np
+from sklearn.base import BaseEstimator
 import sklearn.cluster as skc
+from sklearn.feature_selection import SelectFromModel  # feature-weighted clustering
 
 # https://www.w3schools.com/python/python_ml_hierarchial_clustering.asp
 # https://matplotlib.org/stable/gallery/mplot3d/scatter3d.html
@@ -15,10 +18,11 @@ data = list(zip(h, s, v))
 # from scipy.cluster.hierarchy import linkage
 # linkage_data = linkage(data, method='ward', metric='euclidean')
 
-labels = skc.KMeans(n_clusters=3).fit_predict(data, sample_weight=[10, 1, 1])
-# sample_weight.shape == (3,), expected (6,)!
-print("Results:", labels)
-
+weights = np.array([100, 1, 1])
+estimator: BaseEstimator = skc.KMeans(n_clusters=3)
+selector = SelectFromModel(estimator, max_features=3, importance_getter=lambda _estimator: weights)
+selector.fit(data)
+print("Labels:", selector.estimator_.labels_)
 
 # the rest is all about MatPlotLib
 # prepare the points in the plot
@@ -32,7 +36,7 @@ for c in range(len(data)):
 ax.set_xlabel('Hue')
 ax.set_ylabel('Saturation')
 # noinspection PyUnresolvedReferences
-ax.set_zlabel('Value')
+ax.set_zlabel('Brightness')
 plt.show()
 
 # THIS APPROACH FAILED TOO!!! Hue must be taken far more important than saturation and value!
