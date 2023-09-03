@@ -8,15 +8,14 @@ h = [255, 175, 81, 250, 100, 20]
 s = [255, 255, 128, 255, 255, 200]
 v = [255, 255, 255, 250, 100, 255]
 data = list(zip(h, s, v))
+
 for i in range(len(s)):
     s[i] *= 0.3
     v[i] *= 0.3  # maximum should be 0.3
 weighted_data = list(zip(h, s, v))
-
-# weights = np.array([100, 1, 1])
-cluster = skc.KMeans(n_clusters=4, n_init=10)
-print("Labels:", cluster.fit_predict(weighted_data))  # correct is 1 2 0 1 0 3
-# sklearn.feature_selection.SelectFromModel IS NOT feature-weighted clustering !!
+print("Labels:", skc.KMeans(n_clusters=4).fit_predict(weighted_data))
+# correct is 1 2 0 1 0 3
+# TODO COMPUTE n_clusters
 
 #
 
