@@ -1,30 +1,27 @@
 import colorsys
 
 import matplotlib.pyplot as plt
-import numpy as np
-from sklearn.base import BaseEstimator
 import sklearn.cluster as skc
-from sklearn.feature_selection import SelectFromModel  # feature-weighted clustering
-
-# https://www.w3schools.com/python/python_ml_hierarchial_clustering.asp
-# https://matplotlib.org/stable/gallery/mplot3d/scatter3d.html
 
 #    red, blu, lgr,red, dgr, orn
 h = [255, 175, 81, 250, 100, 20]
 s = [255, 255, 128, 255, 255, 200]
 v = [255, 255, 255, 250, 100, 255]
 data = list(zip(h, s, v))
+for i in range(len(s)):
+    s[i] *= 0.3
+    v[i] *= 0.3  # maximum should be 0.3
+weighted_data = list(zip(h, s, v))
 
-# from scipy.cluster.hierarchy import linkage
-# linkage_data = linkage(data, method='ward', metric='euclidean')
+# weights = np.array([100, 1, 1])
+cluster = skc.KMeans(n_clusters=4, n_init=10)
+print("Labels:", cluster.fit_predict(weighted_data))  # correct is 1 2 0 1 0 3
+# sklearn.feature_selection.SelectFromModel IS NOT feature-weighted clustering !!
 
-weights = np.array([100, 1, 1])
-estimator: BaseEstimator = skc.KMeans(n_clusters=3)
-selector = SelectFromModel(estimator, max_features=3, importance_getter=lambda _estimator: weights)
-selector.fit(data)
-print("Labels:", selector.estimator_.labels_)
+#
 
 # the rest is all about MatPlotLib
+# https://matplotlib.org/stable/gallery/mplot3d/scatter3d.html
 # prepare the points in the plot
 ax: plt.Axes = plt.figure().add_subplot(projection='3d')
 for c in range(len(data)):
