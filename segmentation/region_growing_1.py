@@ -151,4 +151,4 @@ plot.imshow(Image.fromarray(arr, 'HSV').convert('RGB'))
 print('Whole time:', datetime.now() - whole_time)  # mere File->Image->RGB->HSV->RGB->Image->ImShow: 0:00:00.430~~480
 plot.show()
 
-# I wrote this algorithm days ago, and now I found tin Wikipedia that it is called a "Region-growing" method!!
+# I wrote this algorithm days ago, and now I found it in Wikipedia that it is called a "Region-growing" method!!

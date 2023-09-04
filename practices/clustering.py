@@ -15,7 +15,7 @@ for i in range(len(s)):
 weighted_data = list(zip(h, s, v))
 print("Labels:", skc.KMeans(n_clusters=4).fit_predict(weighted_data))
 # correct is 1 2 0 1 0 3
-# TODO COMPUTE n_clusters
+# TODO COMPUTE n_clusters, BUT HOW?!?!?!?!?!?
 
 #
 
