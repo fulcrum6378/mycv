@@ -11,7 +11,7 @@ whole_time = datetime.now()
 arr: np.ndarray = np.asarray(Image.open('vis/2/1689005849386887.bmp').convert('HSV')).copy()
 arr.setflags(write=True)
 dim = 1088
-sys.setrecursionlimit(dim * dim)
+# sys.setrecursionlimit(dim * dim)
 
 
 # In the previous method, we focused on a pixel and analysed its neighbours.
@@ -48,9 +48,12 @@ class Pixel:
 
 # put every pixel in a Pixel class instance
 pixels: list[Pixel] = []
-for y in arr:
-    for x in y:
+for y in range(len(arr)):
+    for x in range(len(arr[y])):
         pixels.append(Pixel(arr[y, x], y, x))
+
+print('Pixels time:', len(pixels), datetime.now() - whole_time)
+quit()
 
 # iterate once on all pixels
 segmentation_time = datetime.now()
