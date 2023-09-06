@@ -58,13 +58,20 @@ for p in range(len(pixels)):
 
     # analyse the neighbours
     neighbours: list[Neighbour] = []
+    go = True
     if pixels[p].x < (dim - 1):  # right
-        neighbours.append(pixels[p].compare(Pixel.get_pos(pixels[p].y, pixels[p].x + 1)))
-    if pixels[p].y < (dim - 1):  # bottom
-        neighbours.append(pixels[p].compare(Pixel.get_pos(pixels[p].y + 1, pixels[p].x)))
-    if pixels[p].x > 0:  # left
-        neighbours.append(pixels[p].compare(Pixel.get_pos(pixels[p].y, pixels[p].x - 1)))
-    if pixels[p].x > 0:  # top
+        n = pixels[p].compare(Pixel.get_pos(pixels[p].y, pixels[p].x + 1))
+        neighbours.append(n)
+        if n.qualified and pixels[n.index].s is not None: go = False
+    if go and pixels[p].y < (dim - 1):  # bottom
+        n = pixels[p].compare(Pixel.get_pos(pixels[p].y + 1, pixels[p].x))
+        neighbours.append(n)
+        if n.qualified and pixels[n.index].s is not None: go = False
+    if go and pixels[p].x > 0:  # left
+        n = pixels[p].compare(Pixel.get_pos(pixels[p].y, pixels[p].x - 1))
+        neighbours.append(n)
+        if n.qualified and pixels[n.index].s is not None: go = False
+    if go and pixels[p].x > 0:  # top
         neighbours.append(pixels[p].compare(Pixel.get_pos(pixels[p].y - 1, pixels[p].x)))
 
     # iterate on the neighbours
@@ -84,7 +91,7 @@ for p in range(len(pixels)):
 
     # determine the segment of this pixel
     allowed_regions = list(allowed_regions)
-    if any_qualified:  # FIXME IT'S NOT YET GROUPED, BUT IT'S GONNA BE
+    if any_qualified:
         if len(allowed_regions) > 0:
             if len(allowed_regions) > 1:  # repair the pixels
                 chosen_one = min(allowed_regions)
@@ -112,6 +119,7 @@ for p in range(len(pixels)):
             next_seg += 1
     segments[pixels[p].s].append(p)
 
+# FIXME it takes nearly a double time now; after the pixel repair shit and the segmentation index
 # TODO now resolve the many small segments
 
 print('Segmentation time:', datetime.now() - segmentation_time)
