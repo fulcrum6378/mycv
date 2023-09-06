@@ -10,16 +10,19 @@ whole_time = datetime.now()
 arr: np.ndarray = np.asarray(Image.open('vis/2/1689005849386887.bmp').convert('HSV')).copy()
 arr.setflags(write=True)
 dim = 1088
+min_seg = 30
+max_skipped_seg_pixels = min_seg * 3
 
 
 # In the previous method, we focused on a pixel and analysed its neighbours.
 # Here we shall focus on a neighbour, and see if it fits anywhere with its own neighbours.
+# This can be easily translated to work using Vulkan.
 
 
 class Neighbour:
     def __init__(self, index: int, dh: int, ds: int, dv: int):
         self.index = index
-        self.qualified = dh <= 5 and ds <= 50 and dv <= 5
+        self.qualified = dh <= 5 and ds <= 10 and dv <= 5
         # self.distance: float = (dh * 3.0) + (ds * 1.0) + (dv * 1.0)
 
 
@@ -112,8 +115,63 @@ for p in range(len(pixels)):
             next_seg += 1
     segments[pixels[p].s].append(p)
 
-# FIXME it takes nearly a double time now; after the pixel repair shit and the segmentation index
-# TODO now resolve the many small segments
+
+def find_a_segment_to_dissolve_in(this_seg: int, _p_ids: list[int]):
+    start = pixels[_p_ids[0]]
+    skipped_pixels = 0
+    for _y in range(start.y, 0, -1):
+        seg_ = pixels[Pixel.get_pos(_y, start.x)].s
+        if seg_ != this_seg:
+            if len(segments[seg_]) >= min_seg:
+                return seg_
+            else:
+                skipped_pixels += 1
+                if skipped_pixels == max_skipped_seg_pixels:
+                    break
+    skipped_pixels = 0
+    for _x in range(start.x, 0, -1):
+        seg_ = pixels[Pixel.get_pos(start.y, _x)].s
+        if seg_ != this_seg:
+            if len(segments[seg_]) >= min_seg:
+                return seg_
+            else:
+                skipped_pixels += 1
+                if skipped_pixels == max_skipped_seg_pixels:
+                    break
+    start = pixels[_p_ids[len(_p_ids) - 1]]
+    skipped_pixels = 0
+    for _y in range(start.y + 1, dim - 1):
+        seg_ = pixels[Pixel.get_pos(_y, start.x)].s
+        if seg_ != this_seg:
+            if len(segments[seg_]) >= min_seg:
+                return seg_
+            else:
+                skipped_pixels += 1
+                if skipped_pixels == max_skipped_seg_pixels:
+                    break
+    skipped_pixels = 0
+    for _x in range(start.x + 1, dim - 1):
+        seg_ = pixels[Pixel.get_pos(start.y, _x)].s
+        if seg_ != this_seg:
+            if len(segments[seg_]) >= min_seg:
+                return seg_
+            else:
+                skipped_pixels += 1
+                if skipped_pixels == max_skipped_seg_pixels:
+                    break
+    print(start.__dict__)
+    raise Exception('What the fuck do I do now?!?')
+
+
+# dissolve the small segments
+removal: list[int] = list()
+for seg, p_ids in segments.items():
+    if len(p_ids) < min_seg:
+        absorber = find_a_segment_to_dissolve_in(seg, p_ids)
+        segments[absorber].extend(segments[seg])
+        removal.append(seg)
+for reg in removal:
+    segments.pop(reg)
 
 print('Segmentation time:', datetime.now() - segmentation_time)
 
@@ -124,6 +182,12 @@ for big_sgm in list(segments.keys())[:25]:
         arr[pixels[p].y, pixels[p].x] = np.array([5 + (10 * (big_sgm + 1)), 255, 255])
 print('Biggest segment sizes:', ', '.join(str(len(item)) for item in list(segments.values())[:25]))
 print('Total segments:', len(segments))
+n_sized_segments = 0
+for sgm in segments.values():
+    if len(sgm) >= min_seg:
+        n_sized_segments += 1
+print('N-cell segments:', n_sized_segments)
+# 1->83, 2->9649, 3->5293
 
 # show the image
 plot.imshow(Image.fromarray(arr, 'HSV').convert('RGB'))
