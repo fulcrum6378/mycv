@@ -19,6 +19,13 @@ sys.setrecursionlimit(dim * dim)
 # Using a Dict/Map, it'll eliminate the futile exercise.
 
 
+class Neighbour:
+    def __init__(self, index: int, dh: int, ds: int, dv: int):
+        self.index = index
+        self.qualified = dh <= 5 and ds <= 50 and dv <= 10
+        self.distance: float = (dh * 3.0) + (ds * 1.0) + (dv * 1.0)
+
+
 class Pixel:
     def __init__(self, _c: np.ndarray, _y: int, _x: int):
         self.c: list[int] = _c.tolist()  # if it is ndarray, sorting won't work!
@@ -26,61 +33,89 @@ class Pixel:
         self.x: int = _x
         self.s: Optional[int] = None  # Segment
 
-    # returns True if the colours are near, NOT EXACTLY EQUAL
-    def __eq__(self, other) -> bool:
-        return abs(int(self.c[0]) - int(other.c[0])) <= 5 \
-            and abs(int(self.c[1]) - int(other.c[1])) <= 50 \
-            and abs(int(self.c[2]) - int(other.c[2])) <= 10
+    def compare(self, _n: int) -> Neighbour:
+        global pixels
+        return Neighbour(
+            _n,
+            abs(int(self.c[0]) - int(pixels[_n].c[0])),
+            abs(int(self.c[1]) - int(pixels[_n].c[1])),
+            abs(int(self.c[2]) - int(pixels[_n].c[2])))
 
     @staticmethod
     def get_pos(_y: int, _x: int) -> int:
         return (_y * dim) + _x
 
 
+# put every pixel in a Pixel class instance
 pixels: list[Pixel] = []
 for y in arr:
     for x in y:
         pixels.append(Pixel(arr[y, x], y, x))
 
-# Flowchart:
-# a neighbour ->
-#   grouped & close   -> JOIN
-#   !grouped & close  -> skip, if none other was found, NEW GROUP, else recursion?!?!?
-#   grouped & !close  ->
-#   !grouped & !close ->
-
-n: int
+# iterate once on all pixels
+segmentation_time = datetime.now()
 next_seg = 0
-req1: bool
-req2: bool
 for p in range(len(pixels)):
-    neighbourhood = list()  # TODO
-    n = Pixel.get_pos(pixels[p].y, pixels[p].x + 1)  # right
-    req1, req2 = pixels[p] == n, pixels[n].s is not None
-    if pixels[p].x < (dim - 1) and req1:
-        if pixels[n].s is not None:
-            pass
-        if pixels[p] == pixels[n]:
-            pass
-        pixels[p].s = pixels[n].s
+    if pixels[p].s is not None: continue
 
-    n = Pixel.get_pos(pixels[p].y + 1, pixels[p].x)  # bottom
-    req1, req2 = pixels[n].s is not None, pixels[p] == pixels[n]
-    if pixels[p].y < (dim - 1) and pixels[n].s is not None and pixels[p] == pixels[n]:
-        pixels[p].s = pixels[n].s
+    # analyse the neighbours
+    neighbours: list[Neighbour] = []
+    if pixels[p].x < (dim - 1):  # right
+        neighbours.append(pixels[p].compare(Pixel.get_pos(pixels[p].y, pixels[p].x + 1)))
+    if pixels[p].y < (dim - 1):  # bottom
+        neighbours.append(pixels[p].compare(Pixel.get_pos(pixels[p].y + 1, pixels[p].x)))
+    if pixels[p].x > 0:  # left
+        neighbours.append(pixels[p].compare(Pixel.get_pos(pixels[p].y, pixels[p].x - 1)))
+    if pixels[p].x > 0:  # top
+        neighbours.append(pixels[p].compare(Pixel.get_pos(pixels[p].y - 1, pixels[p].x)))
 
-    n = Pixel.get_pos(pixels[p].y, pixels[p].x - 1)  # left
-    req1, req2 = pixels[n].s is not None, pixels[p] == n
-    if pixels[p].x > 0 and pixels[n].s is not None and pixels[p] == n:
-        pixels[p].s = pixels[n].s
+    # find the nearest neighbour plus someone with a segment to rely on if no close neighbours were there
+    nearest: Optional[int] = None
+    segment_of_any_neighbour: Optional[int] = None
+    for n in range(len(neighbours)):
+        if neighbours[n].distance < neighbours[nearest].distance:
+            nearest = n
+        if not segment_of_any_neighbour and pixels[neighbours[nearest].index].s is not None:
+            segment_of_any_neighbour = pixels[neighbours[nearest].index].s
 
-    n = Pixel.get_pos(pixels[p].y - 1, pixels[p].x)  # top
-    req1, req2 = pixels[n].s is not None, pixels[p] == n
-    if pixels[p].x > 0 and pixels[n].s is not None and pixels[p] == n:
-        pixels[p].s = pixels[n].s
+    # determine the segment of this pixel
+    if neighbours[nearest].qualified:
+        if pixels[neighbours[nearest].index].s is not None:
+            pixels[p].s = pixels[neighbours[nearest].index].s
+        else:
+            pixels[p].s = next_seg
+            pixels[neighbours[nearest].index].s = next_seg
+            next_seg += 1
+    else:
+        if segment_of_any_neighbour is not None:
+            pixels[p].s = segment_of_any_neighbour
+        else:
+            pixels[p].s = next_seg
+            next_seg += 1
 
-    # if none of the neighbours had any segments
-    # if none of the neighbours were close
+print('Segmentation time:', datetime.now() - segmentation_time)
+
+# assess the segments
+segments: dict[int, list[int]] = {}  # size: next_seg
+for p in range(len(pixels)):
+    if pixels[p].s is None:
+        raise Exception("Pixel " + str(p) + " is not grouped: " + str(pixels[p].x) + "x" + str(pixels[p].y))
+    if pixels[p].s not in segments:
+        segments[pixels[p].s] = list()
+    segments[pixels[p].s].append(p)
+dict(sorted(segments.items(), key=lambda item: len(item[1]), reverse=True))
+
+# colour the biggest segments
+for big_sgm in segments.keys()[:25]:
+    for p in segments[big_sgm]:
+        arr[pixels[p].y, pixels[p].x] = 5 + (10 * (big_sgm + 1)), 255, 255
+
+# print a summary
+total_segments = 0
+for seg in segments.values():
+    if len(seg) > 0:
+        total_segments += 1
+print('Total segments:', total_segments)
 
 # show the image
 plot.imshow(Image.fromarray(arr, 'HSV').convert('RGB'))
