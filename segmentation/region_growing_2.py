@@ -1,4 +1,3 @@
-import sys
 from datetime import datetime
 from typing import Optional
 
@@ -11,7 +10,6 @@ whole_time = datetime.now()
 arr: np.ndarray = np.asarray(Image.open('vis/2/1689005849386887.bmp').convert('HSV')).copy()
 arr.setflags(write=True)
 dim = 1088
-# sys.setrecursionlimit(dim * dim)
 
 
 # In the previous method, we focused on a pixel and analysed its neighbours.
@@ -52,9 +50,6 @@ for y in range(len(arr)):
     for x in range(len(arr[y])):
         pixels.append(Pixel(arr[y, x], y, x))
 
-print('Pixels time:', len(pixels), datetime.now() - whole_time)
-quit()
-
 # iterate once on all pixels
 segmentation_time = datetime.now()
 next_seg = 0
@@ -73,10 +68,10 @@ for p in range(len(pixels)):
         neighbours.append(pixels[p].compare(Pixel.get_pos(pixels[p].y - 1, pixels[p].x)))
 
     # find the nearest neighbour plus someone with a segment to rely on if no close neighbours were there
-    nearest: Optional[int] = None
+    nearest: int = 0
     segment_of_any_neighbour: Optional[int] = None
     for n in range(len(neighbours)):
-        if neighbours[n].distance < neighbours[nearest].distance:
+        if n != 0 and neighbours[n].distance < neighbours[nearest].distance:
             nearest = n
         if not segment_of_any_neighbour and pixels[neighbours[nearest].index].s is not None:
             segment_of_any_neighbour = pixels[neighbours[nearest].index].s
@@ -106,19 +101,17 @@ for p in range(len(pixels)):
     if pixels[p].s not in segments:
         segments[pixels[p].s] = list()
     segments[pixels[p].s].append(p)
-dict(sorted(segments.items(), key=lambda item: len(item[1]), reverse=True))
+segments = dict(sorted(segments.items(), key=lambda item: len(item[1]), reverse=True))
 
 # colour the biggest segments
-for big_sgm in segments.keys()[:25]:
+for big_sgm in list(segments.keys())[:25]:
     for p in segments[big_sgm]:
-        arr[pixels[p].y, pixels[p].x] = 5 + (10 * (big_sgm + 1)), 255, 255
+        arr[pixels[p].y, pixels[p].x] = np.array([5 + (10 * (big_sgm + 1)), 255, 255])
 
 # print a summary
-total_segments = 0
-for seg in segments.values():
-    if len(seg) > 0:
-        total_segments += 1
-print('Total segments:', total_segments)
+for seg in list(segments.values())[:30]:
+    print(len(seg))
+print('Total segments:', next_seg)
 
 # show the image
 plot.imshow(Image.fromarray(arr, 'HSV').convert('RGB'))
