@@ -10,7 +10,7 @@ whole_time = datetime.now()
 arr: np.ndarray = np.asarray(Image.open('vis/2/1689005849386887.bmp').convert('HSV')).copy()
 arr.setflags(write=True)
 dim = 1088
-min_seg = 30
+min_seg = 200  # changed by stress!?
 max_skipped_seg_pixels = min_seg * 3
 
 
@@ -22,7 +22,7 @@ max_skipped_seg_pixels = min_seg * 3
 class Neighbour:
     def __init__(self, index: int, dh: int, ds: int, dv: int):
         self.index = index
-        self.qualified = dh <= 5 and ds <= 10 and dv <= 5
+        self.qualified = dh <= 10 and ds <= 20 and dv <= 5
         # self.distance: float = (dh * 3.0) + (ds * 1.0) + (dv * 1.0)
 
 
@@ -31,7 +31,7 @@ class Pixel:
         self.c: list[int] = _c.tolist()  # if it is ndarray, sorting won't work!
         self.y: int = _y
         self.x: int = _x
-        self.s: Optional[int] = None  # Segment
+        self.s: Optional[int] = None  # segment
 
     def compare(self, _n: int) -> Neighbour:
         global pixels
@@ -182,12 +182,6 @@ for big_sgm in list(segments.keys())[:25]:
         arr[pixels[p].y, pixels[p].x] = np.array([5 + (10 * (big_sgm + 1)), 255, 255])
 print('Biggest segment sizes:', ', '.join(str(len(item)) for item in list(segments.values())[:25]))
 print('Total segments:', len(segments))
-n_sized_segments = 0
-for sgm in segments.values():
-    if len(sgm) >= min_seg:
-        n_sized_segments += 1
-print('N-cell segments:', n_sized_segments)
-# 1->83, 2->9649, 3->5293
 
 # show the image
 plot.imshow(Image.fromarray(arr, 'HSV').convert('RGB'))
