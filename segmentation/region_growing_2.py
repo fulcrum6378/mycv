@@ -20,7 +20,7 @@ class Neighbour:
     def __init__(self, index: int, dh: int, ds: int, dv: int):
         self.index = index
         self.qualified = dh <= 5 and ds <= 50 and dv <= 5
-        self.distance: float = (dh * 3.0) + (ds * 1.0) + (dv * 1.0)
+        # self.distance: float = (dh * 3.0) + (ds * 1.0) + (dv * 1.0)
 
 
 class Pixel:
@@ -58,30 +58,23 @@ for p in range(len(pixels)):
 
     # analyse the neighbours
     neighbours: list[Neighbour] = []
-    go = True
     if pixels[p].x < (dim - 1):  # right
-        n = pixels[p].compare(Pixel.get_pos(pixels[p].y, pixels[p].x + 1))
-        neighbours.append(n)
-        if n.qualified and pixels[n.index].s is not None: go = False
-    if go and pixels[p].y < (dim - 1):  # bottom
-        n = pixels[p].compare(Pixel.get_pos(pixels[p].y + 1, pixels[p].x))
-        neighbours.append(n)
-        if n.qualified and pixels[n.index].s is not None: go = False
-    if go and pixels[p].x > 0:  # left
-        n = pixels[p].compare(Pixel.get_pos(pixels[p].y, pixels[p].x - 1))
-        neighbours.append(n)
-        if n.qualified and pixels[n.index].s is not None: go = False
-    if go and pixels[p].x > 0:  # top
+        neighbours.append(pixels[p].compare(Pixel.get_pos(pixels[p].y, pixels[p].x + 1)))
+    if pixels[p].y < (dim - 1):  # bottom
+        neighbours.append(pixels[p].compare(Pixel.get_pos(pixels[p].y + 1, pixels[p].x)))
+    if pixels[p].x > 0:  # left
+        neighbours.append(pixels[p].compare(Pixel.get_pos(pixels[p].y, pixels[p].x - 1)))
+    if pixels[p].x > 0:  # top
         neighbours.append(pixels[p].compare(Pixel.get_pos(pixels[p].y - 1, pixels[p].x)))
 
     # iterate on the neighbours
-    nearest: int = 0
+    # nearest: int = 0
     any_qualified = False
     allowed_regions = set()
     segment_of_any_neighbour: Optional[int] = None
     for n in range(len(neighbours)):
-        if n != 0 and neighbours[n].distance < neighbours[nearest].distance:
-            nearest = n
+        # if n != 0 and neighbours[n].distance < neighbours[nearest].distance:
+        #    nearest = n
         if neighbours[n].qualified:
             any_qualified = True
             if pixels[neighbours[n].index].s is not None:
@@ -109,9 +102,9 @@ for p in range(len(pixels)):
             segments[next_seg] = []
             next_seg += 1
     else:
-        if pixels[neighbours[nearest].index].s is not None:
-            pixels[p].s = pixels[neighbours[nearest].index].s
-        elif segment_of_any_neighbour is not None:
+        # if pixels[neighbours[nearest].index].s is not None:
+        #    pixels[p].s = pixels[neighbours[nearest].index].s
+        if segment_of_any_neighbour is not None:  # elif
             pixels[p].s = segment_of_any_neighbour
         else:
             pixels[p].s = next_seg
