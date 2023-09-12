@@ -19,7 +19,6 @@ max_skipped_seg_pixels = min_seg * 3
 # In the previous method, we focused on a pixel and analysed its neighbours.
 # Here we shall focus on a neighbour, and see if it fits anywhere with its own neighbours.
 # This can be easily translated to work using Vulkan.
-# For more info: https://en.wikipedia.org/wiki/Image_segmentation
 
 
 class Neighbour:

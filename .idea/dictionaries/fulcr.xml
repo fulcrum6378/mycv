@@ -5,6 +5,7 @@
       <w>fromarray</w>
       <w>mycv</w>
       <w>ndmin</w>
+      <w>unpickled</w>
     </words>
   </dictionary>
 </component>
