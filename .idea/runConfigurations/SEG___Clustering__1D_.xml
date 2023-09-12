@@ -1,5 +1,5 @@
 <component name="ProjectRunConfigurationManager">
-  <configuration default="false" name="0. RGB to Bitmap" type="PythonConfigurationType" factoryName="Python">
+  <configuration default="false" name="SEG - Clustering (1D)" type="PythonConfigurationType" factoryName="Python">
     <module name="MyCV" />
     <option name="INTERPRETER_OPTIONS" value="" />
     <option name="PARENT_ENVS" value="true" />
@@ -10,9 +10,9 @@
     <option name="SDK_NAME" value="Python 3.11 (MyCV)" />
     <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
     <option name="IS_MODULE_SDK" value="false" />
-    <option name="ADD_CONTENT_ROOTS" value="false" />
+    <option name="ADD_CONTENT_ROOTS" value="true" />
     <option name="ADD_SOURCE_ROOTS" value="false" />
-    <option name="SCRIPT_NAME" value="$PROJECT_DIR$/vis/rgb_to_bitmap.py" />
+    <option name="SCRIPT_NAME" value="$PROJECT_DIR$/segmentation/clustering_1d.py" />
     <option name="PARAMETERS" value="" />
     <option name="SHOW_COMMAND_LINE" value="false" />
     <option name="EMULATE_TERMINAL" value="true" />

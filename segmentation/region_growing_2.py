@@ -1,3 +1,5 @@
+import json
+import pickle
 from datetime import datetime
 from typing import Optional
 
@@ -45,6 +47,10 @@ class Pixel:
     @staticmethod
     def get_pos(_y: int, _x: int) -> int:
         return (_y * dim) + _x
+
+    class Encoder(json.JSONEncoder):
+        def default(self, o):
+            return o.__dict__
 
 
 # put every pixel in a Pixel class instance
@@ -188,3 +194,9 @@ print('Total segments:', len(segments))
 plot.imshow(Image.fromarray(arr, 'HSV').convert('RGB'))
 print('Whole time:', datetime.now() - whole_time)
 plot.show()
+
+# save the output
+# open('segmentation/output/rg2_pixels.json', 'w').write(json.dumps(pixels, cls=Pixel.Encoder))
+# open('segmentation/output/rg2_segments.json', 'w').write(json.dumps(segments, cls=Pixel.Encoder))
+pickle.dump(pixels, open('segmentation/output/rg2_pixels.pickle', 'wb'))
+pickle.dump(segments, open('segmentation/output/rg2_segments.pickle', 'wb'))
