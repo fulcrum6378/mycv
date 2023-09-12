@@ -1,4 +1,3 @@
-import json
 import pickle
 from datetime import datetime
 from typing import Optional
@@ -47,9 +46,10 @@ class Pixel:
     def get_pos(_y: int, _x: int) -> int:
         return (_y * dim) + _x
 
-    class Encoder(json.JSONEncoder):
-        def default(self, o):
-            return o.__dict__
+
+class Segment:
+    def __init__(self):
+        self.a: list[int] = []
 
 
 # put every pixel in a Pixel class instance
@@ -61,7 +61,7 @@ for y in range(len(arr)):
 # iterate once on all pixels
 segmentation_time = datetime.now()
 next_seg = 0
-segments: dict[int, list[int]] = {}
+segments: dict[int, Segment] = {}
 for p in range(len(pixels)):
     if pixels[p].s is not None: continue
 
@@ -94,41 +94,39 @@ for p in range(len(pixels)):
     # determine the segment of this pixel
     allowed_regions = list(allowed_regions)
     if any_qualified:
-        if len(allowed_regions) > 0:
+        if len(allowed_regions) == 0:
+            pixels[p].s = next_seg
+            segments[next_seg] = Segment()
+            next_seg += 1
+        else:
             if len(allowed_regions) > 1:  # repair the pixels
                 chosen_one = min(allowed_regions)
-                for seg in allowed_regions:
-                    if seg != chosen_one:
-                        for changer in segments[seg]:
+                for sid in allowed_regions:
+                    if sid != chosen_one:
+                        for changer in segments[sid].a:
                             pixels[changer].s = chosen_one
-                        segments[chosen_one].extend(segments[seg])
-                        segments.pop(seg)
+                        segments[chosen_one].a.extend(segments[sid].a)
+                        segments.pop(sid)
                 pixels[p].s = chosen_one
             else:
                 pixels[p].s = allowed_regions[0]
-        else:
-            pixels[p].s = next_seg
-            segments[next_seg] = []
-            next_seg += 1
     else:
-        # if pixels[neighbours[nearest].index].s is not None:
-        #    pixels[p].s = pixels[neighbours[nearest].index].s
-        if segment_of_any_neighbour is not None:  # elif
+        if segment_of_any_neighbour is not None:
             pixels[p].s = segment_of_any_neighbour
         else:
             pixels[p].s = next_seg
-            segments[next_seg] = []
+            segments[next_seg] = Segment()
             next_seg += 1
-    segments[pixels[p].s].append(p)
+    segments[pixels[p].s].a.append(p)
 
 
-def find_a_segment_to_dissolve_in(this_seg: int, _p_ids: list[int]) -> int:
+def find_a_segment_to_dissolve_in(this_seg: int, _p_ids: list[int]) -> int:  # FIXME Optional
     start = pixels[_p_ids[0]]
     skipped_pixels = 0
     for _y in range(start.y, 0, -1):
         seg_ = pixels[Pixel.get_pos(_y, start.x)].s
         if seg_ != this_seg:
-            if len(segments[seg_]) >= min_seg:
+            if len(segments[seg_].a) >= min_seg:
                 return seg_
             else:
                 skipped_pixels += 1
@@ -138,7 +136,7 @@ def find_a_segment_to_dissolve_in(this_seg: int, _p_ids: list[int]) -> int:
     for _x in range(start.x, 0, -1):
         seg_ = pixels[Pixel.get_pos(start.y, _x)].s
         if seg_ != this_seg:
-            if len(segments[seg_]) >= min_seg:
+            if len(segments[seg_].a) >= min_seg:
                 return seg_
             else:
                 skipped_pixels += 1
@@ -149,7 +147,7 @@ def find_a_segment_to_dissolve_in(this_seg: int, _p_ids: list[int]) -> int:
     for _y in range(start.y + 1, dim - 1):
         seg_ = pixels[Pixel.get_pos(_y, start.x)].s
         if seg_ != this_seg:
-            if len(segments[seg_]) >= min_seg:
+            if len(segments[seg_].a) >= min_seg:
                 return seg_
             else:
                 skipped_pixels += 1
@@ -159,7 +157,7 @@ def find_a_segment_to_dissolve_in(this_seg: int, _p_ids: list[int]) -> int:
     for _x in range(start.x + 1, dim - 1):
         seg_ = pixels[Pixel.get_pos(start.y, _x)].s
         if seg_ != this_seg:
-            if len(segments[seg_]) >= min_seg:
+            if len(segments[seg_].a) >= min_seg:
                 return seg_
             else:
                 skipped_pixels += 1
@@ -171,11 +169,11 @@ def find_a_segment_to_dissolve_in(this_seg: int, _p_ids: list[int]) -> int:
 
 # dissolve the small segments
 removal: dict[int, int] = {}
-for seg, p_ids in segments.items():
-    if len(p_ids) < min_seg:
-        absorber = find_a_segment_to_dissolve_in(seg, p_ids)
-        segments[absorber].extend(segments[seg])
-        removal[seg] = absorber
+for sid, seg in segments.items():
+    if len(seg.a) < min_seg:
+        absorber = find_a_segment_to_dissolve_in(sid, seg.a)
+        segments[absorber].a.extend(segments[sid].a)
+        removal[sid] = absorber
 rem_keys = removal.keys()
 for p in pixels:
     if p.s in rem_keys:
@@ -186,11 +184,11 @@ for reg in rem_keys:
 print('Segmentation time:', datetime.now() - segmentation_time)
 
 # evaluate the segments and colour the biggest ones
-segments = dict(sorted(segments.items(), key=lambda item: len(item[1]), reverse=True))
+segments = dict(sorted(segments.items(), key=lambda item: len(item[1].a), reverse=True))
 for big_sgm in list(segments.keys())[:25]:
-    for p in segments[big_sgm]:
+    for p in segments[big_sgm].a:
         arr[pixels[p].y, pixels[p].x] = np.array([5 + (10 * (big_sgm + 1)), 255, 255])
-print('Biggest segment sizes:', ', '.join(str(len(item)) for item in list(segments.values())[:25]))
+print('Biggest segment sizes:', ', '.join(str(len(item.a)) for item in list(segments.values())[:25]))
 print('Total segments:', len(segments))
 
 # show the image
@@ -199,7 +197,5 @@ print('Whole time:', datetime.now() - whole_time)
 plot.show()
 
 # save the output
-# open('segmentation/output/rg2_pixels.json', 'w').write(json.dumps(pixels, cls=Pixel.Encoder))
-# open('segmentation/output/rg2_segments.json', 'w').write(json.dumps(segments, cls=Pixel.Encoder))
 pickle.dump(pixels, open('segmentation/output/rg2_pixels.pickle', 'wb'))
 pickle.dump(segments, open('segmentation/output/rg2_segments.pickle', 'wb'))
