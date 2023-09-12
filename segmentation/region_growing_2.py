@@ -122,7 +122,7 @@ for p in range(len(pixels)):
     segments[pixels[p].s].append(p)
 
 
-def find_a_segment_to_dissolve_in(this_seg: int, _p_ids: list[int]):
+def find_a_segment_to_dissolve_in(this_seg: int, _p_ids: list[int]) -> int:
     start = pixels[_p_ids[0]]
     skipped_pixels = 0
     for _y in range(start.y, 0, -1):
@@ -170,13 +170,17 @@ def find_a_segment_to_dissolve_in(this_seg: int, _p_ids: list[int]):
 
 
 # dissolve the small segments
-removal: list[int] = list()
+removal: dict[int, int] = {}
 for seg, p_ids in segments.items():
     if len(p_ids) < min_seg:
         absorber = find_a_segment_to_dissolve_in(seg, p_ids)
         segments[absorber].extend(segments[seg])
-        removal.append(seg)
-for reg in removal:
+        removal[seg] = absorber
+rem_keys = removal.keys()
+for p in pixels:
+    if p.s in rem_keys:
+        p.s = removal[p.s]
+for reg in rem_keys:
     segments.pop(reg)
 
 print('Segmentation time:', datetime.now() - segmentation_time)
