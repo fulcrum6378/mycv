@@ -7,12 +7,13 @@ import numpy as np
 from PIL import Image
 
 # read the image
-whole_time = datetime.now()
-arr: np.ndarray = np.asarray(Image.open('vis/2/1689005849386887.bmp').convert('HSV')).copy()
+loading_time = datetime.now()
+# red pillow: 1689005849386887, shoes: 1689005891979733
+arr: np.ndarray = np.asarray(Image.open('vis/2/1689005891979733.bmp').convert('HSV')).copy()
 arr.setflags(write=True)
 dim = 1088
-min_seg = 200  # changed by stress!?
-max_skipped_seg_pixels = min_seg * 3
+min_seg = 100  # changed by stress!?
+max_skipped_seg_pixels = 5  # 90 goes with no problem with min_seg:200
 
 
 # In the previous method, we focused on a pixel and analysed its neighbours.
@@ -57,6 +58,7 @@ pixels: list[Pixel] = []
 for y in range(len(arr)):
     for x in range(len(arr[y])):
         pixels.append(Pixel(arr[y, x], y, x))
+print('Loading time:', datetime.now() - loading_time)
 
 # iterate once on all pixels
 segmentation_time = datetime.now()
@@ -77,13 +79,10 @@ for p in range(len(pixels)):
         neighbours.append(pixels[p].compare(Pixel.get_pos(pixels[p].y - 1, pixels[p].x)))
 
     # iterate on the neighbours
-    # nearest: int = 0
     any_qualified = False
     allowed_regions = set()
     segment_of_any_neighbour: Optional[int] = None
     for n in range(len(neighbours)):
-        # if n != 0 and neighbours[n].distance < neighbours[nearest].distance:
-        #    nearest = n
         if neighbours[n].qualified:
             any_qualified = True
             if pixels[neighbours[n].index].s is not None:
@@ -120,51 +119,44 @@ for p in range(len(pixels)):
     segments[pixels[p].s].a.append(p)
 
 
-def find_a_segment_to_dissolve_in(this_seg: int, _p_ids: list[int]) -> int:  # FIXME Optional
-    start = pixels[_p_ids[0]]
-    skipped_pixels = 0
-    for _y in range(start.y, 0, -1):
-        seg_ = pixels[Pixel.get_pos(_y, start.x)].s
-        if seg_ != this_seg:
-            if len(segments[seg_].a) >= min_seg:
-                return seg_
-            else:
-                skipped_pixels += 1
-                if skipped_pixels == max_skipped_seg_pixels:
-                    break
-    skipped_pixels = 0
-    for _x in range(start.x, 0, -1):
-        seg_ = pixels[Pixel.get_pos(start.y, _x)].s
-        if seg_ != this_seg:
-            if len(segments[seg_].a) >= min_seg:
-                return seg_
-            else:
-                skipped_pixels += 1
-                if skipped_pixels == max_skipped_seg_pixels:
-                    break
-    start = pixels[_p_ids[len(_p_ids) - 1]]
-    skipped_pixels = 0
-    for _y in range(start.y + 1, dim - 1):
-        seg_ = pixels[Pixel.get_pos(_y, start.x)].s
-        if seg_ != this_seg:
-            if len(segments[seg_].a) >= min_seg:
-                return seg_
-            else:
-                skipped_pixels += 1
-                if skipped_pixels == max_skipped_seg_pixels:
-                    break
-    skipped_pixels = 0
-    for _x in range(start.x + 1, dim - 1):
-        seg_ = pixels[Pixel.get_pos(start.y, _x)].s
-        if seg_ != this_seg:
-            if len(segments[seg_].a) >= min_seg:
-                return seg_
-            else:
-                skipped_pixels += 1
-                if skipped_pixels == max_skipped_seg_pixels:
-                    break
-    print(start.__dict__)
-    raise Exception('What the fuck do I do now?!?')
+def find_a_segment_to_dissolve_in(this_seg: int, _p_ids: list[int]) -> Optional[int]:
+    ranges_starts = [
+        pixels[_p_ids[0]],
+        pixels[_p_ids[0]],
+        pixels[_p_ids[len(_p_ids) - 1]],
+        pixels[_p_ids[len(_p_ids) - 1]],
+    ]
+    ranges: list[range] = [
+        range(ranges_starts[0].y, 0, -1),
+        range(ranges_starts[1].x, 0, -1),
+        range(ranges_starts[2].y + 1, dim - 1),
+        range(ranges_starts[3].x + 1, dim - 1),
+    ]
+    ranges_dim = [False, True, False, True]  # False=>Y, True=>X
+    this_range, i = 0, 0
+    point: Optional[int]
+    while len(ranges) > 0 and i < max_skipped_seg_pixels:
+        try:
+            point = ranges[this_range][i]
+            this_range += 1
+        except IndexError:
+            point = None
+            ranges_starts.pop(this_range)
+            ranges.pop(this_range)
+            ranges_dim.pop(this_range)
+        if this_range == len(ranges): this_range = 0
+        if point is not None:
+            seg_ = pixels[
+                Pixel.get_pos(point, ranges_starts[this_range].x)
+                if not ranges_dim[this_range]
+                else Pixel.get_pos(ranges_starts[this_range].y, point)
+            ].s
+            if seg_ != this_seg:
+                if len(segments[seg_].a) >= min_seg:
+                    return seg_
+        i += 1
+    # raise Exception('Ran out of allowed skipped pixels for dissolving small segments')
+    return None
 
 
 # dissolve the small segments
@@ -172,6 +164,7 @@ removal: dict[int, int] = {}
 for sid, seg in segments.items():
     if len(seg.a) < min_seg:
         absorber = find_a_segment_to_dissolve_in(sid, seg.a)
+        if absorber is None: continue
         segments[absorber].a.extend(segments[sid].a)
         removal[sid] = absorber
 rem_keys = removal.keys()
@@ -193,9 +186,10 @@ print('Total segments:', len(segments))
 
 # show the image
 plot.imshow(Image.fromarray(arr, 'HSV').convert('RGB'))
-print('Whole time:', datetime.now() - whole_time)
 plot.show()
 
 # save the output
+dumping_time = datetime.now()
 pickle.dump(pixels, open('segmentation/output/rg2_pixels.pickle', 'wb'))
 pickle.dump(segments, open('segmentation/output/rg2_segments.pickle', 'wb'))
+print('Dumping time:', datetime.now() - dumping_time)
