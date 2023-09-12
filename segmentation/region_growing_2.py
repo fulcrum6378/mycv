@@ -8,12 +8,12 @@ from PIL import Image
 
 # read the image
 loading_time = datetime.now()
-# red pillow: 1689005849386887, shoes: 1689005891979733
-arr: np.ndarray = np.asarray(Image.open('vis/2/1689005891979733.bmp').convert('HSV')).copy()
+# red pillow: 1689005849386887 (28,230 seg), shoes: 1689005891979733 (100,302 seg)
+arr: np.ndarray = np.asarray(Image.open('vis/2/1689005849386887.bmp').convert('HSV')).copy()
 arr.setflags(write=True)
-dim = 1088
-min_seg = 100  # changed by stress!?
-max_skipped_seg_pixels = 5  # 90 goes with no problem with min_seg:200
+dim: int = 1088
+min_seg_len_multiplied_by: float = 0.0002  # 0.001
+max_skipped_seg_pixels: int = 10
 
 
 # In the previous method, we focused on a pixel and analysed its neighbours.
@@ -161,6 +161,8 @@ def find_a_segment_to_dissolve_in(this_seg: int, _p_ids: list[int]) -> Optional[
 
 # dissolve the small segments
 removal: dict[int, int] = {}
+min_seg: int = int(len(segments) * min_seg_len_multiplied_by)  # changed by stress?
+print('Minimum segment size:', min_seg)
 for sid, seg in segments.items():
     if len(seg.a) < min_seg:
         absorber = find_a_segment_to_dissolve_in(sid, seg.a)
@@ -178,7 +180,7 @@ print('Segmentation time:', datetime.now() - segmentation_time)
 
 # evaluate the segments and colour the biggest ones
 segments = dict(sorted(segments.items(), key=lambda item: len(item[1].a), reverse=True))
-for big_sgm in list(segments.keys())[:25]:
+for big_sgm in list(segments.keys())[:50]:
     for p in segments[big_sgm].a:
         arr[pixels[p].y, pixels[p].x] = np.array([5 + (10 * (big_sgm + 1)), 255, 255])
 print('Biggest segment sizes:', ', '.join(str(len(item.a)) for item in list(segments.values())[:25]))
