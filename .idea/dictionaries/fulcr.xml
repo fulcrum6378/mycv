@@ -3,8 +3,12 @@
     <words>
       <w>dtype</w>
       <w>fromarray</w>
+      <w>getdata</w>
+      <w>mergen</w>
       <w>mycv</w>
+      <w>ndarray</w>
       <w>ndmin</w>
+      <w>uint</w>
       <w>unpickled</w>
     </words>
   </dictionary>
