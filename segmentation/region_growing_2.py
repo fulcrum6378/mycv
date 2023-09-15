@@ -6,31 +6,24 @@ import matplotlib.pyplot as plot
 import numpy as np
 from PIL import Image
 
-# read the image
-loading_time = datetime.now()
-colour_model: str = 'YCbCr'  # RGB, CMYK(4x8bit), YCbCr, LAB, HSV
-# tweak Neighbour.__init__ manually after edition.
-# "conversion from LAB to RGB not supported"
-# there are more here: https://pillow.readthedocs.io/en/stable/handbook/concepts.html#concept-modes
-# red pillow: 1689005849386887 (28,230 seg), shoes: 1689005891979733 (100,302 seg)
-arr: np.ndarray = np.asarray(Image.open('vis/2/1689005849386887.bmp').convert(colour_model)).copy()
-if colour_model == 'HSV': arr.setflags(write=True)
-dim: int = 1088
-min_seg_len_multiplied_by: float = 0  # 0.001
-max_skipped_seg_pixels: int = 10
-
-
 # In the previous method, we focused on a pixel and analysed its neighbours.
 # Here we shall focus on a neighbour, and see if it fits anywhere with its own neighbours.
 # This can be easily translated to work using Vulkan.
-# Remember, YCbCr is close to YUV!
-# TODO so perhaps YUV is very good!!!
+
+# read the image
+loading_time = datetime.now()
+colour_model: str = 'YCbCr'  # RGB, HSV, YCbCr; (tweak Neighbour.__init__ too) TODO YUV
+# https://pillow.readthedocs.io/en/stable/handbook/concepts.html#concept-modes
+# red pillow: 1689005849386887;   28,230(HSV), 18,692(YCC), 24,204(RGB) segments
+# shoes:      1689005891979733;  100,302(HSV), 78,930(YCC), 96,025(RGB) segments
+arr: np.ndarray = np.asarray(Image.open('vis/2/1689005849386887.bmp').convert(colour_model)).copy()
+dim: int = 1088
 
 
 class Neighbour:
     def __init__(self, index: int, dh: int, ds: int, dv: int):
         self.index = index
-        # self.qualified = dh <= 5 and ds <= 5 and dv <= 5  # RGB
+        # self.qualified = dh <= 4 and ds <= 4 and dv <= 4  # RGB
         # self.qualified = dh <= 10 and ds <= 20 and dv <= 5  # HSV
         self.qualified = dh <= 4 and ds <= 4 and dv <= 4  # YCbCr
 
@@ -131,7 +124,7 @@ print('Segmentation time:', datetime.now() - segmentation_time)
 segments = dict(sorted(segments.items(), key=lambda item: len(item[1].a), reverse=True))
 if colour_model != 'HSV':
     arr = np.asarray(Image.fromarray(arr, colour_model).convert('HSV')).copy()
-    arr.setflags(write=True)
+arr.setflags(write=True)
 for big_sgm in list(segments.keys())[:50]:
     for p in segments[big_sgm].a:
         arr[pixels[p].y, pixels[p].x] = np.array([5 + (10 * (big_sgm + 1)), 255, 255])
