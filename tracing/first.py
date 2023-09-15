@@ -59,7 +59,7 @@ dim = 1088
 print('Loading time:', datetime.now() - loading_time)
 
 # get a mean value of all colours + detect border pixels
-interpretation_time = datetime.now()
+mean_and_border_time = datetime.now()
 border: list[tuple[int, int]] = []
 for p in pixels:
     segments[p.s].add_colour(p.c)
@@ -87,10 +87,10 @@ for p in pixels:
             border.append((p.y, p.x))
             p.b = True
             continue
+for seg in segments.values(): seg.mean()
+print('Mean + border time:', datetime.now() - mean_and_border_time)
 
-for seg in segments.values():
-    seg.mean()
-print('Interpretation time:', datetime.now() - interpretation_time)
+# TODO detect shapes as comparable vectors
 
 # detect the boundaries of the cadre
 display_preparation_time = datetime.now()

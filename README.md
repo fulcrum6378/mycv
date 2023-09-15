@@ -20,10 +20,11 @@ Testing various methods of Image Segmentation:
 - [**Region-growing methods**](https://en.wikipedia.org/wiki/Region_growing)
 - [Clustering methods](https://en.wikipedia.org/wiki/Cluster_analysis)
 
-#### 3. /interpretation/
+#### 3. /tracing/: [**Image Tracing**](https://en.wikipedia.org/wiki/Image_tracing)
 
 Trying to interpret segments of images in terms of [vector graphics](https://en.wikipedia.org/wiki/Vector_graphics)
-instead of [raster images](https://en.wikipedia.org/wiki/Raster_graphics)...
+instead of [raster images](https://en.wikipedia.org/wiki/Raster_graphics); but the vectors must be able to be easily
+compared to others of their kind.
 
 #### + /practices/
 

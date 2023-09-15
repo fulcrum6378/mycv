@@ -126,7 +126,7 @@ for p in range(len(pixels)):
     segments[pixels[p].s].p.append(p)
 
 # even with a standard amount of dissolution which doesn't fuck up the shoes picture,
-# the Interpretation section will need to deal with small segments.
+# the Tracing section will need to deal with small segments.
 
 print('Segmentation time:', datetime.now() - segmentation_time)
 
