@@ -5,7 +5,6 @@ from typing import Optional
 import cv2
 import matplotlib.pyplot as plot
 import numpy as np
-from PIL import Image
 
 # In the previous method, we focused on a pixel and analysed its neighbours.
 # Here we shall focus on a neighbour, and see if it fits anywhere with its own neighbours.
@@ -13,21 +12,22 @@ from PIL import Image
 
 # read the image
 loading_time = datetime.now()
-colour_model: str = 'YCbCr'  # RGB, HSV, YCbCr; (tweak Neighbour.__init__ too); only with Pillow
 # https://docs.opencv.org/3.4/d8/d01/group__imgproc__color__conversions.html
-# red pillow: 1689005849386887;   28,230(HSV), 18,692(YCC), 18,922(YUV), 24,204(RGB) segments
-# shoes:      1689005891979733;  100,302(HSV), 78,930(YCC), 79,335(YUV), 96,025(RGB) segments
-# arr: np.ndarray = np.asarray(Image.open('vis/2/1689005849386887.bmp').convert(colour_model)).copy()
+#                                    HSV   YCbCr,    YUV     RGB     LAB,    HLS,    XYZ
+# red pillow: 1689005849386887;   28,230, 18,692, 18,922, 24,204, 18,513, 23,780, 22,266 segments
+# shoes:      1689005891979733;  100,302, 78,930, 79,335, 96,025, 77,796, 88,751, 91,839 segments
 arr: np.ndarray = cv2.cvtColor(cv2.imread('vis/2/1689005849386887.bmp'), cv2.COLOR_BGR2YUV)
+is_hsv = False
 dim: int = 1088
 
 
 class Neighbour:
-    def __init__(self, index: int, dh: int, ds: int, dv: int):
+    def __init__(self, index: int, da: int, db: int, dc: int):
         self.index = index
-        # self.qualified = dh <= 4 and ds <= 4 and dv <= 4  # RGB
-        # self.qualified = dh <= 10 and ds <= 20 and dv <= 5  # HSV
-        self.qualified = dh <= 4 and ds <= 4 and dv <= 4  # YCbCr/YUV
+        # self.qualified = da <= 10 and db <= 20 and dc <= 5  # HSV
+        self.qualified = da <= 4 and db <= 4 and dc <= 4  # YCbCr, YUV, LAB, XYZ
+        # self.qualified = da <= 4 and db <= 4 and dc <= 4  # RGB
+        # self.qualified = da <= 10 and db <= 5 and dc <= 20  # HLS
 
 
 class Pixel:
@@ -124,19 +124,17 @@ print('Segmentation time:', datetime.now() - segmentation_time)
 
 # evaluate the segments and colour the biggest ones
 segments = dict(sorted(segments.items(), key=lambda item: len(item[1].a), reverse=True))
-if colour_model != 'HSV':
-    arr = np.asarray(Image.fromarray(arr, colour_model).convert('HSV')).copy()
-arr.setflags(write=True)
+if not is_hsv:
+    arr = cv2.cvtColor(cv2.cvtColor(arr, cv2.COLOR_YUV2RGB), cv2.COLOR_RGB2HSV)
 for big_sgm in list(segments.keys())[:50]:
     for p in segments[big_sgm].a:
         arr[pixels[p].y, pixels[p].x] = np.array([5 + (10 * (big_sgm + 1)), 255, 255])
-if colour_model != 'HSV':
-    arr = np.asarray(Image.fromarray(arr, 'HSV').convert(colour_model))
+if not is_hsv:
+    arr = cv2.cvtColor(cv2.cvtColor(arr, cv2.COLOR_HSV2RGB), cv2.COLOR_RGB2YUV)
 print('Biggest segment sizes:', ', '.join(str(len(item.a)) for item in list(segments.values())[:25]))
 print('Total segments:', len(segments))
 
 # show the image
-# plot.imshow(Image.fromarray(arr, colour_model).convert('RGB'))
 plot.imshow(cv2.cvtColor(arr, cv2.COLOR_YUV2RGB))
 plot.show()
 
