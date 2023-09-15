@@ -1,9 +1,9 @@
 import pickle
 from datetime import datetime
 
+import cv2
 import matplotlib.pyplot as plot
 import numpy as np
-from PIL import Image
 
 
 class Pixel:
@@ -64,6 +64,8 @@ for y in range(min_y, max_y + 1):
     arr.append(xes)
 
 # show the testing sample
-plot.imshow(Image.fromarray(np.array(arr, dtype=np.uint8), colour_model).convert('RGB'))
+plot.imshow(cv2.cvtColor(np.array(arr, dtype=np.uint8), cv2.COLOR_YUV2RGB))
+# from PIL import Image
+# plot.imshow(Image.fromarray(np.array(arr, dtype=np.uint8), colour_model).convert('RGB'))
 print('Whole time:', datetime.now() - whole_time)
 plot.show()

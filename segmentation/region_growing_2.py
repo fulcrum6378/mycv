@@ -2,6 +2,7 @@ import pickle
 from datetime import datetime
 from typing import Optional
 
+import cv2
 import matplotlib.pyplot as plot
 import numpy as np
 from PIL import Image
@@ -12,11 +13,12 @@ from PIL import Image
 
 # read the image
 loading_time = datetime.now()
-colour_model: str = 'YCbCr'  # RGB, HSV, YCbCr; (tweak Neighbour.__init__ too) TODO YUV
-# https://pillow.readthedocs.io/en/stable/handbook/concepts.html#concept-modes
-# red pillow: 1689005849386887;   28,230(HSV), 18,692(YCC), 24,204(RGB) segments
-# shoes:      1689005891979733;  100,302(HSV), 78,930(YCC), 96,025(RGB) segments
-arr: np.ndarray = np.asarray(Image.open('vis/2/1689005849386887.bmp').convert(colour_model)).copy()
+colour_model: str = 'YCbCr'  # RGB, HSV, YCbCr; (tweak Neighbour.__init__ too); only with Pillow
+# https://docs.opencv.org/3.4/d8/d01/group__imgproc__color__conversions.html
+# red pillow: 1689005849386887;   28,230(HSV), 18,692(YCC), 18,922(YUV), 24,204(RGB) segments
+# shoes:      1689005891979733;  100,302(HSV), 78,930(YCC), 79,335(YUV), 96,025(RGB) segments
+# arr: np.ndarray = np.asarray(Image.open('vis/2/1689005849386887.bmp').convert(colour_model)).copy()
+arr: np.ndarray = cv2.cvtColor(cv2.imread('vis/2/1689005849386887.bmp'), cv2.COLOR_BGR2YUV)
 dim: int = 1088
 
 
@@ -25,7 +27,7 @@ class Neighbour:
         self.index = index
         # self.qualified = dh <= 4 and ds <= 4 and dv <= 4  # RGB
         # self.qualified = dh <= 10 and ds <= 20 and dv <= 5  # HSV
-        self.qualified = dh <= 4 and ds <= 4 and dv <= 4  # YCbCr
+        self.qualified = dh <= 4 and ds <= 4 and dv <= 4  # YCbCr/YUV
 
 
 class Pixel:
@@ -134,7 +136,8 @@ print('Biggest segment sizes:', ', '.join(str(len(item.a)) for item in list(segm
 print('Total segments:', len(segments))
 
 # show the image
-plot.imshow(Image.fromarray(arr, colour_model).convert('RGB'))
+# plot.imshow(Image.fromarray(arr, colour_model).convert('RGB'))
+plot.imshow(cv2.cvtColor(arr, cv2.COLOR_YUV2RGB))
 plot.show()
 
 # save the output
