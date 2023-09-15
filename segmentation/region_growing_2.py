@@ -36,6 +36,7 @@ class Pixel:
         self.y: int = _y
         self.x: int = _x
         self.s: Optional[int] = None  # segment
+        self.b: bool = False  # is a border pixels
 
     def compare(self, _n: int) -> Neighbour:
         global pixels
@@ -52,7 +53,11 @@ class Pixel:
 
 class Segment:
     def __init__(self):
-        self.a: list[int] = []
+        self.p: list[int] = []  # pixels
+        self.a: list[int] = []  # colour A values
+        self.b: list[int] = []  # colour B values
+        self.c: list[int] = []  # colour C values
+        self.m: list[int] = []  # mean colour
 
 
 # put every pixel in a Pixel class instance
@@ -104,9 +109,9 @@ for p in range(len(pixels)):
                 chosen_one = min(allowed_regions)
                 for sid in allowed_regions:
                     if sid != chosen_one:
-                        for changer in segments[sid].a:
+                        for changer in segments[sid].p:
                             pixels[changer].s = chosen_one
-                        segments[chosen_one].a.extend(segments[sid].a)
+                        segments[chosen_one].p.extend(segments[sid].p)
                         segments.pop(sid)
                 pixels[p].s = chosen_one
             else:
@@ -118,7 +123,7 @@ for p in range(len(pixels)):
             pixels[p].s = next_seg
             segments[next_seg] = Segment()
             next_seg += 1
-    segments[pixels[p].s].a.append(p)
+    segments[pixels[p].s].p.append(p)
 
 # even with a standard amount of dissolution which doesn't fuck up the shoes picture,
 # the Interpretation section will need to deal with small segments.
@@ -126,15 +131,15 @@ for p in range(len(pixels)):
 print('Segmentation time:', datetime.now() - segmentation_time)
 
 # evaluate the segments and colour the biggest ones
-segments = dict(sorted(segments.items(), key=lambda item: len(item[1].a), reverse=True))
+segments = dict(sorted(segments.items(), key=lambda item: len(item[1].p), reverse=True))
 if not is_hsv:
     arr = cv2.cvtColor(cv2.cvtColor(arr, cv2.COLOR_YUV2RGB), cv2.COLOR_RGB2HSV)
 for big_sgm in list(segments.keys())[:50]:
-    for p in segments[big_sgm].a:
+    for p in segments[big_sgm].p:
         arr[pixels[p].y, pixels[p].x] = np.array([5 + (10 * (big_sgm + 1)), 255, 255])
 if not is_hsv:
     arr = cv2.cvtColor(cv2.cvtColor(arr, cv2.COLOR_HSV2RGB), cv2.COLOR_RGB2YUV)
-print('Biggest segment sizes:', ', '.join(str(len(item.a)) for item in list(segments.values())[:25]))
+print('Biggest segment sizes:', ', '.join(str(len(item.p)) for item in list(segments.values())[:25]))
 print('Total segments:', len(segments))
 
 # show the image

@@ -1,5 +1,6 @@
 import pickle
 from datetime import datetime
+from math import sqrt
 
 import cv2
 import matplotlib.pyplot as plot
@@ -9,10 +10,11 @@ import numpy as np
 class Pixel:
     # When a class instance is unpickled, its __init__() method is usually not invoked.
     def __init__(self):
-        self.c = None  # list[int]
-        self.y = None  # int
-        self.x = None  # int
-        self.s = None  # int
+        self.c: list[int] = []
+        self.y: int = 0
+        self.x: int = 0
+        self.s: int = 0
+        self.b: bool = False
 
     @staticmethod
     def get_pos(_y: int, _x: int) -> int:
@@ -21,7 +23,30 @@ class Pixel:
 
 class Segment:
     def __init__(self):
-        self.a = None  # list[int]
+        self.p: list[int] = []  # pixels
+        self.a: list[int] = []  # colour A values
+        self.b: list[int] = []  # colour B values
+        self.c: list[int] = []  # colour C values
+        self.m: list[int] = []  # mean colour
+
+    # THIS PROCESS COULD BE DONE DURING THE SEGMENTATION...
+    def add_colour(self, c: list[int]):
+        # self.a.append(c[0])
+        # self.b.append(c[1])
+        # self.c.append(c[2])
+        self.a.append(pow(c[0], 2))
+        self.b.append(pow(c[1], 2))
+        self.c.append(pow(c[2], 2))
+
+    # without squaring, my pillow gets a little darker!
+    def mean(self) -> None:
+        # self.m = [sum(self.a) / len(self.a),
+        #          sum(self.b) / len(self.b),
+        #          sum(self.c) / len(self.c)]
+        self.m = [sqrt(sum(self.a) / len(self.a)),
+                  sqrt(sum(self.b) / len(self.b)),
+                  sqrt(sum(self.c) / len(self.c))]
+        del self.a, self.b, self.c
 
 
 # `arr` will be disposed of at the end of `segmentation`.
@@ -35,48 +60,43 @@ print('Loading time:', datetime.now() - loading_time)
 
 # get a mean value of all colours + detect border pixels
 interpretation_time = datetime.now()
-colours_a: list[float] = []
-colours_b: list[float] = []
-colours_c: list[float] = []
 border: list[tuple[int, int]] = []
 for p in pixels:
-    colours_a.append(float(p.c[0]))
-    colours_b.append(float(p.c[1]))
-    colours_c.append(float(p.c[2]))
+    segments[p.s].add_colour(p.c)
     if p.x < (dim - 1):  # right
         n = pixels[Pixel.get_pos(p.y, p.x + 1)]
         if p.s != n.s:
             border.append((p.y, p.x))
-            p.border = True
+            p.b = True
             continue
     if p.y < (dim - 1):  # bottom
         n = pixels[Pixel.get_pos(p.y + 1, p.x)]
         if p.s != n.s:
             border.append((p.y, p.x))
-            p.border = True
+            p.b = True
             continue
     if p.x > 0:  # left
         n = pixels[Pixel.get_pos(p.y, p.x - 1)]
         if p.s != n.s:
             border.append((p.y, p.x))
-            p.border = True
+            p.b = True
             continue
     if p.x > 0:  # top
         n = pixels[Pixel.get_pos(p.y - 1, p.x)]
         if p.s != n.s:
             border.append((p.y, p.x))
-            p.border = True
+            p.b = True
             continue
-mean = [int(sum(colours_a) / len(colours_a)),
-        int(sum(colours_b) / len(colours_b)),
-        int(sum(colours_c) / len(colours_c))]
+
+for seg in segments.values():
+    seg.mean()
 print('Interpretation time:', datetime.now() - interpretation_time)
 
 # detect the boundaries of the cadre
 display_preparation_time = datetime.now()
 min_y, min_x, max_y, max_x = -1, -1, -1, -1
 seg = list(segments.items())[2]
-for p in seg[1].a:
+for p in seg[1].p:
     if min_y == -1:  # messed because Python has no do... while!
         min_y = pixels[p].y
         max_y = pixels[p].y
@@ -95,10 +115,10 @@ for y in range(min_y, max_y + 1):
     for x in range(min_x, max_x + 1):
         p = pixels[Pixel.get_pos(y, x)]
         if p.s == seg[0]:
-            if not hasattr(p, 'border'):
-                xes.append(mean)  # p.c
+            if not p.b:
+                xes.append(seg[1].m)  # p.c
             else:
-                xes.append([17, 107, 255])  # blue (RGB#0000FF)
+                xes.append([0, 255, 200])
         else:
             xes.append([255, 127, 127])  # HSV: [0, 0, 255], RGB: [255, 255, 255]
     arr.append(xes)
