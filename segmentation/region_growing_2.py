@@ -13,10 +13,10 @@ import numpy as np
 # read the image
 loading_time = datetime.now()
 # https://docs.opencv.org/3.4/d8/d01/group__imgproc__color__conversions.html
-#                                    HSV   YCbCr,    YUV     RGB     LAB,    HLS,    XYZ
-# red pillow: 1689005849386887;   28,230, 18,692, 18,922, 24,204, 18,513, 23,780, 22,266 segments
-# shoes:      1689005891979733;  100,302, 78,930, 79,335, 96,025, 77,796, 88,751, 91,839 segments
-arr: np.ndarray = cv2.cvtColor(cv2.imread('vis/2/1689005849386887.bmp'), cv2.COLOR_BGR2YUV)
+#                                    HSV   YCbCr,    YUV     RGB     LAB,    HLS,    XYZ     LUV
+# red pillow: 1689005849386887;   28,230, 18,692, 18,922, 24,204, 18,513, 23,780, 22,266, 18,609 segments
+# shoes:      1689005891979733;  100,302, 78,930, 79,335, 96,025, 77,796, 88,751, 91,839, 77,768 segments
+arr: np.ndarray = cv2.cvtColor(cv2.imread('vis/2/1689005891979733.bmp'), cv2.COLOR_BGR2YUV)
 is_hsv = False
 dim: int = 1088
 

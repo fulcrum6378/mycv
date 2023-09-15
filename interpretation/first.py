@@ -28,8 +28,9 @@ class Segment:
 whole_time = datetime.now()
 pixels: list[Pixel] = pickle.load(open('segmentation/output/rg2_pixels.pickle', 'rb'))
 segments: dict[int, Segment] = pickle.load(open('segmentation/output/rg2_segments.pickle', 'rb'))
-colour_model: str = 'YUV'
 dim = 1088
+
+# TODO interpret...
 
 # detect the boundaries of the cadre
 min_y, min_x, max_y, max_x = -1, -1, -1, -1
@@ -48,12 +49,6 @@ for p in seg[1].a:
 
 # draw the segment into the cadre
 arr: list[list[list[int]]] = []
-blank = {
-    'HSV': [0, 0, 255],
-    'YCbCr': [255, 127, 127],
-    'RGB': [255, 255, 255],
-    'YUV': [255, 127, 127],
-}[colour_model]
 for y in range(min_y, max_y + 1):
     xes: list[list[int]] = []
     for x in range(min_x, max_x + 1):
@@ -61,7 +56,7 @@ for y in range(min_y, max_y + 1):
         if p.s == seg[0]:
             xes.append(p.c)
         else:
-            xes.append(blank)
+            xes.append([255, 127, 127])  # HSV: [0, 0, 255], RGB: [255, 255, 255]
     arr.append(xes)
 
 # show the testing sample
