@@ -8,11 +8,15 @@ from PIL import Image
 
 # read the image
 loading_time = datetime.now()
+colour_model: str = 'YCbCr'  # RGB, CMYK(4x8bit), YCbCr, LAB, HSV
+# tweak Neighbour.__init__ manually after edition.
+# "conversion from LAB to RGB not supported"
+# there are more here: https://pillow.readthedocs.io/en/stable/handbook/concepts.html#concept-modes
 # red pillow: 1689005849386887 (28,230 seg), shoes: 1689005891979733 (100,302 seg)
-arr: np.ndarray = np.asarray(Image.open('vis/2/1689005849386887.bmp').convert('HSV')).copy()
-arr.setflags(write=True)
+arr: np.ndarray = np.asarray(Image.open('vis/2/1689005849386887.bmp').convert(colour_model)).copy()
+if colour_model == 'HSV': arr.setflags(write=True)
 dim: int = 1088
-min_seg_len_multiplied_by: float = 0.0002  # 0.001
+min_seg_len_multiplied_by: float = 0  # 0.001
 max_skipped_seg_pixels: int = 10
 
 
@@ -24,8 +28,9 @@ max_skipped_seg_pixels: int = 10
 class Neighbour:
     def __init__(self, index: int, dh: int, ds: int, dv: int):
         self.index = index
-        self.qualified = dh <= 10 and ds <= 20 and dv <= 5
-        # self.distance: float = (dh * 3.0) + (ds * 1.0) + (dv * 1.0)
+        # self.qualified = dh <= 5 and ds <= 5 and dv <= 5  # RGB
+        # self.qualified = dh <= 10 and ds <= 20 and dv <= 5  # HSV
+        self.qualified = dh <= 4 and ds <= 4 and dv <= 4  # YCbCr
 
 
 class Pixel:
@@ -180,14 +185,19 @@ print('Segmentation time:', datetime.now() - segmentation_time)
 
 # evaluate the segments and colour the biggest ones
 segments = dict(sorted(segments.items(), key=lambda item: len(item[1].a), reverse=True))
+if colour_model != 'HSV':
+    arr = np.asarray(Image.fromarray(arr, colour_model).convert('HSV')).copy()
+    arr.setflags(write=True)
 for big_sgm in list(segments.keys())[:50]:
     for p in segments[big_sgm].a:
         arr[pixels[p].y, pixels[p].x] = np.array([5 + (10 * (big_sgm + 1)), 255, 255])
+if colour_model != 'HSV':
+    arr = np.asarray(Image.fromarray(arr, 'HSV').convert(colour_model))
 print('Biggest segment sizes:', ', '.join(str(len(item.a)) for item in list(segments.values())[:25]))
 print('Total segments:', len(segments))
 
 # show the image
-plot.imshow(Image.fromarray(arr, 'HSV').convert('RGB'))
+plot.imshow(Image.fromarray(arr, colour_model).convert('RGB'))
 plot.show()
 
 # save the output
