@@ -23,6 +23,8 @@ max_skipped_seg_pixels: int = 10
 # In the previous method, we focused on a pixel and analysed its neighbours.
 # Here we shall focus on a neighbour, and see if it fits anywhere with its own neighbours.
 # This can be easily translated to work using Vulkan.
+# Remember, YCbCr is close to YUV!
+# TODO so perhaps YUV is very good!!!
 
 
 class Neighbour:
@@ -122,64 +124,6 @@ for p in range(len(pixels)):
             segments[next_seg] = Segment()
             next_seg += 1
     segments[pixels[p].s].a.append(p)
-
-
-def find_a_segment_to_dissolve_in(this_seg: int, _p_ids: list[int]) -> Optional[int]:
-    ranges_starts = [
-        pixels[_p_ids[0]],
-        pixels[_p_ids[0]],
-        pixels[_p_ids[len(_p_ids) - 1]],
-        pixels[_p_ids[len(_p_ids) - 1]],
-    ]
-    ranges: list[range] = [
-        range(ranges_starts[0].y, 0, -1),
-        range(ranges_starts[1].x, 0, -1),
-        range(ranges_starts[2].y + 1, dim - 1),
-        range(ranges_starts[3].x + 1, dim - 1),
-    ]
-    ranges_dim = [False, True, False, True]  # False=>Y, True=>X
-    this_range, i = 0, 0
-    point: Optional[int]
-    while len(ranges) > 0 and i < max_skipped_seg_pixels:
-        try:
-            point = ranges[this_range][i]
-            this_range += 1
-        except IndexError:
-            point = None
-            ranges_starts.pop(this_range)
-            ranges.pop(this_range)
-            ranges_dim.pop(this_range)
-        if this_range == len(ranges): this_range = 0
-        if point is not None:
-            seg_ = pixels[
-                Pixel.get_pos(point, ranges_starts[this_range].x)
-                if not ranges_dim[this_range]
-                else Pixel.get_pos(ranges_starts[this_range].y, point)
-            ].s
-            if seg_ != this_seg:
-                if len(segments[seg_].a) >= min_seg:
-                    return seg_
-        i += 1
-    # raise Exception('Ran out of allowed skipped pixels for dissolving small segments')
-    return None
-
-
-# dissolve the small segments
-removal: dict[int, int] = {}
-min_seg: int = int(len(segments) * min_seg_len_multiplied_by)  # changed by stress?
-print('Minimum segment size:', min_seg)
-for sid, seg in segments.items():
-    if len(seg.a) < min_seg:
-        absorber = find_a_segment_to_dissolve_in(sid, seg.a)
-        if absorber is None: continue
-        segments[absorber].a.extend(segments[sid].a)
-        removal[sid] = absorber
-rem_keys = removal.keys()
-for p in pixels:
-    if p.s in rem_keys:
-        p.s = removal[p.s]
-for reg in rem_keys:
-    segments.pop(reg)
 
 print('Segmentation time:', datetime.now() - segmentation_time)
 
