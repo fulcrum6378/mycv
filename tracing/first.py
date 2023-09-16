@@ -90,7 +90,8 @@ for p in pixels:
 for seg in segments.values(): seg.mean()
 print('Mean + border time:', datetime.now() - mean_and_border_time)
 
-# TODO detect shapes as comparable vectors
+# TODO detect shapes as comparable vectors, using `border`
+# if we record all border pixels of our pillow, it'll make ~266 kilobytes at least!
 
 # detect the boundaries of the cadre
 display_preparation_time = datetime.now()
