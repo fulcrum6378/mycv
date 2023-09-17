@@ -69,6 +69,8 @@ pixels: list[Pixel] = [
     Pixel(2, 0, 0), Pixel(2, 1, 0), Pixel(2, 2, 0), Pixel(2, 3, 0),
     Pixel(3, 0, 0), Pixel(3, 1, 9), Pixel(3, 2, 9), Pixel(3, 3, 0),
 ]
+# TODO ignored bug; it works like this:
+# 0, 1, 2, 3, 7, 11, 15, 10, 9, (SKIPS 12) and goes to 8, then comes back to 12, then GETS CONFUSED!!!!!!
 s_id = 0
 seg = Segment([
     0, 1, 2, 3,
@@ -84,22 +86,25 @@ opposites = {
 }
 border_checkpoint: Optional[Pixel] = None
 for p in seg.p:
-    if border_checkpoint is None:
-        _p = pixels[p]
-        if _p.b is None: _p.check_if_in_border()
-        if _p.b: border_checkpoint = _p
+    _p = pixels[p]
+    if _p.b is None: _p.check_if_in_border()
+    if _p.b:
+        border_checkpoint = _p
+        break
+print(border_checkpoint.__dict__)
 
 # now start collecting all border pixels using that checkpoint
 direction: int = 0  # 0..7
 avoid_dir: Optional[int] = None
 this_b: Optional[Pixel] = None  # we could use do...while
+i = 0
 while this_b is None or this_b.y != border_checkpoint.y or this_b.x != border_checkpoint.x:
     print('while1')
     if this_b is None: this_b = border_checkpoint
     this_dir = direction
     next_b = None
     while next_b is None:
-        print('while2')
+        print('while2 at', this_dir)
         if this_dir == avoid_dir: raise Exception("KIR")
 
         # look at the only 1 direction each turn
@@ -122,14 +127,15 @@ while this_b is None or this_b.y != border_checkpoint.y or this_b.x != border_ch
 
         # now check if that neighbour is a border one
         if next_b is not None:
-            # if next_b.b is not None:
-            #    next_b = None
-            # else:
-            next_b.check_if_in_border()
-            if not next_b.b:  # or (next_b.y, next_b.x) in seg.border
+            if next_b.b is not None:
                 next_b = None
             else:
-                print(next_b.y, next_b.x)
+                next_b.check_if_in_border()
+                if not next_b.b or next_b.s != s_id:
+                    next_b = None
+                else:
+                    print(next_b.y, next_b.x)
+                    break
 
         this_dir += 1
         if avoid_dir is not None and this_dir == avoid_dir: this_dir += 1
@@ -138,4 +144,8 @@ while this_b is None or this_b.y != border_checkpoint.y or this_b.x != border_ch
     this_b = next_b
     direction = this_dir
     avoid_dir = opposites[direction]
-    print('Border pixels:', len(seg.border))
+    # print('Border pixels:', len(seg.border))
+    print(this_b.__dict__, 'to', direction)
+    if i == 10:
+        quit()
+    i += 1

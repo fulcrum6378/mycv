@@ -111,10 +111,11 @@ for s_id, seg in list(segments.items())[1:50]:
     # find the first encountering border pixel as a checkpoint
     border_checkpoint: Optional[Pixel] = None
     for p in seg.p:
-        if border_checkpoint is None:
-            _p = pixels[p]
-            if _p.b is None: _p.check_if_in_border()
-            if _p.b: border_checkpoint = _p
+        _p = pixels[p]
+        if _p.b is None: _p.check_if_in_border()
+        if _p.b:
+            border_checkpoint = _p
+            break
 
     # now start collecting all border pixels using that checkpoint
     direction: int = 0  # 0..7
@@ -149,14 +150,15 @@ for s_id, seg in list(segments.items())[1:50]:
 
             # now check if that neighbour is a border one
             if next_b is not None:
-                # if next_b.b is not None:
-                #    next_b = None
-                # else:
-                next_b.check_if_in_border()
-                if not next_b.b:  # or (next_b.y, next_b.x) in seg.border
+                if next_b.b is not None:
                     next_b = None
                 else:
-                    print(next_b.y, next_b.x)
+                    next_b.check_if_in_border()
+                    if not next_b.b or next_b.s != s_id:  # or (next_b.y, next_b.x) in seg.border
+                        next_b = None
+                    else:
+                        print(next_b.y, next_b.x)
+                        break
 
             this_dir += 1
             if avoid_dir is not None and this_dir == avoid_dir: this_dir += 1
