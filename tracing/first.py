@@ -15,7 +15,7 @@ class Pixel:
         self.y: int = 0
         self.x: int = 0
         self.s: int = 0
-        self.b: Optional[bool] = False
+        self.b: Optional[bool] = None
 
     @staticmethod
     def get_pos(_y: int, _x: int) -> int:
@@ -56,7 +56,7 @@ class Pixel:
             return
 
     def set_is_border(self):
-        border.append((self.y, self.x))
+        segments[self.s].border.add((self.y, self.x))
         self.b = True
 
 
@@ -67,6 +67,7 @@ class Segment:
         self.b: list[int] = []  # colour B values
         self.c: list[int] = []  # colour C values
         self.m: list[int] = []  # mean colour
+        self.border = set()  # FIXME also remove back there
 
     # THIS PROCESS COULD BE DONE DURING THE SEGMENTATION...
     def add_colour(self, c: list[int]):
@@ -104,8 +105,7 @@ opposites = {
     0: 4, 1: 5, 2: 6, 3: 7,
     4: 0, 5: 1, 6: 2, 7: 3
 }
-border: list[tuple[int, int]] = []  # FIXME
-for s_id, seg in list(segments.items())[:100]:
+for s_id, seg in list(segments.items())[1:50]:
     seg.mean()
 
     # find the first encountering border pixel as a checkpoint
@@ -113,7 +113,7 @@ for s_id, seg in list(segments.items())[:100]:
     for p in seg.p:
         if border_checkpoint is None:
             _p = pixels[p]
-            _p.check_if_in_border()
+            if _p.b is None: _p.check_if_in_border()
             if _p.b: border_checkpoint = _p
 
     # now start collecting all border pixels using that checkpoint
@@ -149,8 +149,11 @@ for s_id, seg in list(segments.items())[:100]:
 
             # now check if that neighbour is a border one
             if next_b is not None:
+                # if next_b.b is not None:
+                #    next_b = None
+                # else:
                 next_b.check_if_in_border()
-                if not next_b.b:
+                if not next_b.b:  # or (next_b.y, next_b.x) in seg.border
                     next_b = None
                 else:
                     print(next_b.y, next_b.x)
@@ -162,7 +165,7 @@ for s_id, seg in list(segments.items())[:100]:
         this_b = next_b
         direction = this_dir
         avoid_dir = opposites[direction]
-print('Border pixels:', len(border))
+        print('Border pixels:', len(seg.border))
 print('Mean and border time:', datetime.now() - mean_and_border_time)
 
 # detect the boundaries of the cadre
