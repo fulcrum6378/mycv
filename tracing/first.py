@@ -23,32 +23,32 @@ class Pixel:
 
     def check_if_in_border(self) -> None:
         if self.x < (dim - 1):  # right
-            n = pixels[Pixel.get_pos(self.y, self.x + 1)]
-            if self.s != n.s:
+            _n = pixels[Pixel.get_pos(self.y, self.x + 1)]
+            if self.s != _n.s:
                 self.set_is_border()
                 return
         else:
             self.set_is_border()
             return
         if self.y < (dim - 1):  # bottom
-            n = pixels[Pixel.get_pos(self.y + 1, self.x)]
-            if self.s != n.s:
+            _n = pixels[Pixel.get_pos(self.y + 1, self.x)]
+            if self.s != _n.s:
                 self.set_is_border()
                 return
         else:
             self.set_is_border()
             return
         if self.x > 0:  # left
-            n = pixels[Pixel.get_pos(self.y, self.x - 1)]
-            if self.s != n.s:
+            _n = pixels[Pixel.get_pos(self.y, self.x - 1)]
+            if self.s != _n.s:
                 self.set_is_border()
                 return
         else:
             self.set_is_border()
             return
-        if self.x > 0:  # top
-            n = pixels[Pixel.get_pos(self.y - 1, self.x)]
-            if self.s != n.s:
+        if self.y > 0:  # top
+            _n = pixels[Pixel.get_pos(self.y - 1, self.x)]
+            if self.s != _n.s:
                 self.set_is_border()
                 return
         else:
@@ -112,34 +112,51 @@ print('Mean time:', datetime.now() - mean_time)
 
 # resume from the first encountering border pixel
 border_time = datetime.now()
+opposites = {
+    0: 4, 1: 5, 2: 6, 3: 7,
+    4: 0, 5: 1, 6: 2, 7: 3
+}
 this_b: Optional[Pixel] = None
 direction: int = 0  # 0..7
+avoid_dir: Optional[int] = None
 while this_b is None or this_b.y != border_checkpoint.y or this_b.x != border_checkpoint.x:  # we could use do...while
-    this_dir = direction
     if this_b is None: this_b = border_checkpoint
+    this_dir = direction
     next_b = None
-    while next_b is None:  # analyse the 1 direction
-        match this_dir:
-            case 0:  # northern
-                n = pixels[Pixel.get_pos(self.y + 1, self.x)]
+    while next_b is None:
+        if this_dir == avoid_dir: raise Exception("KIR")
 
-            case 1:  # north-eastern
-                pass
-            case 2:  # eastern
-                pass
-            case 3:  # south-eastern
-                pass
-            case 4:  # southern
-                pass
-            case 5:  # south-western
-                pass
-            case 6:  # western
-                pass
-            case 7:  # north-western
-                pass
+        # analyse the only 1 direction each turn
+        if this_dir == 0 and this_b.y > 0:  # northern
+            next_b = pixels[Pixel.get_pos(this_b.y - 1, this_b.x)]
+        elif this_dir == 1 and this_b.y > 0 and this_b.x < (dim - 1):  # north-eastern
+            next_b = pixels[Pixel.get_pos(this_b.y - 1, this_b.x + 1)]
+        elif this_dir == 2 and this_b.x < (dim - 1):  # eastern
+            next_b = pixels[Pixel.get_pos(this_b.y, this_b.x + 1)]
+        elif this_dir == 3 and this_b.y < (dim - 1) and this_b.x < (dim - 1):  # south-eastern
+            next_b = pixels[Pixel.get_pos(this_b.y + 1, this_b.x + 1)]
+        elif this_dir == 4 and this_b.y < (dim - 1):  # southern
+            next_b = pixels[Pixel.get_pos(this_b.y + 1, this_b.x)]
+        elif this_dir == 5 and this_b.y < (dim - 1) and this_b.x > 0:  # south-western
+            next_b = pixels[Pixel.get_pos(this_b.y + 1, this_b.x - 1)]
+        elif this_dir == 6 and this_b.x > 0:  # western
+            next_b = pixels[Pixel.get_pos(this_b.y, this_b.x - 1)]
+        elif this_dir == 7 and this_b.y > 0 and this_b.x > 0:  # north-western
+            next_b = pixels[Pixel.get_pos(this_b.y - 1, this_b.x - 1)]
+
+        if next_b is not None:
+            next_b.check_if_in_border()
+            if not next_b.b:
+                next_b = None
+            else:
+                print(next_b.y, next_b.x)
         this_dir += 1
-        if this_dir == 8: this_dir = 0
+        if avoid_dir is not None and this_dir == avoid_dir: this_dir += 1
+        if this_dir > 7: this_dir = this_dir - 7
     this_b = next_b
+    direction = this_dir
+    avoid_dir = opposites[direction]
+print('Border pixels:', len(border))
 print('Border time:', datetime.now() - border_time)
 
 # detect the boundaries of the cadre
