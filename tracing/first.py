@@ -1,6 +1,7 @@
 import pickle
 from datetime import datetime
 from math import sqrt
+from typing import Optional
 
 import cv2
 import matplotlib.pyplot as plot
@@ -20,6 +21,44 @@ class Pixel:
     def get_pos(_y: int, _x: int) -> int:
         return (_y * dim) + _x
 
+    def check_if_in_border(self) -> None:
+        if self.x < (dim - 1):  # right
+            n = pixels[Pixel.get_pos(self.y, self.x + 1)]
+            if self.s != n.s:
+                self.set_is_border()
+                return
+        else:
+            self.set_is_border()
+            return
+        if self.y < (dim - 1):  # bottom
+            n = pixels[Pixel.get_pos(self.y + 1, self.x)]
+            if self.s != n.s:
+                self.set_is_border()
+                return
+        else:
+            self.set_is_border()
+            return
+        if self.x > 0:  # left
+            n = pixels[Pixel.get_pos(self.y, self.x - 1)]
+            if self.s != n.s:
+                self.set_is_border()
+                return
+        else:
+            self.set_is_border()
+            return
+        if self.x > 0:  # top
+            n = pixels[Pixel.get_pos(self.y - 1, self.x)]
+            if self.s != n.s:
+                self.set_is_border()
+                return
+        else:
+            self.set_is_border()
+            return
+
+    def set_is_border(self):
+        border.append((self.y, self.x))
+        self.b = True
+
 
 class Segment:
     def __init__(self):
@@ -34,7 +73,7 @@ class Segment:
         # self.a.append(c[0])
         # self.b.append(c[1])
         # self.c.append(c[2])
-        self.a.append(pow(c[0], 2))
+        self.a.append(pow(c[0], 2))  # c[0] * c[0] instead
         self.b.append(pow(c[1], 2))
         self.c.append(pow(c[2], 2))
 
@@ -58,40 +97,50 @@ segments: dict[int, Segment] = pickle.load(open('segmentation/output/rg2_segment
 dim = 1088
 print('Loading time:', datetime.now() - loading_time)
 
-# get a mean value of all colours + detect border pixels
-mean_and_border_time = datetime.now()
+# get a mean value of all colours + detect the first encountering border pixel
+mean_time = datetime.now()
 border: list[tuple[int, int]] = []
+border_checkpoint: Optional[Pixel] = None
 for p in pixels:
     segments[p.s].add_colour(p.c)
-    if p.x < (dim - 1):  # right
-        n = pixels[Pixel.get_pos(p.y, p.x + 1)]
-        if p.s != n.s:
-            border.append((p.y, p.x))
-            p.b = True
-            continue
-    if p.y < (dim - 1):  # bottom
-        n = pixels[Pixel.get_pos(p.y + 1, p.x)]
-        if p.s != n.s:
-            border.append((p.y, p.x))
-            p.b = True
-            continue
-    if p.x > 0:  # left
-        n = pixels[Pixel.get_pos(p.y, p.x - 1)]
-        if p.s != n.s:
-            border.append((p.y, p.x))
-            p.b = True
-            continue
-    if p.x > 0:  # top
-        n = pixels[Pixel.get_pos(p.y - 1, p.x)]
-        if p.s != n.s:
-            border.append((p.y, p.x))
-            p.b = True
-            continue
-for seg in segments.values(): seg.mean()
-print('Mean + border time:', datetime.now() - mean_and_border_time)
+    if border_checkpoint is None:
+        p.check_if_in_border()
+        if p.b: border_checkpoint = p
+for seg in segments.values():
+    seg.mean()
+print('Mean time:', datetime.now() - mean_time)
 
-# TODO detect shapes as comparable vectors, using `border`
-# if we record all border pixels of our pillow, it'll make ~266 kilobytes at least!
+# resume from the first encountering border pixel
+border_time = datetime.now()
+this_b: Optional[Pixel] = None
+direction: int = 0  # 0..7
+while this_b is None or this_b.y != border_checkpoint.y or this_b.x != border_checkpoint.x:  # we could use do...while
+    this_dir = direction
+    if this_b is None: this_b = border_checkpoint
+    next_b = None
+    while next_b is None:  # analyse the 1 direction
+        match this_dir:
+            case 0:  # northern
+                n = pixels[Pixel.get_pos(self.y + 1, self.x)]
+
+            case 1:  # north-eastern
+                pass
+            case 2:  # eastern
+                pass
+            case 3:  # south-eastern
+                pass
+            case 4:  # southern
+                pass
+            case 5:  # south-western
+                pass
+            case 6:  # western
+                pass
+            case 7:  # north-western
+                pass
+        this_dir += 1
+        if this_dir == 8: this_dir = 0
+    this_b = next_b
+print('Border time:', datetime.now() - border_time)
 
 # detect the boundaries of the cadre
 display_preparation_time = datetime.now()
