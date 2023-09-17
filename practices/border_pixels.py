@@ -13,6 +13,45 @@ class Pixel:
     def get_pos(_y: int, _x: int) -> int:
         return (_y * dim) + _x
 
+    # direction is 0..7
+    def check_neighbours(self, avoid_dir: Optional[int] = None):
+        print(self.__dict__, 'from', avoid_dir)
+
+        next_ones: list[tuple[Pixel, int]] = []
+        if avoid_dir != 0 and self.y > 0:  # northern
+            n = pixels[Pixel.get_pos(self.y - 1, self.x)]
+            if n.is_next_b(): next_ones.append((n, 0))
+        if avoid_dir != 1 and self.y > 0 and self.x < (dim - 1):  # north-eastern
+            n = pixels[Pixel.get_pos(self.y - 1, self.x + 1)]
+            if n.is_next_b(): next_ones.append((n, 1))
+        if avoid_dir != 2 and self.x < (dim - 1):  # eastern
+            n = pixels[Pixel.get_pos(self.y, self.x + 1)]
+            if n.is_next_b(): next_ones.append((n, 2))
+        if avoid_dir != 3 and self.y < (dim - 1) and self.x < (dim - 1):  # south-eastern
+            n = pixels[Pixel.get_pos(self.y + 1, self.x + 1)]
+            if n.is_next_b(): next_ones.append((n, 3))
+        if avoid_dir != 4 and self.y < (dim - 1):  # southern
+            n = pixels[Pixel.get_pos(self.y + 1, self.x)]
+            if n.is_next_b(): next_ones.append((n, 4))
+        if avoid_dir != 5 and self.y < (dim - 1) and self.x > 0:  # south-western
+            n = pixels[Pixel.get_pos(self.y + 1, self.x - 1)]
+            if n.is_next_b(): next_ones.append((n, 5))
+        if avoid_dir != 6 and self.x > 0:  # western
+            n = pixels[Pixel.get_pos(self.y, self.x - 1)]
+            if n.is_next_b(): next_ones.append((n, 6))
+        if avoid_dir != 7 and self.y > 0 and self.x > 0:  # north-western
+            n = pixels[Pixel.get_pos(self.y - 1, self.x - 1)]
+            if n.is_next_b(): next_ones.append((n, 7))
+
+        for n, d in next_ones: n.check_neighbours(d)
+
+    def is_next_b(self) -> bool:
+        if self.b is None:
+            self.check_if_in_border()
+            if self.b and self.s == s_id:
+                return True
+        return False
+
     def check_if_in_border(self) -> None:
         if self.x < (dim - 1):  # right
             _n = pixels[Pixel.get_pos(self.y, self.x + 1)]
@@ -69,8 +108,6 @@ pixels: list[Pixel] = [
     Pixel(2, 0, 0), Pixel(2, 1, 0), Pixel(2, 2, 0), Pixel(2, 3, 0),
     Pixel(3, 0, 0), Pixel(3, 1, 9), Pixel(3, 2, 9), Pixel(3, 3, 0),
 ]
-# TODO ignored bug; it works like this:
-# 0, 1, 2, 3, 7, 11, 15, 10, 9, (SKIPS 12) and goes to 8, then comes back to 12, then GETS CONFUSED!!!!!!
 s_id = 0
 seg = Segment([
     0, 1, 2, 3,
@@ -80,10 +117,6 @@ seg = Segment([
 ])
 
 # find the first encountering border pixel as a checkpoint
-opposites = {
-    0: 4, 1: 5, 2: 6, 3: 7,
-    4: 0, 5: 1, 6: 2, 7: 3
-}
 border_checkpoint: Optional[Pixel] = None
 for p in seg.p:
     _p = pixels[p]
@@ -91,61 +124,6 @@ for p in seg.p:
     if _p.b:
         border_checkpoint = _p
         break
-print(border_checkpoint.__dict__)
 
 # now start collecting all border pixels using that checkpoint
-direction: int = 0  # 0..7
-avoid_dir: Optional[int] = None
-this_b: Optional[Pixel] = None  # we could use do...while
-i = 0
-while this_b is None or this_b.y != border_checkpoint.y or this_b.x != border_checkpoint.x:
-    print('while1')
-    if this_b is None: this_b = border_checkpoint
-    this_dir = direction
-    next_b = None
-    while next_b is None:
-        print('while2 at', this_dir)
-        if this_dir == avoid_dir: raise Exception("KIR")
-
-        # look at the only 1 direction each turn
-        if this_dir == 0 and this_b.y > 0:  # northern
-            next_b = pixels[Pixel.get_pos(this_b.y - 1, this_b.x)]
-        elif this_dir == 1 and this_b.y > 0 and this_b.x < (dim - 1):  # north-eastern
-            next_b = pixels[Pixel.get_pos(this_b.y - 1, this_b.x + 1)]
-        elif this_dir == 2 and this_b.x < (dim - 1):  # eastern
-            next_b = pixels[Pixel.get_pos(this_b.y, this_b.x + 1)]
-        elif this_dir == 3 and this_b.y < (dim - 1) and this_b.x < (dim - 1):  # south-eastern
-            next_b = pixels[Pixel.get_pos(this_b.y + 1, this_b.x + 1)]
-        elif this_dir == 4 and this_b.y < (dim - 1):  # southern
-            next_b = pixels[Pixel.get_pos(this_b.y + 1, this_b.x)]
-        elif this_dir == 5 and this_b.y < (dim - 1) and this_b.x > 0:  # south-western
-            next_b = pixels[Pixel.get_pos(this_b.y + 1, this_b.x - 1)]
-        elif this_dir == 6 and this_b.x > 0:  # western
-            next_b = pixels[Pixel.get_pos(this_b.y, this_b.x - 1)]
-        elif this_dir == 7 and this_b.y > 0 and this_b.x > 0:  # north-western
-            next_b = pixels[Pixel.get_pos(this_b.y - 1, this_b.x - 1)]
-
-        # now check if that neighbour is a border one
-        if next_b is not None:
-            if next_b.b is not None:
-                next_b = None
-            else:
-                next_b.check_if_in_border()
-                if not next_b.b or next_b.s != s_id:
-                    next_b = None
-                else:
-                    print(next_b.y, next_b.x)
-                    break
-
-        this_dir += 1
-        if avoid_dir is not None and this_dir == avoid_dir: this_dir += 1
-        if this_dir > 7: this_dir = this_dir - 7
-    if next_b is None: raise Exception("KIR")
-    this_b = next_b
-    direction = this_dir
-    avoid_dir = opposites[direction]
-    # print('Border pixels:', len(seg.border))
-    print(this_b.__dict__, 'to', direction)
-    if i == 10:
-        quit()
-    i += 1
+border_checkpoint.check_neighbours()

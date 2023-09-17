@@ -1,4 +1,5 @@
 import pickle
+import sys
 from datetime import datetime
 from math import sqrt
 from typing import Optional
@@ -21,7 +22,46 @@ class Pixel:
     def get_pos(_y: int, _x: int) -> int:
         return (_y * dim) + _x
 
-    def check_if_in_border(self) -> None:
+    # recursively checks if neighbours are border pixels
+    # directions range are 0..7!
+    def check_neighbours(self, avoid_dir: Optional[int] = None):
+        next_ones: list[tuple[Pixel, int]] = []
+        if avoid_dir != 0 and self.y > 0:  # northern
+            n = pixels[Pixel.get_pos(self.y - 1, self.x)]
+            if n.is_next_b(): next_ones.append((n, 0))
+        if avoid_dir != 1 and self.y > 0 and self.x < (dim - 1):  # north-eastern
+            n = pixels[Pixel.get_pos(self.y - 1, self.x + 1)]
+            if n.is_next_b(): next_ones.append((n, 1))
+        if avoid_dir != 2 and self.x < (dim - 1):  # eastern
+            n = pixels[Pixel.get_pos(self.y, self.x + 1)]
+            if n.is_next_b(): next_ones.append((n, 2))
+        if avoid_dir != 3 and self.y < (dim - 1) and self.x < (dim - 1):  # south-eastern
+            n = pixels[Pixel.get_pos(self.y + 1, self.x + 1)]
+            if n.is_next_b(): next_ones.append((n, 3))
+        if avoid_dir != 4 and self.y < (dim - 1):  # southern
+            n = pixels[Pixel.get_pos(self.y + 1, self.x)]
+            if n.is_next_b(): next_ones.append((n, 4))
+        if avoid_dir != 5 and self.y < (dim - 1) and self.x > 0:  # south-western
+            n = pixels[Pixel.get_pos(self.y + 1, self.x - 1)]
+            if n.is_next_b(): next_ones.append((n, 5))
+        if avoid_dir != 6 and self.x > 0:  # western
+            n = pixels[Pixel.get_pos(self.y, self.x - 1)]
+            if n.is_next_b(): next_ones.append((n, 6))
+        if avoid_dir != 7 and self.y > 0 and self.x > 0:  # north-western
+            n = pixels[Pixel.get_pos(self.y - 1, self.x - 1)]
+            if n.is_next_b(): next_ones.append((n, 7))
+
+        for n, d in next_ones: n.check_neighbours(d)
+
+    # checks if this is a border pixel and not detected before
+    def is_next_b(self) -> bool:
+        if self.b is None:
+            self.check_if_border()
+            if self.b and self.s == s_id:
+                return True
+        return False
+
+    def check_if_border(self) -> None:
         if self.x < (dim - 1):  # right
             _n = pixels[Pixel.get_pos(self.y, self.x + 1)]
             if self.s != _n.s:
@@ -96,84 +136,33 @@ loading_time = datetime.now()
 pixels: list[Pixel] = pickle.load(open('segmentation/output/rg2_pixels.pickle', 'rb'))
 segments: dict[int, Segment] = pickle.load(open('segmentation/output/rg2_segments.pickle', 'rb'))
 dim = 1088
+sys.setrecursionlimit(dim * dim)
 print('Loading time:', datetime.now() - loading_time)
 
-# get a mean value of all colours
+# get a mean value of all colours and detect their border pixels in a proper consecutive order
 mean_and_border_time = datetime.now()
 for p in pixels: segments[p.s].add_colour(p.c)
-opposites = {
-    0: 4, 1: 5, 2: 6, 3: 7,
-    4: 0, 5: 1, 6: 2, 7: 3
-}
-for s_id, seg in list(segments.items())[1:50]:
+for s_id, seg in segments.items():  # couldn't cut the dict properly
     seg.mean()
 
     # find the first encountering border pixel as a checkpoint
     border_checkpoint: Optional[Pixel] = None
     for p in seg.p:
         _p = pixels[p]
-        if _p.b is None: _p.check_if_in_border()
+        if _p.b is None: _p.check_if_border()
         if _p.b:
             border_checkpoint = _p
             break
 
     # now start collecting all border pixels using that checkpoint
-    direction: int = 0  # 0..7
-    avoid_dir: Optional[int] = None
-    this_b: Optional[Pixel] = None  # we could use do...while
-    while this_b is None or this_b.y != border_checkpoint.y or this_b.x != border_checkpoint.x:
-        print('while1')
-        if this_b is None: this_b = border_checkpoint
-        this_dir = direction
-        next_b = None
-        while next_b is None:
-            print('while2')
-            if this_dir == avoid_dir: raise Exception("KIR")
-
-            # look at the only 1 direction each turn
-            if this_dir == 0 and this_b.y > 0:  # northern
-                next_b = pixels[Pixel.get_pos(this_b.y - 1, this_b.x)]
-            elif this_dir == 1 and this_b.y > 0 and this_b.x < (dim - 1):  # north-eastern
-                next_b = pixels[Pixel.get_pos(this_b.y - 1, this_b.x + 1)]
-            elif this_dir == 2 and this_b.x < (dim - 1):  # eastern
-                next_b = pixels[Pixel.get_pos(this_b.y, this_b.x + 1)]
-            elif this_dir == 3 and this_b.y < (dim - 1) and this_b.x < (dim - 1):  # south-eastern
-                next_b = pixels[Pixel.get_pos(this_b.y + 1, this_b.x + 1)]
-            elif this_dir == 4 and this_b.y < (dim - 1):  # southern
-                next_b = pixels[Pixel.get_pos(this_b.y + 1, this_b.x)]
-            elif this_dir == 5 and this_b.y < (dim - 1) and this_b.x > 0:  # south-western
-                next_b = pixels[Pixel.get_pos(this_b.y + 1, this_b.x - 1)]
-            elif this_dir == 6 and this_b.x > 0:  # western
-                next_b = pixels[Pixel.get_pos(this_b.y, this_b.x - 1)]
-            elif this_dir == 7 and this_b.y > 0 and this_b.x > 0:  # north-western
-                next_b = pixels[Pixel.get_pos(this_b.y - 1, this_b.x - 1)]
-
-            # now check if that neighbour is a border one
-            if next_b is not None:
-                if next_b.b is not None:
-                    next_b = None
-                else:
-                    next_b.check_if_in_border()
-                    if not next_b.b or next_b.s != s_id:  # or (next_b.y, next_b.x) in seg.border
-                        next_b = None
-                    else:
-                        print(next_b.y, next_b.x)
-                        break
-
-            this_dir += 1
-            if avoid_dir is not None and this_dir == avoid_dir: this_dir += 1
-            if this_dir > 7: this_dir = this_dir - 7
-        if next_b is None: raise Exception("KIR")
-        this_b = next_b
-        direction = this_dir
-        avoid_dir = opposites[direction]
-        print('Border pixels:', len(seg.border))
+    border_checkpoint.check_neighbours()
 print('Mean and border time:', datetime.now() - mean_and_border_time)
 
 # detect the boundaries of the cadre
 display_preparation_time = datetime.now()
 min_y, min_x, max_y, max_x = -1, -1, -1, -1
 seg = list(segments.items())[2]
+print('Border pixels of this segment:', len(seg[1].border))
 for p in seg[1].p:
     if min_y == -1:  # messed because Python has no do... while!
         min_y = pixels[p].y
