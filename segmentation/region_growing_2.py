@@ -58,7 +58,7 @@ class Segment:
         self.b: list[int] = []  # colour B values
         self.c: list[int] = []  # colour C values
         self.m: list[int] = []  # mean colour
-        self.border = set()  # FIXME remove
+        self.border: list[list[int]] = []
 
 
 # put every pixel in a Pixel class instance

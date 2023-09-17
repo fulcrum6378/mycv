@@ -1,3 +1,4 @@
+import json
 import pickle
 import sys
 from datetime import datetime
@@ -96,8 +97,8 @@ class Pixel:
             return
 
     def set_is_border(self):
-        segments[self.s].border.add((self.y, self.x))
         self.b = True
+        segments[self.s].border.append([self.y, self.x])
 
 
 class Segment:
@@ -107,7 +108,7 @@ class Segment:
         self.b: list[int] = []  # colour B values
         self.c: list[int] = []  # colour C values
         self.m: list[int] = []  # mean colour
-        self.border = set()  # FIXME also remove back there
+        self.border: list[list[int]] = []
 
     # THIS PROCESS COULD BE DONE DURING THE SEGMENTATION...
     def add_colour(self, c: list[int]):
@@ -157,6 +158,13 @@ for s_id, seg in segments.items():  # couldn't cut the dict properly
     # now start collecting all border pixels using that checkpoint
     border_checkpoint.check_neighbours()
 print('Mean and border time:', datetime.now() - mean_and_border_time)
+
+# store 5 of largest segments
+exports = sorted(segments.values(), key=lambda item: len(item.p), reverse=True)[:5]
+for s in range(len(exports)):
+    open('tracing/output/' + str(s + 1) + '.json', 'w').write(
+        json.dumps({'mean': exports[s].m, 'path': exports[s].border})
+    )
 
 # detect the boundaries of the cadre
 display_preparation_time = datetime.now()

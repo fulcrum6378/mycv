@@ -77,6 +77,7 @@ pixels.sort(key=cmp_to_key(sort_by_hue))
 pixels.sort(key=cmp_to_key(sort_by_saturation))
 
 # Divide into 16 clusters
+# noinspection PyStatementEffect
 pixels
 
 # for y in range(len(arr)):
