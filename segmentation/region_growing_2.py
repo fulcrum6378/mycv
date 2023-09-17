@@ -36,7 +36,7 @@ class Pixel:
         self.y: int = _y
         self.x: int = _x
         self.s: Optional[int] = None  # segment
-        self.b: bool = False  # is a border pixels
+        self.b: Optional[bool] = None  # is a border pixels
 
     def compare(self, _n: int) -> Neighbour:
         global pixels

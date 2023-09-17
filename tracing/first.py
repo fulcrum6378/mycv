@@ -15,7 +15,7 @@ class Pixel:
         self.y: int = 0
         self.x: int = 0
         self.s: int = 0
-        self.b: bool = False
+        self.b: Optional[bool] = False
 
     @staticmethod
     def get_pos(_y: int, _x: int) -> int:
@@ -97,67 +97,73 @@ segments: dict[int, Segment] = pickle.load(open('segmentation/output/rg2_segment
 dim = 1088
 print('Loading time:', datetime.now() - loading_time)
 
-# get a mean value of all colours + detect the first encountering border pixel
-mean_time = datetime.now()
-border: list[tuple[int, int]] = []
-border_checkpoint: Optional[Pixel] = None
-for p in pixels:
-    segments[p.s].add_colour(p.c)
-    if border_checkpoint is None:
-        p.check_if_in_border()
-        if p.b: border_checkpoint = p
-for seg in segments.values():
-    seg.mean()
-print('Mean time:', datetime.now() - mean_time)
-
-# resume from the first encountering border pixel
-border_time = datetime.now()
+# get a mean value of all colours
+mean_and_border_time = datetime.now()
+for p in pixels: segments[p.s].add_colour(p.c)
 opposites = {
     0: 4, 1: 5, 2: 6, 3: 7,
     4: 0, 5: 1, 6: 2, 7: 3
 }
-this_b: Optional[Pixel] = None
-direction: int = 0  # 0..7
-avoid_dir: Optional[int] = None
-while this_b is None or this_b.y != border_checkpoint.y or this_b.x != border_checkpoint.x:  # we could use do...while
-    if this_b is None: this_b = border_checkpoint
-    this_dir = direction
-    next_b = None
-    while next_b is None:
-        if this_dir == avoid_dir: raise Exception("KIR")
+border: list[tuple[int, int]] = []  # FIXME
+for s_id, seg in list(segments.items())[:100]:
+    seg.mean()
 
-        # analyse the only 1 direction each turn
-        if this_dir == 0 and this_b.y > 0:  # northern
-            next_b = pixels[Pixel.get_pos(this_b.y - 1, this_b.x)]
-        elif this_dir == 1 and this_b.y > 0 and this_b.x < (dim - 1):  # north-eastern
-            next_b = pixels[Pixel.get_pos(this_b.y - 1, this_b.x + 1)]
-        elif this_dir == 2 and this_b.x < (dim - 1):  # eastern
-            next_b = pixels[Pixel.get_pos(this_b.y, this_b.x + 1)]
-        elif this_dir == 3 and this_b.y < (dim - 1) and this_b.x < (dim - 1):  # south-eastern
-            next_b = pixels[Pixel.get_pos(this_b.y + 1, this_b.x + 1)]
-        elif this_dir == 4 and this_b.y < (dim - 1):  # southern
-            next_b = pixels[Pixel.get_pos(this_b.y + 1, this_b.x)]
-        elif this_dir == 5 and this_b.y < (dim - 1) and this_b.x > 0:  # south-western
-            next_b = pixels[Pixel.get_pos(this_b.y + 1, this_b.x - 1)]
-        elif this_dir == 6 and this_b.x > 0:  # western
-            next_b = pixels[Pixel.get_pos(this_b.y, this_b.x - 1)]
-        elif this_dir == 7 and this_b.y > 0 and this_b.x > 0:  # north-western
-            next_b = pixels[Pixel.get_pos(this_b.y - 1, this_b.x - 1)]
+    # find the first encountering border pixel as a checkpoint
+    border_checkpoint: Optional[Pixel] = None
+    for p in seg.p:
+        if border_checkpoint is None:
+            _p = pixels[p]
+            _p.check_if_in_border()
+            if _p.b: border_checkpoint = _p
 
-        if next_b is not None:
-            next_b.check_if_in_border()
-            if not next_b.b:
-                next_b = None
-            else:
-                print(next_b.y, next_b.x)
-        this_dir += 1
-        if avoid_dir is not None and this_dir == avoid_dir: this_dir += 1
-        if this_dir > 7: this_dir = this_dir - 7
-    this_b = next_b
-    direction = this_dir
-    avoid_dir = opposites[direction]
+    # now start collecting all border pixels using that checkpoint
+    direction: int = 0  # 0..7
+    avoid_dir: Optional[int] = None
+    this_b: Optional[Pixel] = None  # we could use do...while
+    while this_b is None or this_b.y != border_checkpoint.y or this_b.x != border_checkpoint.x:
+        print('while1')
+        if this_b is None: this_b = border_checkpoint
+        this_dir = direction
+        next_b = None
+        while next_b is None:
+            print('while2')
+            if this_dir == avoid_dir: raise Exception("KIR")
+
+            # look at the only 1 direction each turn
+            if this_dir == 0 and this_b.y > 0:  # northern
+                next_b = pixels[Pixel.get_pos(this_b.y - 1, this_b.x)]
+            elif this_dir == 1 and this_b.y > 0 and this_b.x < (dim - 1):  # north-eastern
+                next_b = pixels[Pixel.get_pos(this_b.y - 1, this_b.x + 1)]
+            elif this_dir == 2 and this_b.x < (dim - 1):  # eastern
+                next_b = pixels[Pixel.get_pos(this_b.y, this_b.x + 1)]
+            elif this_dir == 3 and this_b.y < (dim - 1) and this_b.x < (dim - 1):  # south-eastern
+                next_b = pixels[Pixel.get_pos(this_b.y + 1, this_b.x + 1)]
+            elif this_dir == 4 and this_b.y < (dim - 1):  # southern
+                next_b = pixels[Pixel.get_pos(this_b.y + 1, this_b.x)]
+            elif this_dir == 5 and this_b.y < (dim - 1) and this_b.x > 0:  # south-western
+                next_b = pixels[Pixel.get_pos(this_b.y + 1, this_b.x - 1)]
+            elif this_dir == 6 and this_b.x > 0:  # western
+                next_b = pixels[Pixel.get_pos(this_b.y, this_b.x - 1)]
+            elif this_dir == 7 and this_b.y > 0 and this_b.x > 0:  # north-western
+                next_b = pixels[Pixel.get_pos(this_b.y - 1, this_b.x - 1)]
+
+            # now check if that neighbour is a border one
+            if next_b is not None:
+                next_b.check_if_in_border()
+                if not next_b.b:
+                    next_b = None
+                else:
+                    print(next_b.y, next_b.x)
+
+            this_dir += 1
+            if avoid_dir is not None and this_dir == avoid_dir: this_dir += 1
+            if this_dir > 7: this_dir = this_dir - 7
+        if next_b is None: raise Exception("KIR")
+        this_b = next_b
+        direction = this_dir
+        avoid_dir = opposites[direction]
 print('Border pixels:', len(border))
-print('Border time:', datetime.now() - border_time)
+print('Mean and border time:', datetime.now() - mean_and_border_time)
 
 # detect the boundaries of the cadre
 display_preparation_time = datetime.now()
