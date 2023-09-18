@@ -58,7 +58,9 @@ class Segment:
         self.b: list[int] = []  # colour B values
         self.c: list[int] = []  # colour C values
         self.m: list[int] = []  # mean colour
-        self.border: list[list[int]] = []
+        self.border: list[list[float]] = []
+        self.min_y, self.min_x, self.max_y, self.max_x = -1, -1, -1, -1  # boundaries
+        self.w, self.h = -1, -1  # dimensions
 
 
 # put every pixel in a Pixel class instance

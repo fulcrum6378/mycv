@@ -98,7 +98,8 @@ class Pixel:
 
     def set_is_border(self):
         self.b = True
-        segments[self.s].border.append([self.y, self.x])
+        _s = segments[self.s]
+        _s.border.append([(100 / _s.w) * _s.min_x - self.x, (100 / _s.h) * _s.min_y - self.y])
 
 
 class Segment:
@@ -108,7 +109,9 @@ class Segment:
         self.b: list[int] = []  # colour B values
         self.c: list[int] = []  # colour C values
         self.m: list[int] = []  # mean colour
-        self.border: list[list[int]] = []
+        self.border: list[list[float]] = []
+        self.min_y, self.min_x, self.max_y, self.max_x = -1, -1, -1, -1  # boundaries
+        self.w, self.h = -1, -1  # dimensions
 
     # THIS PROCESS COULD BE DONE DURING THE SEGMENTATION...
     def add_colour(self, c: list[int]):
@@ -124,10 +127,26 @@ class Segment:
         # self.m = [sum(self.a) / len(self.a),
         #          sum(self.b) / len(self.b),
         #          sum(self.c) / len(self.c)]
-        self.m = [sqrt(sum(self.a) / len(self.a)),
-                  sqrt(sum(self.b) / len(self.b)),
-                  sqrt(sum(self.c) / len(self.c))]
+        self.m = [round(sqrt(sum(self.a) / len(self.a))),
+                  round(sqrt(sum(self.b) / len(self.b))),
+                  round(sqrt(sum(self.c) / len(self.c)))]
         del self.a, self.b, self.c
+
+    # determine min_y, min_x, max_y, max_x
+    def detect_boundaries(self):
+        for _p in self.p:
+            if self.min_y == -1:  # messed because Python has no do... while!
+                self.min_y = pixels[_p].y
+                self.max_y = pixels[_p].y
+                self.min_x = pixels[_p].x
+                self.max_x = pixels[_p].x
+                continue
+            if pixels[_p].y < self.min_y: self.min_y = pixels[_p].y
+            if pixels[_p].x < self.min_x: self.min_x = pixels[_p].x
+            if pixels[_p].y > self.max_y: self.max_y = pixels[_p].y
+            if pixels[_p].x > self.max_x: self.max_x = pixels[_p].x
+        self.w = (seg.max_x + 1) - seg.min_x
+        self.h = (seg.max_y + 1) - seg.min_y
 
 
 # `arr` will be disposed of at the end of `segmentation`.
@@ -140,19 +159,20 @@ dim = 1088
 sys.setrecursionlimit(dim * dim)
 print('Loading time:', datetime.now() - loading_time)
 
-# get a mean value of all colours and detect their border pixels in a proper consecutive order
+# get a mean value of all colours in all segments, detect their border pixels and also their boundaries
 mean_and_border_time = datetime.now()
 for p in pixels: segments[p.s].add_colour(p.c)
 for s_id, seg in segments.items():  # couldn't cut the dict properly
     seg.mean()
+    seg.detect_boundaries()
 
     # find the first encountering border pixel as a checkpoint
     border_checkpoint: Optional[Pixel] = None
     for p in seg.p:
-        _p = pixels[p]
-        if _p.b is None: _p.check_if_border()
-        if _p.b:
-            border_checkpoint = _p
+        p_ = pixels[p]
+        if p_.b is None: p_.check_if_border()
+        if p_.b:
+            border_checkpoint = p_
             break
 
     # now start collecting all border pixels using that checkpoint
@@ -162,43 +182,28 @@ print('Mean and border time:', datetime.now() - mean_and_border_time)
 # store 5 of largest segments
 exports = sorted(segments.values(), key=lambda item: len(item.p), reverse=True)[:5]
 for s in range(len(exports)):
-    open('tracing/output/' + str(s + 1) + '.json', 'w').write(
-        json.dumps({'mean': exports[s].m, 'path': exports[s].border})
-    )
+    open('tracing/output/' + str(s + 1) + '.json', 'w').write(json.dumps({
+        'mean': exports[s].m,
+        'path': exports[s].border,
+        'dimensions': [exports[s].w, exports[s].h],
+    }))
 
-# detect the boundaries of the cadre
+# draw the segment into the cadre and display it
 display_preparation_time = datetime.now()
-min_y, min_x, max_y, max_x = -1, -1, -1, -1
-seg = list(segments.items())[2]
-print('Border pixels of this segment:', len(seg[1].border))
-for p in seg[1].p:
-    if min_y == -1:  # messed because Python has no do... while!
-        min_y = pixels[p].y
-        max_y = pixels[p].y
-        min_x = pixels[p].x
-        max_x = pixels[p].x
-        continue
-    if pixels[p].y < min_y: min_y = pixels[p].y
-    if pixels[p].x < min_x: min_x = pixels[p].x
-    if pixels[p].y > max_y: max_y = pixels[p].y
-    if pixels[p].x > max_x: max_x = pixels[p].x
-
-# draw the segment into the cadre
+s_id, seg = list(segments.items())[2]
 arr: list[list[list[int]]] = []
-for y in range(min_y, max_y + 1):
+for y in range(seg.min_y, seg.max_y + 1):
     xes: list[list[int]] = []
-    for x in range(min_x, max_x + 1):
+    for x in range(seg.min_x, seg.max_x + 1):
         p = pixels[Pixel.get_pos(y, x)]
-        if p.s == seg[0]:
+        if p.s == s_id:
             if not p.b:
-                xes.append(seg[1].m)  # p.c
+                xes.append(seg.m)  # p.c
             else:
                 xes.append([0, 255, 200])
         else:
             xes.append([255, 127, 127])  # HSV: [0, 0, 255], RGB: [255, 255, 255]
     arr.append(xes)
-
-# show the testing sample
 plot.imshow(cv2.cvtColor(np.array(arr, dtype=np.uint8), cv2.COLOR_YUV2RGB))
 print('Display preparation time:', datetime.now() - display_preparation_time)
 plot.show()
