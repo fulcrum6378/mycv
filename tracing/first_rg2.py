@@ -64,32 +64,28 @@ class Pixel:
 
     def check_if_border(self) -> None:
         if self.x < (dim - 1):  # right
-            _n = pixels[Pixel.get_pos(self.y, self.x + 1)]
-            if self.s != _n.s:
+            if self.s != pixels[Pixel.get_pos(self.y, self.x + 1)].s:
                 self.set_is_border()
                 return
         else:
             self.set_is_border()
             return
         if self.y < (dim - 1):  # bottom
-            _n = pixels[Pixel.get_pos(self.y + 1, self.x)]
-            if self.s != _n.s:
+            if self.s != pixels[Pixel.get_pos(self.y + 1, self.x)].s:
                 self.set_is_border()
                 return
         else:
             self.set_is_border()
             return
         if self.x > 0:  # left
-            _n = pixels[Pixel.get_pos(self.y, self.x - 1)]
-            if self.s != _n.s:
+            if self.s != pixels[Pixel.get_pos(self.y, self.x - 1)].s:
                 self.set_is_border()
                 return
         else:
             self.set_is_border()
             return
         if self.y > 0:  # top
-            _n = pixels[Pixel.get_pos(self.y - 1, self.x)]
-            if self.s != _n.s:
+            if self.s != pixels[Pixel.get_pos(self.y - 1, self.x)].s:
                 self.set_is_border()
                 return
         else:
@@ -105,9 +101,9 @@ class Pixel:
 class Segment:
     def __init__(self):
         self.p: list[int] = []  # pixels
-        self.a: list[int] = []  # colour A values
-        self.b: list[int] = []  # colour B values
-        self.c: list[int] = []  # colour C values
+        self.a: int = 0  # total colour A values
+        self.b: int = 0  # total colour B values
+        self.c: int = 0  # total colour C values
         self.m: list[int] = []  # mean colour
         self.border: list[list[float]] = []
         self.min_y, self.min_x, self.max_y, self.max_x = -1, -1, -1, -1  # boundaries
@@ -118,18 +114,17 @@ class Segment:
         # self.a.append(c[0])
         # self.b.append(c[1])
         # self.c.append(c[2])
-        self.a.append(pow(c[0], 2))  # c[0] * c[0] instead
-        self.b.append(pow(c[1], 2))
-        self.c.append(pow(c[2], 2))
+        self.a += pow(c[0], 2)  # c[0] * c[0] instead
+        self.b += pow(c[1], 2)
+        self.c += pow(c[2], 2)
 
     # without squaring, my pillow gets a little darker!
     def mean(self) -> None:
         # self.m = [sum(self.a) / len(self.a),
         #          sum(self.b) / len(self.b),
         #          sum(self.c) / len(self.c)]
-        self.m = [round(sqrt(sum(self.a) / len(self.a))),
-                  round(sqrt(sum(self.b) / len(self.b))),
-                  round(sqrt(sum(self.c) / len(self.c)))]
+        l_ = len(self.p)
+        self.m = [round(sqrt(self.a / l_)), round(sqrt(self.b / l_)), round(sqrt(self.c / l_))]
         del self.a, self.b, self.c
 
     # determine min_y, min_x, max_y, max_x
@@ -163,6 +158,7 @@ print('Loading time:', datetime.now() - loading_time)
 mean_and_border_time = datetime.now()
 for p in pixels: segments[p.s].add_colour(p.c)
 for s_id, seg in segments.items():  # couldn't cut the dict properly
+    # s_id is used weirdly!
     seg.mean()
     seg.detect_boundaries()
 

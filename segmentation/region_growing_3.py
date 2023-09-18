@@ -13,12 +13,12 @@ loading_time = datetime.now()
 arr: np.ndarray = cv2.cvtColor(cv2.imread('vis/2/1689005849386887.bmp'), cv2.COLOR_BGR2YUV)
 arr.setflags(write=True)
 dim: int = 1088
-min_seg = 70
+min_seg = 50
 sys.setrecursionlimit(dim * dim)
 print('Loading time:', datetime.now() - loading_time)
 
-status: np.ndarray = np.repeat([np.repeat(-1, dim)], dim, 0)  # verified to have no -1 at the end.
-segments: list[list[tuple[int, int]]] = list()
+status: np.ndarray = np.repeat([np.repeat(-1, dim)], dim, 0)
+segments: list[list[tuple[int, int]]] = []
 
 
 def compare_colours(a: np.ndarray, b: np.ndarray) -> bool:
@@ -84,7 +84,7 @@ for seg in range(len(segments) - 1, -1, -1):
             continue
         parent: list[tuple[int, int]] = segments[status[parent_index[0], parent_index[1]]]
         parent.extend(segments[seg])
-        segments.pop(seg)
+        segments[seg].clear()  # segments.pop(seg); but this will ruin the indices!
 print('Dissolution time:', datetime.now() - dissolution_time)
 print('Segmentation time:', datetime.now() - segmentation_time)
 
@@ -100,7 +100,13 @@ for seg in range(len(segments)):  # show the persisting small segments
             arr[px[0], px[1]] = 0, 255, 255
         continue
 arr = cv2.cvtColor(cv2.cvtColor(arr, cv2.COLOR_HSV2RGB), cv2.COLOR_RGB2YUV)
-print('Total segments:', len(segments))
+
+# print a summary
+total_segments = 0
+for seg in segments:
+    if len(seg) > 0:
+        total_segments += 1
+print('Total segments:', total_segments)
 
 # show the image
 plot.imshow(cv2.cvtColor(arr, cv2.COLOR_YUV2RGB))
