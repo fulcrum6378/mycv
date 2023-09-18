@@ -6,6 +6,7 @@ from typing import Optional
 import cv2
 import matplotlib.pyplot as plot
 import numpy as np
+from numpy.compat import long
 
 # read the image
 loading_time = datetime.now()
@@ -17,8 +18,29 @@ min_seg = 50
 sys.setrecursionlimit(dim * dim)
 print('Loading time:', datetime.now() - loading_time)
 
-status: np.ndarray = np.repeat([np.repeat(-1, dim)], dim, 0)
-segments: list[list[tuple[int, int]]] = []
+
+class Segment:
+    def __init__(self):
+        global segments
+        self.id = len(segments)
+        self.p: list[tuple[int, int]] = []  # pixels
+        self.a: long = 0  # total A colour values
+        self.b: long = 0  # total B colour values
+        self.c: long = 0  # total C colour values
+        self.m: list[int] = []  # mean colour
+        self.border: list[list[float]] = []
+        self.min_y, self.min_x, self.max_y, self.max_x = -1, -1, -1, -1  # boundaries
+        self.w, self.h = -1, -1  # dimensions
+
+    def add(self, p_: tuple[int, int]):
+        self.p.append(p_)
+        self.add_colour(arr[*p_])
+
+    # it is actually a temporary part of tracing, but is done here for efficiency.
+    def add_colour(self, c: list[int]):
+        self.a += c[0]
+        self.b += c[1]
+        self.c += c[2]
 
 
 def compare_colours(a: np.ndarray, b: np.ndarray) -> bool:
@@ -27,34 +49,36 @@ def compare_colours(a: np.ndarray, b: np.ndarray) -> bool:
         and abs(int(a[2]) - int(b[2])) <= 4
 
 
-def neighbours_of(yy: int, xx: int, pixels: list[tuple[int, int]], sgm_idx: int):
-    pixels.append((yy, xx))
+def neighbours_of(yy: int, xx: int, seg_: Segment, sgm_idx: int):
+    seg_.add((yy, xx))
     status[yy, xx] = sgm_idx
     if xx > 0 and status[yy, xx - 1] == -1 and compare_colours(arr[yy, xx], arr[yy, xx - 1]):  # left
-        neighbours_of(yy, xx - 1, pixels, sgm_idx)
+        neighbours_of(yy, xx - 1, seg_, sgm_idx)
     if yy > 0 and status[yy - 1, xx] == -1 and compare_colours(arr[yy, xx], arr[yy - 1, xx]):  # top
-        neighbours_of(yy - 1, xx, pixels, sgm_idx)
+        neighbours_of(yy - 1, xx, seg_, sgm_idx)
     if xx < (dim - 1) and status[yy, xx + 1] == -1 and compare_colours(arr[yy, xx], arr[yy, xx + 1]):  # right
-        neighbours_of(yy, xx + 1, pixels, sgm_idx)
+        neighbours_of(yy, xx + 1, seg_, sgm_idx)
     if yy < (dim - 1) and status[yy + 1, xx] == -1 and compare_colours(arr[yy, xx], arr[yy + 1, xx]):  # bottom
-        neighbours_of(yy + 1, xx, pixels, sgm_idx)
+        neighbours_of(yy + 1, xx, seg_, sgm_idx)
 
 
 # It must become more developed. You can also calculate segments' mean values!
-def find_a_segment_to_dissolve_in(sgm_pixels: list[tuple[int, int]]) -> Optional[tuple[int, int]]:
-    if sgm_pixels[0][0] > 0:
-        return sgm_pixels[0][0] - 1, sgm_pixels[0][1]
-    if sgm_pixels[0][1] > 0:
-        return sgm_pixels[0][0], sgm_pixels[0][1] - 1
-    if sgm_pixels[len(sgm_pixels) - 1][0] < dim - 1:
-        return sgm_pixels[len(sgm_pixels) - 1][0] + 1, sgm_pixels[len(sgm_pixels) - 1][1]
-    if sgm_pixels[len(sgm_pixels) - 1][1] < dim - 1:
-        return sgm_pixels[len(sgm_pixels) - 1][0], sgm_pixels[len(sgm_pixels) - 1][1] + 1
+def find_a_segment_to_dissolve_in(seg_: Segment) -> Optional[tuple[int, int]]:
+    if seg_.p[0][0] > 0:
+        return seg_.p[0][0] - 1, seg_.p[0][1]
+    if seg_.p[0][1] > 0:
+        return seg_.p[0][0], seg_.p[0][1] - 1
+    if seg_.p[len(seg_.p) - 1][0] < dim - 1:
+        return seg_.p[len(seg_.p) - 1][0] + 1, seg_.p[len(seg_.p) - 1][1]
+    if seg_.p[len(seg_.p) - 1][1] < dim - 1:
+        return seg_.p[len(seg_.p) - 1][0], seg_.p[len(seg_.p) - 1][1] + 1
     return None
 
 
 # detect segments by single-pixel colour differences
 segmentation_time = datetime.now()
+status: np.ndarray = np.repeat([np.repeat(-1, dim)], dim, 0)
+segments: list[Segment] = []
 thisY, thisX, found_sth_to_analyse = 0, 0, True
 while found_sth_to_analyse:
     found_sth_to_analyse = False
@@ -67,46 +91,41 @@ while found_sth_to_analyse:
                 break
         if found_sth_to_analyse: break
     if not found_sth_to_analyse: break
-    segment = list()
+    segment = Segment()
     neighbours_of(thisY, thisX, segment, len(segments))
     segments.append(segment)
 
 # dissolve smaller segments
 dissolution_time = datetime.now()
 for seg in range(len(segments) - 1, -1, -1):
-    if len(segments[seg]) == 0: continue
-    if len(segments[seg]) < min_seg:
-        segments[seg].sort(key=lambda s: s[1])
-        segments[seg].sort(key=lambda s: s[0])
+    if len(segments[seg].p) < min_seg:
+        segments[seg].p.sort(key=lambda s: s[1])
+        segments[seg].p.sort(key=lambda s: s[0])
         parent_index = find_a_segment_to_dissolve_in(segments[seg])
         if parent_index is None:
             print('parent_index is None:', segments[seg])
             continue
-        parent: list[tuple[int, int]] = segments[status[parent_index[0], parent_index[1]]]
-        parent.extend(segments[seg])
-        segments[seg].clear()  # segments.pop(seg); but this will ruin the indices!
+        parent: Segment = segments[status[parent_index[0], parent_index[1]]]
+        for p in segments[seg].p:
+            parent.add(p)
+            status[*p] = parent.id
+        segments.pop(seg)
 print('Dissolution time:', datetime.now() - dissolution_time)
 print('Segmentation time:', datetime.now() - segmentation_time)
 
 # evaluate the segments
-segments.sort(key=lambda s: len(s), reverse=True)
+segments.sort(key=lambda s: len(s.p), reverse=True)
 arr = cv2.cvtColor(cv2.cvtColor(arr, cv2.COLOR_YUV2RGB), cv2.COLOR_RGB2HSV)
 for big_sgm in range(25):  # colour the biggest ones
-    for px in segments[big_sgm]:
+    for px in segments[big_sgm].p:
         arr[px[0], px[1]] = 5 + (10 * (big_sgm + 1)), 255, 255
 for seg in range(len(segments)):  # show the persisting small segments
-    if len(segments[seg]) < min_seg:
-        for px in segments[seg]:
+    if len(segments[seg].p) < min_seg:
+        for px in segments[seg].p:
             arr[px[0], px[1]] = 0, 255, 255
         continue
 arr = cv2.cvtColor(cv2.cvtColor(arr, cv2.COLOR_HSV2RGB), cv2.COLOR_RGB2YUV)
-
-# print a summary
-total_segments = 0
-for seg in segments:
-    if len(seg) > 0:
-        total_segments += 1
-print('Total segments:', total_segments)
+print('Total segments:', len(segments))
 
 # show the image
 plot.imshow(cv2.cvtColor(arr, cv2.COLOR_YUV2RGB))
