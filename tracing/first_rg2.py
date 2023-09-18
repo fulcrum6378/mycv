@@ -62,34 +62,19 @@ class Pixel:
         return False
 
     def check_if_border(self) -> None:
-        if self.x < (dim - 1):  # right
-            if self.s != pixels[Pixel.get_pos(self.y, self.x + 1)].s:
-                self.set_is_border()
-                return
-        else:
+        if self.x == (dim - 1) or self.s != pixels[Pixel.get_pos(self.y, self.x + 1)].s:  # right
             self.set_is_border()
             return
-        if self.y < (dim - 1):  # bottom
-            if self.s != pixels[Pixel.get_pos(self.y + 1, self.x)].s:
-                self.set_is_border()
-                return
-        else:
+        if self.y == (dim - 1) or self.s != pixels[Pixel.get_pos(self.y + 1, self.x)].s:  # bottom
             self.set_is_border()
             return
-        if self.x > 0:  # left
-            if self.s != pixels[Pixel.get_pos(self.y, self.x - 1)].s:
-                self.set_is_border()
-                return
-        else:
+        if self.x == 0 or self.s != pixels[Pixel.get_pos(self.y, self.x - 1)].s:  # left
             self.set_is_border()
             return
-        if self.y > 0:  # top
-            if self.s != pixels[Pixel.get_pos(self.y - 1, self.x)].s:
-                self.set_is_border()
-                return
-        else:
+        if self.y == 0 or self.s != pixels[Pixel.get_pos(self.y - 1, self.x)].s:  # top
             self.set_is_border()
             return
+        self.b = False
 
     def set_is_border(self):
         self.b = True

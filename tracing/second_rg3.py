@@ -65,35 +65,19 @@ def is_next_b(s_: Segment, yy: int, xx: int) -> bool:
 # checks if this pixel is in border
 def check_if_border(s_, yy: int, xx: int) -> None:
     s_id = s_.id if isinstance(s_, Segment) else s_
-
-    if xx < (dim - 1):  # right
-        if s_id != status[yy, xx + 1]:
-            set_is_border(s_, yy, xx)
-            return
-    else:
+    if xx == (dim - 1) or s_id != status[yy, xx + 1]:  # right
         set_is_border(s_, yy, xx)
         return
-    if yy < (dim - 1):  # bottom
-        if s_id != status[yy + 1, xx]:
-            set_is_border(s_, yy, xx)
-            return
-    else:
+    if yy == (dim - 1) or s_id != status[yy + 1, xx]:  # bottom
         set_is_border(s_, yy, xx)
         return
-    if xx > 0:  # left
-        if s_id != status[yy, xx - 1]:
-            set_is_border(s_, yy, xx)
-            return
-    else:
+    if xx == 0 or s_id != status[yy, xx - 1]:  # left
         set_is_border(s_, yy, xx)
         return
-    if yy > 0:  # top
-        if s_id != status[yy - 1, xx]:
-            set_is_border(s_, yy, xx)
-            return
-    else:
+    if yy == 0 or s_id != status[yy - 1, xx]:  # top
         set_is_border(s_, yy, xx)
         return
+    b_status[yy, xx] = False
 
 
 def set_is_border(s_, yy: int, xx: int):
@@ -114,9 +98,7 @@ print('Loading time:', datetime.now() - loading_time)
 mean_and_border_time = datetime.now()
 # noinspection PyTypeChecker
 b_status: np.ndarray[Optional[bool]] = np.repeat([np.repeat(None, dim)], dim, 0)
-for seg in segments:  # don't cut it!
-    if len(seg.p) == 0: continue
-
+for seg in segments:
     # calculate mean colour (NOT USING POW/SQRT)
     l_ = len(seg.p)
     seg.m = [round(seg.a / l_), round(seg.b / l_), round(seg.c / l_)]

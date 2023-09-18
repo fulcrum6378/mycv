@@ -98,7 +98,6 @@ while found_sth_to_analyse:
 # dissolve smaller segments
 if min_seg > 1:
     dissolution_time = datetime.now()
-    # removal: list[int] = []
     for seg in range(len(segments) - 1, -1, -1):
         if len(segments[seg].p) < min_seg:
             absorber_index = find_a_segment_to_dissolve_in(segments[seg])
@@ -107,10 +106,7 @@ if min_seg > 1:
             for p in segments[seg].p:
                 absorber.add(p)
                 status[*p] = absorber.id
-            # removal.append(seg)
-            segments[seg].p.clear()
-    # for seg in removal:
-    #    segments.pop(seg)
+            segments.pop(seg)
     print('Dissolution time:', datetime.now() - dissolution_time)
 print('Segmentation time:', datetime.now() - segmentation_time)
 
