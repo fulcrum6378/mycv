@@ -1,17 +1,12 @@
-import pickle
-from datetime import datetime
 from typing import Optional
 
-import cv2
-import matplotlib.pyplot as plot
 import numpy as np
 
 
 class Segment:
-    def __init__(self):
-        global segments
-        self.id = len(segments)
-        self.p: list[tuple[int, int]] = []  # pixels
+    def __init__(self, id_: int, _p: list[tuple[int, int]]):
+        self.id = id_
+        self.p: list[tuple[int, int]] = _p  # pixels
         self.a: int = 0  # total A colour values
         self.b: int = 0  # total B colour values
         self.c: int = 0  # total C colour values
@@ -23,6 +18,8 @@ class Segment:
 
 # recursively checks if neighbours are border pixels. directions range are 0..7.
 def check_neighbours(s_: Segment, yy: int, xx: int, avoid_dir: Optional[int] = None):
+    print(s_.id, ':', str(yy) + 'x' + str(xx), 'from', avoid_dir)
+
     next_ones: list[tuple[int, int, int]] = []
     if avoid_dir != 0 and yy > 0:  # northern
         n = (yy - 1, xx)
@@ -104,64 +101,35 @@ def set_is_border(s_, yy: int, xx: int):
     s_.border.append([(100 / s_.w) * s_.min_x - xx, (100 / s_.h) * s_.min_y - yy])
 
 
-# load the segmentation output data
-loading_time = datetime.now()
-status: np.ndarray = pickle.load(open('segmentation/output/rg3_status.pickle', 'rb'))
-segments: list[Segment] = pickle.load(open('segmentation/output/rg3_segments.pickle', 'rb'))
-dim: int = 1088
-print('Loading time:', datetime.now() - loading_time)
-
-# get a mean value of all colours in all segments, detect their border pixels and also their boundaries
-mean_and_border_time = datetime.now()
+dim: int = 4
+status: np.ndarray = np.array([
+    [0, 0, 0, 0, ],
+    [0, 0, 0, 0, ],
+    [0, 0, 0, 0, ],
+    [0, 9, 9, 0, ],
+])
+segments: list[Segment] = [
+    Segment(0, [
+        (0, 0), (0, 1), (0, 2), (0, 3),
+        (1, 0), (1, 1), (1, 2), (1, 3),
+        (2, 0), (2, 1), (2, 2), (2, 3),
+        (3, 0), (3, 3),
+    ]),
+    Segment(9, [
+        (3, 1), (3, 2),
+    ]),
+]
 # noinspection PyTypeChecker
 b_status: np.ndarray[Optional[bool]] = np.repeat([np.repeat(None, dim)], dim, 0)
-for seg in segments:
-    # calculate mean colour (NOT USING POW/SQRT)
-    l_ = len(seg.p)
-    seg.m = [round(seg.a / l_), round(seg.b / l_), round(seg.c / l_)]
-    del seg.a, seg.b, seg.c
+seg = segments[0]
 
-    # detect boundaries (min_y, min_x, max_y, max_x)
-    for _p in seg.p:
-        if seg.min_y == -1:  # messed because Python has no do... while!
-            seg.min_y = seg.max_y = _p[0]
-            seg.min_x = seg.max_x = _p[1]
-            continue
-        if _p[0] < seg.min_y: seg.min_y = _p[0]
-        if _p[1] < seg.min_x: seg.min_x = _p[1]
-        if _p[0] > seg.max_y: seg.max_y = _p[0]
-        if _p[1] > seg.max_x: seg.max_x = _p[1]
-    seg.w = (seg.max_x + 1) - seg.min_x
-    seg.h = (seg.max_y + 1) - seg.min_y
+# find the first encountering border pixel as a checkpoint
+border_checkpoint: Optional[tuple[int, int]] = None
+for p in seg.p:
+    if b_status[*p] is None: check_if_border(seg, *p)
+    if b_status[*p]:
+        border_checkpoint = p
+        break
 
-    # find the first encountering border pixel as a checkpoint
-    border_checkpoint: Optional[tuple[int, int]] = None
-    for p in seg.p:
-        if b_status[*p] is None: check_if_border(seg, *p)
-        if b_status[*p]:
-            border_checkpoint = p
-            break
-
-    # now start collecting all border pixels using that checkpoint
-    check_neighbours(seg, *border_checkpoint)
-print('Mean and border time:', datetime.now() - mean_and_border_time)
-
-# draw the segment into the cadre and display it
-display_preparation_time = datetime.now()
-seg = segments[2]
-print(len(seg.border))
-arr: list[list[list[int]]] = []
-for y in range(seg.min_y, seg.max_y + 1):
-    xes: list[list[int]] = []
-    for x in range(seg.min_x, seg.max_x + 1):
-        if status[y, x] == seg.id:
-            if not b_status[y, x]:
-                xes.append(seg.m)
-            else:
-                xes.append([0, 255, 200])
-        else:
-            xes.append([255, 127, 127])
-    arr.append(xes)
-plot.imshow(cv2.cvtColor(np.array(arr, dtype=np.uint8), cv2.COLOR_YUV2RGB))
-print('Display preparation time:', datetime.now() - display_preparation_time)
-plot.show()
+# now start collecting all border pixels using that checkpoint
+check_neighbours(seg, *border_checkpoint)
