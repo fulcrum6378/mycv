@@ -13,13 +13,16 @@ class Shape:
         self.r: int = r_  # ratio (width / height)
 
 
-output_dir, ext = 'tracing/output/', '.json'
+output_dir, ext = os.path.join('tracing', 'output'), '.json'
 shapes: np.ndarray[Shape] = np.array([], dtype=Shape, ndmin=1)
 for o in os.listdir(output_dir):
     if not o.endswith(ext): continue
     seg = json.loads(open(os.path.join(output_dir, o), 'r').read())
-    y, u, v = seg['mean']
     w, h = seg['dimensions']
     # noinspection PyTypeChecker
     shapes = np.append(shapes, Shape(o[:-len(ext)], *seg['mean'], w / h))
-print(shapes, shapes.shape)
+print(sorted(shapes, key=lambda s: s.y))
+print("Shape of `shapes`:", shapes.shape)
+for s1 in shapes:
+    # for s2 in s1:
+    print(s1.__dict__)
