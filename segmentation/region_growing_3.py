@@ -9,10 +9,11 @@ import numpy as np
 
 # read the image
 loading_time = datetime.now()
+# red pillow: 1689005849386887, shoes: 1689005891979733
 arr: np.ndarray = cv2.cvtColor(cv2.imread('vis/2/1689005849386887.bmp'), cv2.COLOR_BGR2YUV)
 arr.setflags(write=True)
 dim: int = 1088
-min_seg = 1000  # this must change by the degree of stress!
+min_seg = 70
 sys.setrecursionlimit(dim * dim)
 print('Loading time:', datetime.now() - loading_time)
 
@@ -66,15 +67,13 @@ while found_sth_to_analyse:
                 break
         if found_sth_to_analyse: break
     if not found_sth_to_analyse: break
-    # print(thisY, thisX)
-
     segment = list()
     neighbours_of(thisY, thisX, segment, len(segments))
     segments.append(segment)
 
 # dissolve smaller segments
-# open('vis/before_dissolution.json', 'w').write(json.dumps(segments, indent=2))  # import json
-for seg in range(len(segments)):
+dissolution_time = datetime.now()
+for seg in range(len(segments) - 1, -1, -1):
     if len(segments[seg]) == 0: continue
     if len(segments[seg]) < min_seg:
         segments[seg].sort(key=lambda s: s[1])
@@ -85,55 +84,27 @@ for seg in range(len(segments)):
             continue
         parent: list[tuple[int, int]] = segments[status[parent_index[0], parent_index[1]]]
         parent.extend(segments[seg])
-        segments[seg].clear()
-# open('vis/after_dissolution.json', 'w').write(json.dumps(segments, indent=2))
-
-# temporary double dissolution FIX-ME
-for seg in range(len(segments)):
-    if len(segments[seg]) == 0: continue
-    if len(segments[seg]) < min_seg:
-        segments[seg].sort(key=lambda s: s[1])
-        segments[seg].sort(key=lambda s: s[0])
-        parent_index = find_a_segment_to_dissolve_in(segments[seg])
-        if parent_index is None:
-            print('parent_index is None:', segments[seg])
-            continue
-        parent: list[tuple[int, int]] = segments[status[parent_index[0], parent_index[1]]]
-        parent.extend(segments[seg])
-        segments[seg].clear()
-
+        segments.pop(seg)
+print('Dissolution time:', datetime.now() - dissolution_time)
 print('Segmentation time:', datetime.now() - segmentation_time)
 
-# TODO where are the other segments?!?
-
-# show the persisting small segments
-for seg in range(len(segments)):
+# evaluate the segments
+segments.sort(key=lambda s: len(s), reverse=True)
+arr = cv2.cvtColor(cv2.cvtColor(arr, cv2.COLOR_YUV2RGB), cv2.COLOR_RGB2HSV)
+for big_sgm in range(25):  # colour the biggest ones
+    for px in segments[big_sgm]:
+        arr[px[0], px[1]] = 5 + (10 * (big_sgm + 1)), 255, 255
+for seg in range(len(segments)):  # show the persisting small segments
     if len(segments[seg]) < min_seg:
         for px in segments[seg]:
             arr[px[0], px[1]] = 0, 255, 255
         continue
-    # print(seg, ':', len(segments[seg]))
-
-# evaluate the segments and colour the biggest ones
-segments.sort(key=lambda s: len(s), reverse=True)
-arr = cv2.cvtColor(cv2.cvtColor(arr, cv2.COLOR_YUV2RGB), cv2.COLOR_RGB2HSV)
-for big_sgm in range(25):
-    for px in segments[big_sgm]:
-        arr[px[0], px[1]] = 5 + (10 * (big_sgm + 1)), 255, 255
 arr = cv2.cvtColor(cv2.cvtColor(arr, cv2.COLOR_HSV2RGB), cv2.COLOR_RGB2YUV)
-
-# print a summary
-total_segments = 0
-for seg in segments:
-    if len(seg) > 0:
-        total_segments += 1
-print('Total segments:', total_segments)
+print('Total segments:', len(segments))
 
 # show the image
 plot.imshow(cv2.cvtColor(arr, cv2.COLOR_YUV2RGB))
 plot.show()
-
-quit()
 
 # save the output
 dumping_time = datetime.now()
