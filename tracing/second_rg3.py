@@ -55,36 +55,40 @@ def check_neighbours(s_: Segment, yy: int, xx: int, avoid_dir: Optional[int] = N
 # checks if this is a border pixel and not detected before
 def is_next_b(s_: Segment, yy: int, xx: int) -> bool:
     if b_status[yy, xx] is None:
-        check_if_border(s_, yy, xx)
-        if b_status[yy, xx] and status[yy, xx] == s_.id:
+        self_s = status[yy, xx]
+        check_if_border(self_s, yy, xx)
+        if b_status[yy, xx] and self_s == s_.id:
             return True
     return False
 
 
-def check_if_border(s_: Segment, yy: int, xx: int) -> None:
+# checks if this pixel is in border
+def check_if_border(s_, yy: int, xx: int) -> None:
+    s_id = s_.id if isinstance(s_, Segment) else s_
+
     if xx < (dim - 1):  # right
-        if s_.id != status[yy, xx + 1]:
+        if s_id != status[yy, xx + 1]:
             set_is_border(s_, yy, xx)
             return
     else:
         set_is_border(s_, yy, xx)
         return
     if yy < (dim - 1):  # bottom
-        if s_.id != status[yy + 1, xx]:
+        if s_id != status[yy + 1, xx]:
             set_is_border(s_, yy, xx)
             return
     else:
         set_is_border(s_, yy, xx)
         return
     if xx > 0:  # left
-        if s_.id != status[yy, xx - 1]:
+        if s_id != status[yy, xx - 1]:
             set_is_border(s_, yy, xx)
             return
     else:
         set_is_border(s_, yy, xx)
         return
     if yy > 0:  # top
-        if s_.id != status[yy - 1, xx]:
+        if s_id != status[yy - 1, xx]:
             set_is_border(s_, yy, xx)
             return
     else:
@@ -92,16 +96,18 @@ def check_if_border(s_: Segment, yy: int, xx: int) -> None:
         return
 
 
-def set_is_border(_s: Segment, yy: int, xx: int):
+def set_is_border(s_, yy: int, xx: int):
+    if not isinstance(s_, Segment):
+        s_ = next(s for s in segments if s.id == s_)
     b_status[yy, xx] = True
-    _s.border.append([(100 / _s.w) * _s.min_x - xx, (100 / _s.h) * _s.min_y - yy])
+    s_.border.append([(100 / s_.w) * s_.min_x - xx, (100 / s_.h) * s_.min_y - yy])
 
 
-# load the segmentation outputs
+# load the segmentation output data
 loading_time = datetime.now()
 status: np.ndarray = pickle.load(open('segmentation/output/rg3_status.pickle', 'rb'))
 segments: list[Segment] = pickle.load(open('segmentation/output/rg3_segments.pickle', 'rb'))
-dim = 1088
+dim: int = 1088
 print('Loading time:', datetime.now() - loading_time)
 
 # get a mean value of all colours in all segments, detect their border pixels and also their boundaries
@@ -149,7 +155,7 @@ for y in range(seg.min_y, seg.max_y + 1):
     for x in range(seg.min_x, seg.max_x + 1):
         if status[y, x] == seg.id:
             if not b_status[y, x]:
-                xes.append(seg.m)  # p.c
+                xes.append(seg.m)
             else:
                 xes.append([0, 255, 200])
         else:

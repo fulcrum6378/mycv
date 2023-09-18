@@ -1,6 +1,5 @@
 import json
 import pickle
-import sys
 from datetime import datetime
 from math import sqrt
 from typing import Optional
@@ -150,8 +149,7 @@ class Segment:
 loading_time = datetime.now()
 pixels: list[Pixel] = pickle.load(open('segmentation/output/rg2_pixels.pickle', 'rb'))
 segments: dict[int, Segment] = pickle.load(open('segmentation/output/rg2_segments.pickle', 'rb'))
-dim = 1088
-sys.setrecursionlimit(dim * dim)
+dim: int = 1088
 print('Loading time:', datetime.now() - loading_time)
 
 # get a mean value of all colours in all segments, detect their border pixels and also their boundaries

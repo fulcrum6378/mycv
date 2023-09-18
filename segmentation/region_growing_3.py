@@ -6,13 +6,11 @@ from typing import Optional
 import cv2
 import matplotlib.pyplot as plot
 import numpy as np
-from numpy.compat import long
 
 # read the image
 loading_time = datetime.now()
 # red pillow: 1689005849386887, shoes: 1689005891979733
 arr: np.ndarray = cv2.cvtColor(cv2.imread('vis/2/1689005849386887.bmp'), cv2.COLOR_BGR2YUV)
-arr.setflags(write=True)
 dim: int = 1088
 min_seg = 50
 sys.setrecursionlimit(dim * dim)
@@ -24,9 +22,9 @@ class Segment:
         global segments
         self.id = len(segments)
         self.p: list[tuple[int, int]] = []  # pixels
-        self.a: long = 0  # total A colour values
-        self.b: long = 0  # total B colour values
-        self.c: long = 0  # total C colour values
+        self.a: int = 0  # total A colour values
+        self.b: int = 0  # total B colour values
+        self.c: int = 0  # total C colour values
         self.m: list[int] = []  # mean colour
         self.border: list[list[float]] = []
         self.min_y, self.min_x, self.max_y, self.max_x = -1, -1, -1, -1  # boundaries
@@ -105,13 +103,15 @@ for seg in range(len(segments) - 1, -1, -1):
         if parent_index is None:
             print('parent_index is None:', segments[seg])
             continue
-        parent: Segment = segments[status[parent_index[0], parent_index[1]]]
+        parent: Segment = segments[status[*parent_index]]
         for p in segments[seg].p:
             parent.add(p)
             status[*p] = parent.id
         segments.pop(seg)
 print('Dissolution time:', datetime.now() - dissolution_time)
 print('Segmentation time:', datetime.now() - segmentation_time)
+
+# TODO better collect colour values here
 
 # evaluate the segments
 segments.sort(key=lambda s: len(s.p), reverse=True)
