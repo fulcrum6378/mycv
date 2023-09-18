@@ -9,8 +9,7 @@ import numpy as np
 
 class Segment:
     def __init__(self):
-        global segments
-        self.id = len(segments)
+        self.id: int = 0
         self.p: list[tuple[int, int]] = []  # pixels
         self.a: int = 0  # total A colour values
         self.b: int = 0  # total B colour values
@@ -115,7 +114,9 @@ print('Loading time:', datetime.now() - loading_time)
 mean_and_border_time = datetime.now()
 # noinspection PyTypeChecker
 b_status: np.ndarray[Optional[bool]] = np.repeat([np.repeat(None, dim)], dim, 0)
-for seg in segments:
+for seg in segments:  # don't cut it!
+    if len(seg.p) == 0: continue
+
     # calculate mean colour (NOT USING POW/SQRT)
     l_ = len(seg.p)
     seg.m = [round(seg.a / l_), round(seg.b / l_), round(seg.c / l_)]

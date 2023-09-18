@@ -12,14 +12,14 @@ loading_time = datetime.now()
 # red pillow: 1689005849386887, shoes: 1689005891979733
 arr: np.ndarray = cv2.cvtColor(cv2.imread('vis/2/1689005849386887.bmp'), cv2.COLOR_BGR2YUV)
 dim: int = 1088
-min_seg = 50
+min_seg = 40
 sys.setrecursionlimit(dim * dim)
 print('Loading time:', datetime.now() - loading_time)
 
 
 class Segment:
     def __init__(self):
-        global segments
+        # global segments
         self.id = len(segments)
         self.p: list[tuple[int, int]] = []  # pixels
         self.a: int = 0  # total A colour values
@@ -47,21 +47,23 @@ def compare_colours(a: np.ndarray, b: np.ndarray) -> bool:
         and abs(int(a[2]) - int(b[2])) <= 4
 
 
-def neighbours_of(yy: int, xx: int, seg_: Segment, sgm_idx: int):
+def neighbours_of(yy: int, xx: int, seg_: Segment):
     seg_.add((yy, xx))
-    status[yy, xx] = sgm_idx
+    status[yy, xx] = seg_.id
     if xx > 0 and status[yy, xx - 1] == -1 and compare_colours(arr[yy, xx], arr[yy, xx - 1]):  # left
-        neighbours_of(yy, xx - 1, seg_, sgm_idx)
+        neighbours_of(yy, xx - 1, seg_)
     if yy > 0 and status[yy - 1, xx] == -1 and compare_colours(arr[yy, xx], arr[yy - 1, xx]):  # top
-        neighbours_of(yy - 1, xx, seg_, sgm_idx)
+        neighbours_of(yy - 1, xx, seg_)
     if xx < (dim - 1) and status[yy, xx + 1] == -1 and compare_colours(arr[yy, xx], arr[yy, xx + 1]):  # right
-        neighbours_of(yy, xx + 1, seg_, sgm_idx)
+        neighbours_of(yy, xx + 1, seg_)
     if yy < (dim - 1) and status[yy + 1, xx] == -1 and compare_colours(arr[yy, xx], arr[yy + 1, xx]):  # bottom
-        neighbours_of(yy + 1, xx, seg_, sgm_idx)
+        neighbours_of(yy + 1, xx, seg_)
 
 
 # It must become more developed. You can also calculate segments' mean values!
 def find_a_segment_to_dissolve_in(seg_: Segment) -> Optional[tuple[int, int]]:
+    # seg_.p.sort(key=lambda s: s[1])  # no visible difference
+    # seg_.p.sort(key=lambda s: s[0])
     if seg_.p[0][0] > 0:
         return seg_.p[0][0] - 1, seg_.p[0][1]
     if seg_.p[0][1] > 0:
@@ -90,25 +92,26 @@ while found_sth_to_analyse:
         if found_sth_to_analyse: break
     if not found_sth_to_analyse: break
     segment = Segment()
-    neighbours_of(thisY, thisX, segment, len(segments))
+    neighbours_of(thisY, thisX, segment)
     segments.append(segment)
 
 # dissolve smaller segments
-dissolution_time = datetime.now()
-for seg in range(len(segments) - 1, -1, -1):
-    if len(segments[seg].p) < min_seg:
-        segments[seg].p.sort(key=lambda s: s[1])
-        segments[seg].p.sort(key=lambda s: s[0])
-        parent_index = find_a_segment_to_dissolve_in(segments[seg])
-        if parent_index is None:
-            print('parent_index is None:', segments[seg])
-            continue
-        parent: Segment = segments[status[*parent_index]]
-        for p in segments[seg].p:
-            parent.add(p)
-            status[*p] = parent.id
-        segments.pop(seg)
-print('Dissolution time:', datetime.now() - dissolution_time)
+if min_seg > 1:
+    dissolution_time = datetime.now()
+    # removal: list[int] = []
+    for seg in range(len(segments) - 1, -1, -1):
+        if len(segments[seg].p) < min_seg:
+            absorber_index = find_a_segment_to_dissolve_in(segments[seg])
+            if absorber_index is None: continue   # rarely
+            absorber: Segment = segments[status[*absorber_index]]
+            for p in segments[seg].p:
+                absorber.add(p)
+                status[*p] = absorber.id
+            # removal.append(seg)
+            segments[seg].p.clear()
+    # for seg in removal:
+    #    segments.pop(seg)
+    print('Dissolution time:', datetime.now() - dissolution_time)
 print('Segmentation time:', datetime.now() - segmentation_time)
 
 # TODO better collect colour values here
