@@ -13,8 +13,7 @@ class Segment:
     def __init__(self):
         self.id: int = 0
         self.p: list[tuple[int, int]] = []  # pixels
-        self.a, self.b, self.c = 0, 0, 0  # sum of colour values
-        self.m: list[int] = []  # mean colour
+        self.m: list[int] = []  # average colour
 
 
 # recursively checks if neighbours are border pixels. directions range are 0..7.
@@ -45,7 +44,7 @@ def check_neighbours(s_: Segment, yy: int, xx: int, avoid_dir: int = -1):
         if is_next_b(s_, *n): check_neighbours(s_, n[0], n[1], 7)
 
 
-# checks if this is a border pixel and not detected before
+# checks if this is a border pixel and not detected before FIXME but it's not urgent
 # noinspection PyTypeChecker
 def is_next_b(org_s: Segment, yy: int, xx: int) -> bool:
     # WORKS FINE ONLY WITHOUT DISSOLUTION!
@@ -55,6 +54,7 @@ def is_next_b(org_s: Segment, yy: int, xx: int) -> bool:
     #    if b_status[yy, xx] and s_ == org_s.id:
     #        return True
     # return False
+    # DOESN'T WORK FINE IN THE TEST!!!
     s_ = status[yy, xx]
     if s_ == org_s.id: return False  # AS MUCH AS I THINK, IT SHOULD BE `s_ != org_s.id`, BUT THE OPPOSITE WORKS!
     if b_status[yy, xx] is None:
@@ -65,10 +65,10 @@ def is_next_b(org_s: Segment, yy: int, xx: int) -> bool:
 
 # checks if this pixel is in border
 def check_if_border(s_id: int, yy: int, xx: int) -> None:
-    if (xx == (dim - 1) or s_id != status[yy, xx + 1] or  # bottom
-            yy == (dim - 1) or s_id != status[yy + 1, xx] or  # left
-            xx == 0 or s_id != status[yy, xx - 1] or  # top
-            yy == 0 or s_id != status[yy - 1, xx]):  # right
+    if (xx == (dim - 1) or s_id != status[yy, xx + 1] or  # right
+            yy == (dim - 1) or s_id != status[yy + 1, xx] or  # bottom
+            xx == 0 or s_id != status[yy, xx - 1] or  # left
+            yy == 0 or s_id != status[yy - 1, xx]):  # top
         set_is_border(s_id, yy, xx)
         return
     b_status[yy, xx] = False
@@ -88,22 +88,17 @@ loading_time = datetime.now()
 status: np.ndarray = pickle.load(open('segmentation/output/rg3_status.pickle', 'rb'))
 segments: list[Segment] = pickle.load(open('segmentation/output/rg3_segments.pickle', 'rb'))
 dim: int = 1088
-sys.setrecursionlimit(dim * dim * dim)
+sys.setrecursionlimit(dim * dim)
 print('Loading time:', datetime.now() - loading_time)
 
 # get a mean value of all colours in all segments, detect their border pixels and also their boundaries
-mean_and_border_time = datetime.now()
+border_time = datetime.now()
 # noinspection PyTypeChecker
 b_status: np.ndarray[Optional[bool]] = np.repeat([np.repeat(None, dim)], dim, 0)
 s_border: dict[int, list[tuple[float, float]]] = {}
 s_boundaries: dict[int, list[int, int, int, int]] = {}  # min_y, min_x, max_y, max_x
-s_dimensions: dict[int, tuple[float, float]] = {}  # width, height
+s_dimensions: dict[int, tuple[int, int]] = {}  # width, height
 for seg in segments:
-    # calculate mean colour (NOT USING POW/SQRT)
-    l_ = len(seg.p)
-    seg.m = [round(seg.a / l_), round(seg.b / l_), round(seg.c / l_)]
-    del seg.a, seg.b, seg.c
-
     # detect boundaries (min_y, min_x, max_y, max_x)
     for _p in seg.p:
         if seg.id not in s_boundaries:  # messed because Python has no do... while!
@@ -129,7 +124,7 @@ for seg in segments:
 
     # now start collecting all border pixels using that checkpoint
     check_neighbours(seg, *border_checkpoint)
-print('+ Mean and border time:', datetime.now() - mean_and_border_time)
+print('+ Border time:', datetime.now() - border_time)
 
 # store 5 of largest segments
 for s in range(5):

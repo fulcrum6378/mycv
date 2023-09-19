@@ -7,79 +7,74 @@ class Segment:
     def __init__(self, id_: int, _p: list[tuple[int, int]]):
         self.id = id_
         self.p: list[tuple[int, int]] = _p  # pixels
-        self.a, self.b, self.c = 0, 0, 0  # sum of colour values
-        self.m: list[int] = []  # mean colour
-        self.min_y, self.min_x, self.max_y, self.max_x = -1, -1, -1, -1  # boundaries
-        self.w, self.h = -1, -1  # dimensions
+        self.m: list[int] = []  # average colour
 
 
 # recursively checks if neighbours are border pixels. directions range are 0..7.
 def check_neighbours(s_: Segment, yy: int, xx: int, avoid_dir: Optional[int] = None):
     print(s_.id, ':', str(yy) + 'x' + str(xx), 'from', avoid_dir)
 
-    next_ones: list[tuple[int, int, int]] = []
     if avoid_dir != 0 and yy > 0:  # northern
         n = (yy - 1, xx)
-        if is_next_b(s_, *n): next_ones.append(n + (0,))
+        if is_next_b(s_, *n): check_neighbours(s_, n[0], n[1], 0)
     if avoid_dir != 1 and yy > 0 and xx < (dim - 1):  # north-eastern
         n = (yy - 1, xx + 1)
-        if is_next_b(s_, *n): next_ones.append(n + (1,))
+        if is_next_b(s_, *n): check_neighbours(s_, n[0], n[1], 1)
     if avoid_dir != 2 and xx < (dim - 1):  # eastern
         n = (yy, xx + 1)
-        if is_next_b(s_, *n): next_ones.append(n + (2,))
+        if is_next_b(s_, *n): check_neighbours(s_, n[0], n[1], 2)
     if avoid_dir != 3 and yy < (dim - 1) and xx < (dim - 1):  # south-eastern
         n = (yy + 1, xx + 1)
-        if is_next_b(s_, *n): next_ones.append(n + (3,))
+        if is_next_b(s_, *n): check_neighbours(s_, n[0], n[1], 3)
     if avoid_dir != 4 and yy < (dim - 1):  # southern
         n = (yy + 1, xx)
-        if is_next_b(s_, *n): next_ones.append(n + (4,))
+        if is_next_b(s_, *n): check_neighbours(s_, n[0], n[1], 4)
     if avoid_dir != 5 and yy < (dim - 1) and xx > 0:  # south-western
         n = (yy + 1, xx - 1)
-        if is_next_b(s_, *n): next_ones.append(n + (5,))
+        if is_next_b(s_, *n): check_neighbours(s_, n[0], n[1], 5)
     if avoid_dir != 6 and xx > 0:  # western
         n = (yy, xx - 1)
-        if is_next_b(s_, *n): next_ones.append(n + (6,))
+        if is_next_b(s_, *n): check_neighbours(s_, n[0], n[1], 6)
     if avoid_dir != 7 and yy > 0 and xx > 0:  # north-western
         n = (yy - 1, xx - 1)
-        if is_next_b(s_, *n): next_ones.append(n + (7,))
-
-    for y_, x_, d in next_ones: check_neighbours(s_, y_, x_, d)
+        if is_next_b(s_, *n): check_neighbours(s_, n[0], n[1], 7)
 
 
 # checks if this is a border pixel and not detected before
-def is_next_b(s_: Segment, yy: int, xx: int) -> bool:
-    self_s = status[yy, xx]
-    if self_s != s_.id: return False
+# noinspection PyTypeChecker
+def is_next_b(org_s: Segment, yy: int, xx: int) -> bool:
     if b_status[yy, xx] is None:
-        # noinspection PyTypeChecker
-        check_if_border(self_s, yy, xx)
-        if b_status[yy, xx]: return True
+        s_ = status[yy, xx]
+        check_if_border(s_, yy, xx)
+        if b_status[yy, xx] and s_ == org_s.id:
+            return True
     return False
+    # s_ = status[yy, xx]
+    # if s_ == org_s.id: return False
+    # if b_status[yy, xx] is None:
+    #    check_if_border(s_, yy, xx)
+    #    return b_status[yy, xx]
+    # return False
 
 
 # checks if this pixel is in border
-def check_if_border(s_, yy: int, xx: int) -> None:
-    s_id = s_.id if isinstance(s_, Segment) else s_
-    if xx == (dim - 1) or s_id != status[yy, xx + 1]:  # right
-        set_is_border(s_, yy, xx)
-        return
-    if yy == (dim - 1) or s_id != status[yy + 1, xx]:  # bottom
-        set_is_border(s_, yy, xx)
-        return
-    if xx == 0 or s_id != status[yy, xx - 1]:  # left
-        set_is_border(s_, yy, xx)
-        return
-    if yy == 0 or s_id != status[yy - 1, xx]:  # top
-        set_is_border(s_, yy, xx)
+def check_if_border(s_id: int, yy: int, xx: int) -> None:
+    if (xx == (dim - 1) or s_id != status[yy, xx + 1] or  # right
+            yy == (dim - 1) or s_id != status[yy + 1, xx] or  # bottom
+            xx == 0 or s_id != status[yy, xx - 1] or  # left
+            yy == 0 or s_id != status[yy - 1, xx]):  # top
+        set_is_border(s_id, yy, xx)
         return
     b_status[yy, xx] = False
 
 
-def set_is_border(s_, yy: int, xx: int):
-    if not isinstance(s_, Segment):
-        s_ = next(s for s in segments if s.id == s_)
+def set_is_border(s_id: int, yy: int, xx: int):
     b_status[yy, xx] = True
-    s_.border.append([(100 / s_.w) * s_.min_x - xx, (100 / s_.h) * s_.min_y - yy])
+    if s_id not in s_border: s_border[s_id] = []
+    s_border[s_id].append((
+        (100.0 / s_dimensions[seg.id][0]) * (s_boundaries[s_id][1] - xx),  # fractional X
+        (100.0 / s_dimensions[seg.id][1]) * (s_boundaries[s_id][0] - yy),  # fractional Y
+    ))
 
 
 dim: int = 4
@@ -102,12 +97,20 @@ segments: list[Segment] = [
 ]
 # noinspection PyTypeChecker
 b_status: np.ndarray[Optional[bool]] = np.repeat([np.repeat(None, dim)], dim, 0)
+s_border: dict[int, list[tuple[float, float]]] = {}
+s_boundaries: dict[int, list[int, int, int, int]] = {  # min_y, min_x, max_y, max_x
+    0: [0, 0, 3, 3, ],
+    9: [2, 1, 3, 2, ],
+}
+s_dimensions: dict[int, tuple[int, int]] = {  # width, height
+    0: (4, 4), 9: (2, 1),
+}
 seg = segments[0]
 
 # find the first encountering border pixel as a checkpoint
 border_checkpoint: Optional[tuple[int, int]] = None
 for p in seg.p:
-    if b_status[*p] is None: check_if_border(seg, *p)
+    if b_status[*p] is None: check_if_border(seg.id, *p)
     if b_status[*p]:
         border_checkpoint = p
         break
