@@ -15,6 +15,8 @@ which outputs raw RGB streams without BMP metadata (*vis.rgb*).
 
 => Output: BMP image frames
 
+***
+
 ### 2. /segmentation/: [**Image Segmentation**](https://en.wikipedia.org/wiki/Image_segmentation)
 
 - **[Region-growing methods](https://en.wikipedia.org/wiki/Region_growing) (succeeded)**
@@ -28,6 +30,8 @@ which outputs raw RGB streams without BMP metadata (*vis.rgb*).
     - [clustering_1d.py](segmentation/clustering_1d.py) : left incomplete; not logically suitable!
 
 => Output: segmentation data extracted using [pickle](https://docs.python.org/3/library/pickle.html) library
+
+***
 
 ### 3. /tracing/: [**Image Tracing**](https://en.wikipedia.org/wiki/Image_tracing)
 
@@ -46,21 +50,29 @@ Methods used:
 
 => Output: vector data in JSON files
 
+***
+
 ### 4. /storage/ (ongoing...)
 
 We can put comparable features of the **Shape**s in a [**multidimensional database**](
 https://en.wikipedia.org/wiki/Multidimensional_analysis), namely a [datacube](https://en.wikipedia.org/wiki/Data_cube).
 
-### 5. /comparison/ (not yet implemented)
+***
+
+### 5. /comparison/ (to be implemented)
 
 It must search a *Shape* in our multidimensional database.
 
-### 6. /grouping/ (not yet implemented)
+***
+
+### 6. /grouping/ (to be implemented)
 
 Shapes related to an object will be stored in another kind of database as a **Visual Object**.
 Visual objects along with *auditory objects* and *touch patterns* will be related to an ultimate
 **Object** which the brain addresses as an entity.
 
-### + /practices/
+***
+
+#### + /practices/
 
 Testing miscellaneous codes...
