@@ -7,11 +7,8 @@ class Segment:
     def __init__(self, id_: int, _p: list[tuple[int, int]]):
         self.id = id_
         self.p: list[tuple[int, int]] = _p  # pixels
-        self.a: int = 0  # total A colour values
-        self.b: int = 0  # total B colour values
-        self.c: int = 0  # total C colour values
+        self.a, self.b, self.c = 0, 0, 0  # sum of colour values
         self.m: list[int] = []  # mean colour
-        self.border: list[list[float]] = []
         self.min_y, self.min_x, self.max_y, self.max_x = -1, -1, -1, -1  # boundaries
         self.w, self.h = -1, -1  # dimensions
 
@@ -51,12 +48,12 @@ def check_neighbours(s_: Segment, yy: int, xx: int, avoid_dir: Optional[int] = N
 
 # checks if this is a border pixel and not detected before
 def is_next_b(s_: Segment, yy: int, xx: int) -> bool:
+    self_s = status[yy, xx]
+    if self_s != s_.id: return False
     if b_status[yy, xx] is None:
-        self_s = status[yy, xx]
         # noinspection PyTypeChecker
         check_if_border(self_s, yy, xx)
-        if b_status[yy, xx] and self_s == s_.id:
-            return True
+        if b_status[yy, xx]: return True
     return False
 
 

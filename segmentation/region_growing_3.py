@@ -12,33 +12,17 @@ loading_time = datetime.now()
 # red pillow: 1689005849386887, shoes: 1689005891979733
 arr: np.ndarray = cv2.cvtColor(cv2.imread('vis/2/1689005849386887.bmp'), cv2.COLOR_BGR2YUV)
 dim: int = 1088
-min_seg = 40
+min_seg = 30
 sys.setrecursionlimit(dim * dim)
 print('Loading time:', datetime.now() - loading_time)
 
 
 class Segment:
     def __init__(self):
-        # global segments
-        self.id = len(segments)
+        self.id: int = len(segments)
         self.p: list[tuple[int, int]] = []  # pixels
-        self.a: int = 0  # total A colour values
-        self.b: int = 0  # total B colour values
-        self.c: int = 0  # total C colour values
+        self.a, self.b, self.c = 0, 0, 0  # sum of colour values
         self.m: list[int] = []  # mean colour
-        self.border: list[list[float]] = []
-        self.min_y, self.min_x, self.max_y, self.max_x = -1, -1, -1, -1  # boundaries
-        self.w, self.h = -1, -1  # dimensions
-
-    def add(self, p_: tuple[int, int]):
-        self.p.append(p_)
-        self.add_colour(arr[*p_])
-
-    # it is actually a temporary part of tracing, but is done here for efficiency.
-    def add_colour(self, c: list[int]):
-        self.a += c[0]
-        self.b += c[1]
-        self.c += c[2]
 
 
 def compare_colours(a: np.ndarray, b: np.ndarray) -> bool:
@@ -48,7 +32,7 @@ def compare_colours(a: np.ndarray, b: np.ndarray) -> bool:
 
 
 def neighbours_of(yy: int, xx: int, seg_: Segment):
-    seg_.add((yy, xx))
+    seg_.p.append((yy, xx))
     status[yy, xx] = seg_.id
     if xx > 0 and status[yy, xx - 1] == -1 and compare_colours(arr[yy, xx], arr[yy, xx - 1]):  # left
         neighbours_of(yy, xx - 1, seg_)
@@ -101,16 +85,23 @@ if min_seg > 1:
     for seg in range(len(segments) - 1, -1, -1):
         if len(segments[seg].p) < min_seg:
             absorber_index = find_a_segment_to_dissolve_in(segments[seg])
-            if absorber_index is None: continue   # rarely
+            if absorber_index is None: continue  # rarely
             absorber: Segment = segments[status[*absorber_index]]
             for p in segments[seg].p:
-                absorber.add(p)
+                absorber.p.append(p)
                 status[*p] = absorber.id
             segments.pop(seg)
     print('Dissolution time:', datetime.now() - dissolution_time)
-print('Segmentation time:', datetime.now() - segmentation_time)
+print('+ Segmentation time:', datetime.now() - segmentation_time)
 
-# TODO better collect colour values here
+# it is actually a temporary part of tracing, but is done here for efficiency.
+counting_colours_time = datetime.now()
+for seg in segments:
+    for p in seg.p:
+        seg.a += arr[*p][0]
+        seg.b += arr[*p][1]
+        seg.c += arr[*p][2]
+print('+ Time for counting colour values:', datetime.now() - counting_colours_time)
 
 # evaluate the segments
 segments.sort(key=lambda s: len(s.p), reverse=True)
