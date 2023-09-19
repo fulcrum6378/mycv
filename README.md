@@ -17,7 +17,7 @@ which outputs raw RGB streams without BMP metadata (*vis.rgb*).
 
 ***
 
-### 2. /segmentation/: [**Image Segmentation**](https://en.wikipedia.org/wiki/Image_segmentation)
+### 2. /segmentation/: [Image Segmentation](https://en.wikipedia.org/wiki/Image_segmentation)
 
 - **[Region-growing methods](https://en.wikipedia.org/wiki/Region_growing) (succeeded)**
     - [region_growing_1.py](segmentation/region_growing_1.py) : this method focuses on a pixel and analysed its
@@ -35,7 +35,7 @@ which outputs raw RGB streams without BMP metadata (*vis.rgb*).
 
 ***
 
-### 3. /tracing/: [**Image Tracing**](https://en.wikipedia.org/wiki/Image_tracing)
+### 3. /tracing/: [Image Tracing](https://en.wikipedia.org/wiki/Image_tracing)
 
 Trying to interpret segments of images in terms of [vector graphics](https://en.wikipedia.org/wiki/Vector_graphics)
 instead of [raster images](https://en.wikipedia.org/wiki/Raster_graphics); but the vectors must be able to be easily
@@ -75,6 +75,8 @@ Visual objects along with *auditory objects* and *touch patterns* will be relate
 
 ***
 
-#### + /practices/
+### License
 
-Testing miscellaneous codes...
+```
+Copyright © Mahdi Parastesh - All Rights Reserved.
+```

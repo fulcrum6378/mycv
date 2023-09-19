@@ -127,7 +127,7 @@ for seg in segments:
 print('+ Border time:', datetime.now() - border_time)
 
 # store 5 of largest segments
-for s in range(5):
+for s in range(15):
     open('tracing/output/' + str(s) + '.json', 'w').write(json.dumps({
         'mean': segments[s].m,
         'path': s_border[segments[s].id],
