@@ -21,13 +21,15 @@ which outputs raw RGB streams without BMP metadata (*vis.rgb*).
 
 - **[Region-growing methods](https://en.wikipedia.org/wiki/Region_growing) (succeeded)**
     - [region_growing_1.py](segmentation/region_growing_1.py) : this method focuses on a pixel and analysed its
-      neighbours, I left it incomplete and moved to the 2nd method, but then I realised this method was better!
-    - [region_growing_2.py](segmentation/region_growing_2.py) : this one focuses on a neighbour then determines
-      if it fits in the same segment. It takes **~22 seconds**.
+      neighbours, I left it incomplete and moved to the 2nd method, but then I realised this method was much better!
+    - [region_growing_2.py](segmentation/region_growing_2.py) : this method focuses on a neighbour then determines
+      if it fits in the same segment. It is more object-oriented than the previous one, and contains more boilerplate
+      code! It takes **~22 seconds**.
     - [region_growing_3.py](segmentation/region_growing_3.py) : an improved and completed version of the 1st method;
       it takes **~7 to ~8 seconds**.
 - [Clustering methods](https://en.wikipedia.org/wiki/Cluster_analysis)
-    - [clustering_1d.py](segmentation/clustering_1d.py) : left incomplete; not logically suitable!
+    - [clustering_1d.py](segmentation/clustering_1d.py) : clustering all pixels in a 1-dimensional way...
+      left incomplete; not logically suitable!
 
 => Output: segmentation data extracted using [pickle](https://docs.python.org/3/library/pickle.html) library
 
