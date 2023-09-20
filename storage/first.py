@@ -3,28 +3,26 @@ import os
 
 import feature_database as fdb
 
-
-class Shape:
-    def __init__(self, id_: str, y_: int, u_: int, v_: int, r_: float):
-        self.id: str = id_
-        self.y: int = y_
-        self.u: int = u_
-        self.v: int = v_
-        self.r: float = r_  # ratio (width / height)
-
+# initialise databases
+db_y, db_u, db_v = fdb.FeatureDB('y'), fdb.FeatureDB('u'), fdb.FeatureDB('v')
+db_ratio = fdb.FractionalFeatureDB('ratio')
 
 # load data
-output_dir, ext = os.path.join('tracing', 'output'), '.json'
-shapes: list[Shape] = []
-for o in os.listdir(output_dir):
-    if not o.endswith(ext): continue
-    seg = json.loads(open(os.path.join(output_dir, o), 'r').read())
+input_dir, ext_json = os.path.join('tracing', 'output'), '.json'
+for o in os.listdir(input_dir):
+    if not o.endswith(ext_json): continue
+    seg = json.loads(open(os.path.join(input_dir, o), 'r').read())
     w, h = seg['dimensions']
-    shapes.append(Shape(o[:-len(ext)], *seg['mean'], w / h))
+    sid = int(o[:-len(ext_json)])  # id
+    seg['path']
 
-shapes.sort(key=lambda s: s.u)
-for s1 in shapes:
-    # for s2 in s1:
-    print(s1.__dict__)
+    if seg['mean'][0] not in db_y.data: db_y.data[seg['mean'][0]] = set()
+    db_y.data[seg['mean'][0]].add(sid)
+    if seg['mean'][1] not in db_u.data: db_u.data[seg['mean'][1]] = set()
+    db_u.data[seg['mean'][1]].add(sid)
+    if seg['mean'][2] not in db_v.data: db_v.data[seg['mean'][2]] = set()
+    db_v.data[seg['mean'][2]].add(sid)
+
+    w / h  # ratio
 
 # TODO WE STORED FEATURES OF SHAPES. NOW HOW TO STORE SHAPES?!?

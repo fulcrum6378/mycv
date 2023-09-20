@@ -50,7 +50,7 @@ Methods used:
 - **Surrounder**: it finds a random border pixel, then navigates through its neighbours until it detects all border
   pixels of a segment.
 
-=> Output: vector data in JSON files
+=> Output: vector data in JSON files (good for debugging, instead of pickle dumps)
 
 ***
 

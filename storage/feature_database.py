@@ -6,7 +6,7 @@ from typing import Optional
 class FeatureDB:
     ext = 'fdb'
 
-    def __init__(self, name: str, key_length: int = 2):
+    def __init__(self, name: str, key_length: int = 1):
         self.path = os.path.join('storage', 'output', name + '.' + self.ext)
         self.index_path = self.path + '-index'
         self.key_length: int = key_length
@@ -60,6 +60,8 @@ class FeatureDB:
     def delete(self):
         os.remove(self.path)
         os.remove(self.index_path)
+
+# FIXME FUUUUUUUUUUCK self.data is empty; BECAUSE IT'S NEVER READ! WE SHOULD WRITE IN A WAY THAT...
 
 
 class FractionalFeatureDB(FeatureDB):
