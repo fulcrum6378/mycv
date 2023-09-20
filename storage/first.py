@@ -1,6 +1,8 @@
 import json
 import os
 
+import feature_database as fdb
+
 
 class Shape:
     def __init__(self, id_: str, y_: int, u_: int, v_: int, r_: float):

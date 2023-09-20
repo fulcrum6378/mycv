@@ -43,7 +43,7 @@ def neighbours_of(yy: int, xx: int, seg_: Segment):
         neighbours_of(yy + 1, xx, seg_)
 
 
-# It must become more developed. You can also calculate segments' mean values!
+# it must become more developed. You can also calculate segments' mean values!
 def find_a_segment_to_dissolve_in(seg_: Segment) -> Optional[tuple[int, int]]:
     # seg_.p.sort(key=lambda s: s[1])  # no visible difference
     # seg_.p.sort(key=lambda s: s[0])

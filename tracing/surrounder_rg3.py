@@ -16,8 +16,9 @@ class Segment:
         self.m: list[int] = []  # average colour
 
 
-# recursively checks if neighbours are border pixels. directions range are 0..7.
 def check_neighbours(s_: Segment, yy: int, xx: int, avoid_dir: int = -1):
+    """ Recursively checks if neighbours are border pixels. directions range are 0..7. """
+
     if avoid_dir != 0 and yy > 0:  # northern
         n = (yy - 1, xx)
         if is_next_b(s_, *n): check_neighbours(s_, n[0], n[1], 0)
@@ -44,9 +45,10 @@ def check_neighbours(s_: Segment, yy: int, xx: int, avoid_dir: int = -1):
         if is_next_b(s_, *n): check_neighbours(s_, n[0], n[1], 7)
 
 
-# checks if this is a border pixel and not detected before FIXME but it's not urgent
 # noinspection PyTypeChecker
 def is_next_b(org_s: Segment, yy: int, xx: int) -> bool:
+    """ Checks if this is a border pixel and not detected before FIXME but it's not urgent """
+
     # WORKS FINE ONLY WITHOUT DISSOLUTION!
     # if b_status[yy, xx] is None:
     #    s_ = status[yy, xx]
@@ -63,8 +65,8 @@ def is_next_b(org_s: Segment, yy: int, xx: int) -> bool:
     return False
 
 
-# checks if this pixel is in border
 def check_if_border(s_id: int, yy: int, xx: int) -> None:
+    """ Checks if this pixel is in border. """
     if (xx == (dim - 1) or s_id != status[yy, xx + 1] or  # right
             yy == (dim - 1) or s_id != status[yy + 1, xx] or  # bottom
             xx == 0 or s_id != status[yy, xx - 1] or  # left
