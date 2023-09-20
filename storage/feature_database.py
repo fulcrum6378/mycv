@@ -100,6 +100,7 @@ class FractionalFeatureDB(FeatureDB):
         self.data[key].sort(key=lambda t: t[1])
 
 
+# write tests here.
 if __name__ == '__main__':
     my_fdb = FeatureDB('test', 2)
     my_fdb.data = {1: {1001, 1002, 1003}, 2: {1004, 1005, 1006}}

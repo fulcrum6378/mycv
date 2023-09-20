@@ -54,16 +54,19 @@ Methods used:
 
 ***
 
-### 4. /storage/ (ongoing...)
+### 4. /storage/
 
-We can put comparable features of the **Shape**s in a [**multidimensional database**](
-https://en.wikipedia.org/wiki/Multidimensional_analysis), namely a [datacube](https://en.wikipedia.org/wiki/Data_cube).
+[**feature_database.py**](storage/feature_database.py) is a special, indexed and super-fast mini-DBMS.
+It contains a FeatureDB for integral quantities (integers) like every 3 parts of a colour,
+and also a FractionalFeatureDB for fractional quantities (float/double) like width/height ratios.
+
+=> Output: a database of all Shapes
 
 ***
 
 ### 5. /comparison/ (to be implemented)
 
-It must search a *Shape* in our multidimensional database.
+It shall take a shape from the tracing output and look for the similar in the database.
 
 ***
 

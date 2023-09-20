@@ -26,3 +26,5 @@ shapes.sort(key=lambda s: s.u)
 for s1 in shapes:
     # for s2 in s1:
     print(s1.__dict__)
+
+# TODO WE STORED FEATURES OF SHAPES. NOW HOW TO STORE SHAPES?!?
