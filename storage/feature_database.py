@@ -40,6 +40,21 @@ class FeatureDB:
             ret.add(struct.unpack('>Q', data[b:b + 8])[0])
         return ret
 
+    def begin_transaction(self):
+        pass
+
+    def insert(self):
+        pass
+
+    def update(self):
+        pass
+
+    def delete(self):
+        pass
+
+    def end_transaction(self):
+        pass
+
     def edit(self, key: int, value: set[int]) -> bool:
         """ Returns True if calling save_index() is necessary. """
         this_offset = None
@@ -55,12 +70,13 @@ class FeatureDB:
                     this_offset = self._index[k][0]
                     dif_items = len(value)
                 else:
+                    # noinspection PyUnboundLocalVariable
                     self._index[k] = (self._index[k][0] + (dif_items * 8), self._index[k][1])
         if this_offset is None:
             this_offset = os.path.getsize(self._path) if os.path.isfile(self._path) else 0
             dif_items = len(value)
         self._index[key] = (this_offset, len(value))
-        with open(self._path, FUCK) as fdb:
+        with open(self._path, 'ab') as fdb:  # sometimes it needs to bs `ab`, sometimes `wb` and sometimes THE BOTH!!!
             fdb.seek(this_offset)
             for sid in value: fdb.write(struct.pack('>Q', sid))
         return dif_items != 0
@@ -97,7 +113,7 @@ class FractionalFeatureDB(FeatureDB):
         return ret
 
     def edit(self, key: int, value: list[tuple[int, float]]):
-        # FIXME
+        # FIX-ME
         self._data[key].sort(key=lambda t: t[1])
         with open(self._path, 'wb') as fdb:
             for k, ids_and_values in self._data.items():

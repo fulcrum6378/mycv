@@ -54,13 +54,7 @@ Methods used:
 
 ***
 
-### 4. /storage/
-
-[**feature_database.py**](storage/feature_database.py) is a special, indexed and super-fast mini-DBMS.
-It contains a FeatureDB for integral quantities (integers) like every 3 parts of a colour,
-and also a FractionalFeatureDB for fractional quantities (float/double) like width/height ratios.
-
-=> Output: a database of all Shapes
+### 4. /storage/ (ongoing...)
 
 ***
 
