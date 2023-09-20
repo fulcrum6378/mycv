@@ -2,10 +2,6 @@ import os
 import struct
 from typing import Optional
 
-with open('storage/output/test2', 'ab') as f:
-    f.seek(10)
-    f.write('THRAWN'.encode('ascii'))
-quit()
 
 class FeatureDB:
     ext = 'fdb'
@@ -46,32 +42,26 @@ class FeatureDB:
 
     def edit(self, key: int, value: set[int]) -> bool:
         """ Returns True if calling save_index() is necessary. """
-        prev = None
-        this_idx = None
         this_offset = None
         for k in self._index:
             if k < key:  # before this
-                prev = key
                 continue
-            elif k == key:  # this (which may not exist!)
-                this_idx = k
+            elif k == key:  # on this (which may not exist!)
                 this_offset = self._index[k][0]
                 dif_items = len(value) - self._index[k][1]
                 if dif_items == 0: break
             else:  # after this
-                if this_idx is None:
-                    this_idx = prev
+                if this_offset is None:
                     this_offset = self._index[k][0]
                     dif_items = len(value)
                 else:
                     self._index[k] = (self._index[k][0] + (dif_items * 8), self._index[k][1])
-        if this_idx is None:
-            this_offset = self._index[len(self._index)][0]
+        if this_offset is None:
+            this_offset = os.path.getsize(self._path) if os.path.isfile(self._path) else 0
             dif_items = len(value)
-        self._index[this_idx] = (this_offset, len(value))
-        with open(self._path, 'wb') as fdb:
+        self._index[key] = (this_offset, len(value))
+        with open(self._path, FUCK) as fdb:
             fdb.seek(this_offset)
-            # TODO APPEND OR WRITE?!?!?
             for sid in value: fdb.write(struct.pack('>Q', sid))
         return dif_items != 0
 
@@ -126,8 +116,8 @@ if __name__ == '__main__':
     my_fdb.save_index()
     print(my_fdb.read(1))
 
-    my_ffdb = FractionalFeatureDB('test', 2)
-    my_ffdb.edit(1, [(1001, 1.1), (1002, 1.2), (1003, 1.3)])
-    my_ffdb.edit(2, [(1005, 1.5), (1004, 1.4), (1006, 1.6)])
-    my_ffdb.save_index()
-    print(my_ffdb.read(2))
+    # my_ffdb = FractionalFeatureDB('test', 2)
+    # my_ffdb.edit(1, [(1001, 1.1), (1002, 1.2), (1003, 1.3)])
+    # my_ffdb.edit(2, [(1005, 1.5), (1004, 1.4), (1006, 1.6)])
+    # my_ffdb.save_index()
+    # print(my_ffdb.read(2))
