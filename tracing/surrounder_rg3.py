@@ -47,7 +47,7 @@ def check_neighbours(s_: Segment, yy: int, xx: int, avoid_dir: int = -1):
 
 # noinspection PyTypeChecker
 def is_next_b(org_s: Segment, yy: int, xx: int) -> bool:
-    """ Checks if this is a border pixel and not detected before FIXME but it's not urgent """
+    """ Checks if this is a border pixel and not detected before. """
 
     # WORKS FINE ONLY WITHOUT DISSOLUTION!
     # if b_status[yy, xx] is None:
@@ -56,7 +56,7 @@ def is_next_b(org_s: Segment, yy: int, xx: int) -> bool:
     #    if b_status[yy, xx] and s_ == org_s.id:
     #        return True
     # return False
-    # DOESN'T WORK FINE IN THE TEST!!!
+    # DOESN'T WORK FINE IN THE TEST!!! FIXME but it's not urgent
     s_ = status[yy, xx]
     if s_ == org_s.id: return False  # AS MUCH AS I THINK, IT SHOULD BE `s_ != org_s.id`, BUT THE OPPOSITE WORKS!
     if b_status[yy, xx] is None:

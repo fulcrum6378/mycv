@@ -47,7 +47,7 @@ class FeatureDB:
         pass
 
     def update(self):
-        pass
+        pass  # TODO why would we even want to update an attribute anyway?
 
     def delete(self):
         pass
