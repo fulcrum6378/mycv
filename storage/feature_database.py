@@ -46,15 +46,13 @@ class FeatureDB:
     def insert(self):
         pass
 
-    def update(self):
-        pass  # TODO why would we even want to update an attribute anyway?
-
     def delete(self):
         pass
 
     def end_transaction(self):
         pass
 
+    # items are never going to be UPDATED, except while sorting.
     def edit(self, key: int, value: set[int]) -> bool:
         """ Returns True if calling save_index() is necessary. """
         this_offset = None
@@ -89,6 +87,8 @@ class FeatureDB:
                 idx.write(struct.pack('>Q', v[0]))
                 idx.write(struct.pack('>Q', v[1]))
 
+
+# WE MIGHT NOT NEED `SORTING` THOUGH!
 
 class FractionalFeatureDB(FeatureDB):
     ext = 'ffdb'

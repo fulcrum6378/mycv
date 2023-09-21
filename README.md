@@ -54,13 +54,28 @@ Methods used:
 
 ***
 
-### 4. /storage/ (ongoing...)
+### 4. /storage/
+
+Shapes and their details need to be temporarily stored in a [non-volatile memory](
+https://en.wikipedia.org/wiki/Non-volatile_memory) (SSD/hard disk/SD), in a way that it enables super-fast searching
+and easily finding similar shapes. First I wanted to put the data in a 4+ dimensional [datacubes](
+https://en.wikipedia.org/wiki/Data_cube), but it was a bad idea. Then...
+
+1. [feature_database.py](storage/feature_database.py) : I wanted to separate features/details of shapes into separate
+   small databases and this code was intended to be a super-fast mini-DBMS, but due to limitations of writing/appending
+   into files, I realised this method was not even practical!
+2. [**sequence_files.py**](storage/sequence_files.py) : in this method we save shapes and their details in storage,
+   much more separately than the previous method. Each feature will have a folder (resembling a table in a database),
+   and also shapes are stored in a separate folder. Quantities of feature are clustered and IDs of their shapes are
+   put into separate files.
+
+=> Output: data properly and wisely structured and stored in a persistent memory
 
 ***
 
-### 5. /comparison/ (to be implemented)
+### 5. /comparison/ (ongoing...)
 
-It shall take a shape from the tracing output and look for the similar in the database.
+It shall extract a shape from databases made in /storage/ and look for similar items.
 
 ***
 
