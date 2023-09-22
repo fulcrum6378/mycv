@@ -26,13 +26,12 @@ with open(shf_path, 'rb') as shf:
         ))
 print('Loading time:', datetime.now() - loading_time)
 
-print('Colour:', y, u, v)
-print('Dimensions:', w, h, ':', rt)
-# print('Path:', path)
+print('Colour:', y, u, v, '; Dimensions:', w, h, '(', rt / 10, ')')
 # 2  : (74 119 171), 1.959016393442623
 # 12 : (75 119 172), 1.9833333333333334
 # 21 : (71 119 169), 2.0166666666666666
 # 32 : (72 119 170), 2.045325779036827
+# print('Path:', path)
 
 # collect shapes with close features
 searching_time = datetime.now()
@@ -65,10 +64,6 @@ for rt_ in range(rt - rt_radius, rt + rt_radius):
             # ))
             a_rt.append(struct.unpack('>Q', rtf.read(8))[0])
             rtf.seek(4, os.SEEK_CUR)
-print(a_y)
-print(a_u)
-print(a_v)
-print(a_rt)
 
 # exclude candidates
 candidates: list[int] = []
@@ -78,3 +73,5 @@ for sid in a_u:
 del a_y, a_u, a_v, a_rt
 print('Searching time:', datetime.now() - searching_time)
 print('Candidates:', candidates)  # [2, 12, 21, 32]
+
+# TODO advanced comparison of the candidates
