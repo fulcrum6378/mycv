@@ -124,6 +124,8 @@ class FractionalFeatureDB(FeatureDB):
                     fdb.write(struct.pack('>f', val))
 
 
+# open().truncate() MIGHT BE USEFUL TOO, but it just resizes the whole file not a specific portion of it!.
+
 # write tests here.
 if __name__ == '__main__':
     my_fdb = FeatureDB('test', 2)

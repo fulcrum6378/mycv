@@ -40,25 +40,25 @@ for y_ in range(y - y_radius, y + y_radius):
     f_path = os.path.join(dir_y, str(y_))
     if not os.path.isfile(f_path): continue
     with open(f_path, 'rb') as y_f:
-        for bid in range(0, os.path.getsize(f_path), 8):
+        for _ in range(0, os.path.getsize(f_path), 8):
             a_y.append(struct.unpack('>Q', y_f.read(8))[0])
 for u_ in range(u - u_radius, u + u_radius):
     f_path = os.path.join(dir_u, str(u_))
     if not os.path.isfile(f_path): continue
     with open(f_path, 'rb') as u_f:
-        for bid in range(0, os.path.getsize(f_path), 8):
+        for _ in range(0, os.path.getsize(f_path), 8):
             a_u.append(struct.unpack('>Q', u_f.read(8))[0])
 for v_ in range(v - v_radius, v + v_radius):
     f_path = os.path.join(dir_v, str(v_))
     if not os.path.isfile(f_path): continue
     with open(f_path, 'rb') as v_f:
-        for bid in range(0, os.path.getsize(f_path), 8):
+        for _ in range(0, os.path.getsize(f_path), 8):
             a_v.append(struct.unpack('>Q', v_f.read(8))[0])
 for rt_ in range(rt - rt_radius, rt + rt_radius):
     f_path = os.path.join(dir_ratio, str(rt_))
     if not os.path.isfile(f_path): continue
     with open(f_path, 'rb') as rtf:
-        for bid in range(0, os.path.getsize(f_path), 12):
+        for _ in range(0, os.path.getsize(f_path), 12):
             # a_rt.append((
             #    struct.unpack('>Q', rtf.read(8))[0], struct.unpack('>f', rtf.read(4))[0]
             # ))
