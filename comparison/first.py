@@ -9,6 +9,8 @@ input_dir = os.path.join('storage', 'output')
 dir_y, dir_u, dir_v = os.path.join(input_dir, 'y'), os.path.join(input_dir, 'u'), os.path.join(input_dir, 'v')
 dir_ratio, dir_shapes = os.path.join(input_dir, 'ratio'), os.path.join(input_dir, 'shapes')
 
+# FIXME not efficient in forgetting a large number of shapes
+
 # load the subject shape
 loading_time = datetime.now()
 shf_path = os.path.join(dir_shapes, str(subject))
@@ -32,6 +34,7 @@ print('Colour:', y, u, v, '; Dimensions:', w, h, '(', rt / 10, ')')
 # 21 : (71 119 169), 2.0166666666666666
 # 32 : (72 119 170), 2.045325779036827
 # print('Path:', path)
+print('-')
 
 # collect shapes with close features
 searching_time = datetime.now()
