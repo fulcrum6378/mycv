@@ -1,3 +1,4 @@
+import os
 from datetime import datetime
 from functools import cmp_to_key
 
@@ -5,11 +6,13 @@ import matplotlib.pyplot as plot
 import numpy as np
 from PIL import Image
 
+from config import bitmap, bitmap_folder
+
 whole_time = datetime.now()
 # noinspection PyTypeChecker
-arr: np.ndarray = np.asarray(Image.open('vis/2/1689005849386887.bmp').convert('HSV')).copy()
+arr: np.ndarray = np.asarray(Image.open(os.path.join('vis', bitmap_folder, bitmap + '.bmp')).convert('HSV')).copy()
 arr.setflags(write=True)
-dim = 1088
+# dim = 1088 (unused)
 MIN_S = 5
 SELECTED_ROW = 500
 

@@ -1,7 +1,7 @@
 import os
 
 # configurations
-root = 'vis/'
+root = 'vis'
 width = 1088
 height = 1088
 dimensions = str(width) + 'x' + str(height)
@@ -18,17 +18,17 @@ for i in os.listdir('vis'):
     except ValueError:
         pass
 num += 1
-os.mkdir(root + str(num))
+os.mkdir(os.path.join(root, str(num)))
 
 # read the metadata
-with open(root + 'metadata/' + dimensions, 'rb') as f:
+with open(os.path.join(root, 'metadata', dimensions), 'rb') as f:
     metadata: bytes = f.read()
 
 # extract the raw RGB file
 frame_length = frame_size[dimensions]
-with open(root + 'vis.rgb', 'rb') as rgb:
+with open(os.path.join(root, 'vis.rgb'), 'rb') as rgb:
     f = 1
     while frame_data := rgb.read(frame_length):
-        with open(root + str(num) + '/' + str(f) + '.bmp', 'wb') as frame:
+        with open(os.path.join(root, str(num), str(f) + '.bmp'), 'wb') as frame:
             frame.write(metadata + frame_data)
         f += 1

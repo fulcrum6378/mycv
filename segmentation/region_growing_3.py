@@ -1,3 +1,4 @@
+import os
 import pickle
 import sys
 from datetime import datetime
@@ -7,12 +8,11 @@ import cv2
 import matplotlib.pyplot as plot
 import numpy as np
 
+from config import bitmap, bitmap_folder, dim, min_seg
+
 # read the image
 loading_time = datetime.now()
-# red pillow: 1689005849386887, shoes: 1689005891979733
-arr: np.ndarray = cv2.cvtColor(cv2.imread('vis/2/1689005849386887.bmp'), cv2.COLOR_BGR2YUV)
-dim: int = 1088
-min_seg = 30
+arr: np.ndarray = cv2.cvtColor(cv2.imread(os.path.join('vis', bitmap_folder, bitmap + '.bmp')), cv2.COLOR_BGR2YUV)
 sys.setrecursionlimit(dim * dim)
 print('Loading time:', datetime.now() - loading_time)
 
@@ -125,6 +125,6 @@ plot.show()
 
 # save the output
 dumping_time = datetime.now()
-pickle.dump(status, open('segmentation/output/rg3_status.pickle', 'wb'))
-pickle.dump(segments, open('segmentation/output/rg3_segments.pickle', 'wb'))
+pickle.dump(status, open(os.path.join('segmentation', 'output', 'rg3_' + bitmap + '_status.pickle'), 'wb'))
+pickle.dump(segments, open(os.path.join('segmentation', 'output', 'rg3_' + bitmap + '_segments.pickle'), 'wb'))
 print('Dumping time:', datetime.now() - dumping_time)

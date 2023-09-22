@@ -1,4 +1,5 @@
 import json
+import os
 import pickle
 from datetime import datetime
 from math import sqrt
@@ -7,6 +8,8 @@ from typing import Optional
 import cv2
 import matplotlib.pyplot as plot
 import numpy as np
+
+from config import bitmap, dim, display_segment, max_export_segments
 
 
 class Pixel:
@@ -132,9 +135,10 @@ class Segment:
 
 # load the segmentation outputs
 loading_time = datetime.now()
-pixels: list[Pixel] = pickle.load(open('segmentation/output/rg2_pixels.pickle', 'rb'))
-segments: dict[int, Segment] = pickle.load(open('segmentation/output/rg2_segments.pickle', 'rb'))
-dim: int = 1088
+pixels: list[Pixel] = pickle.load(open(os.path.join(
+    'segmentation', 'output', 'rg2_' + bitmap + '_pixels.pickle'), 'rb'))
+segments: dict[int, Segment] = pickle.load(open(os.path.join(
+    'segmentation', 'output', 'rg2_' + bitmap + '_segments.pickle'), 'rb'))
 print('Loading time:', datetime.now() - loading_time)
 
 # get a mean value of all colours in all segments, detect their border pixels and also their boundaries
@@ -159,9 +163,11 @@ for s_id, seg in segments.items():  # couldn't cut the dict properly
 print('Mean and border time:', datetime.now() - mean_and_border_time)
 
 # store 5 of largest segments
-exports = sorted(segments.values(), key=lambda item: len(item.p), reverse=True)[:5]
+branch = os.path.join('tracing', 'output', bitmap)
+if not os.path.isdir(branch): os.mkdir(branch)
+exports = sorted(segments.values(), key=lambda item: len(item.p), reverse=True)[:max_export_segments]
 for s in range(len(exports)):
-    open('tracing/output/' + str(s + 1) + '.json', 'w').write(json.dumps({
+    open(os.path.join(branch, str(s) + '.json'), 'w').write(json.dumps({
         'mean': exports[s].m,
         'path': exports[s].border,
         'dimensions': [exports[s].w, exports[s].h],
@@ -169,7 +175,7 @@ for s in range(len(exports)):
 
 # draw the segment into the cadre and display it
 display_preparation_time = datetime.now()
-s_id, seg = list(segments.items())[2]
+s_id, seg = list(segments.items())[display_segment]
 arr: list[list[list[int]]] = []
 for y in range(seg.min_y, seg.max_y + 1):
     xes: list[list[int]] = []

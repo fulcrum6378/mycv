@@ -1,8 +1,9 @@
 import json
 import os
 import struct
-
 from datetime import datetime
+
+from config import bitmap
 
 # prepare output folders
 output_dir = os.path.join('storage', 'output')
@@ -28,7 +29,7 @@ next_id = len(os.listdir(dir_shapes))
 
 # load data from the /tracing/ section
 load_and_save_time = datetime.now()
-input_dir, ext_json = os.path.join('tracing', 'output'), '.json'
+input_dir, ext_json = os.path.join('tracing', 'output', bitmap), '.json'
 for o in sorted(os.listdir(input_dir)[1:], key=lambda fn: int(fn[:-5])):
     seg = json.loads(open(os.path.join(input_dir, o), 'r').read())
     y, u, v = seg['mean']
@@ -56,5 +57,5 @@ for o in sorted(os.listdir(input_dir)[1:], key=lambda fn: int(fn[:-5])):
         rtf.write(struct.pack('>Q', next_id) + struct.pack('>f', ratio))
 
     next_id += 1
-print('Loading time:', datetime.now() - load_and_save_time)
+print('Loading + saving time:', datetime.now() - load_and_save_time)
 print('Note: the time delta above includes reading from JSON files too!')

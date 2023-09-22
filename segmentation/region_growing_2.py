@@ -1,3 +1,4 @@
+import os
 import pickle
 from datetime import datetime
 from typing import Optional
@@ -5,6 +6,8 @@ from typing import Optional
 import cv2
 import matplotlib.pyplot as plot
 import numpy as np
+
+from config import bitmap, bitmap_folder, dim
 
 # In the previous method, we focused on a pixel and analysed its neighbours.
 # Here we shall focus on a neighbour, and see if it fits anywhere with its own neighbours.
@@ -16,9 +19,8 @@ loading_time = datetime.now()
 #                                    HSV   YCbCr,    YUV     RGB     LAB,    HLS,    XYZ     LUV
 # red pillow: 1689005849386887;   28,230, 18,692, 18,922, 24,204, 18,513, 23,780, 22,266, 18,609 segments
 # shoes:      1689005891979733;  100,302, 78,930, 79,335, 96,025, 77,796, 88,751, 91,839, 77,768 segments
-arr: np.ndarray = cv2.cvtColor(cv2.imread('vis/2/1689005849386887.bmp'), cv2.COLOR_BGR2YUV)
+arr: np.ndarray = cv2.cvtColor(cv2.imread(os.path.join('vis', bitmap_folder, bitmap + '.bmp')), cv2.COLOR_BGR2YUV)
 is_hsv = False
-dim: int = 1088
 
 
 class Neighbour:
@@ -151,6 +153,6 @@ plot.show()
 
 # save the output
 dumping_time = datetime.now()
-pickle.dump(pixels, open('segmentation/output/rg2_pixels.pickle', 'wb'))
-pickle.dump(segments, open('segmentation/output/rg2_segments.pickle', 'wb'))
+pickle.dump(pixels, open(os.path.join('segmentation', 'output', 'rg2_' + bitmap + '_status.pickle'), 'wb'))
+pickle.dump(segments, open(os.path.join('segmentation', 'output', 'rg2_' + bitmap + '_segments.pickle'), 'wb'))
 print('Dumping time:', datetime.now() - dumping_time)

@@ -1,4 +1,5 @@
 import json
+import os
 import pickle
 import sys
 from datetime import datetime
@@ -7,6 +8,8 @@ from typing import Optional
 import cv2
 import matplotlib.pyplot as plot
 import numpy as np
+
+from config import bitmap, dim, display_segment, max_export_segments
 
 
 class Segment:
@@ -87,9 +90,10 @@ def set_is_border(s_id: int, yy: int, xx: int):
 
 # load the segmentation output data
 loading_time = datetime.now()
-status: np.ndarray = pickle.load(open('segmentation/output/rg3_status.pickle', 'rb'))
-segments: list[Segment] = pickle.load(open('segmentation/output/rg3_segments.pickle', 'rb'))
-dim: int = 1088
+status: np.ndarray = pickle.load(open(os.path.join(
+    'segmentation', 'output', 'rg3_' + bitmap + '_status.pickle'), 'rb'))
+segments: list[Segment] = pickle.load(open(os.path.join(
+    'segmentation', 'output', 'rg3_' + bitmap + '_segments.pickle'), 'rb'))
 sys.setrecursionlimit(dim * dim)
 print('Loading time:', datetime.now() - loading_time)
 
@@ -129,8 +133,10 @@ for seg in segments:
 print('+ Border time:', datetime.now() - border_time)
 
 # store 5 of largest segments
-for s in range(15):
-    open('tracing/output/' + str(s) + '.json', 'w').write(json.dumps({
+branch = os.path.join('tracing', 'output', bitmap)
+if not os.path.isdir(branch): os.mkdir(branch)
+for s in range(max_export_segments):
+    open(os.path.join(branch, str(s) + '.json'), 'w').write(json.dumps({
         'mean': segments[s].m,
         'path': s_border[segments[s].id],
         'dimensions': [s_dimensions[segments[s].id][0], s_dimensions[segments[s].id][1]],
@@ -138,7 +144,7 @@ for s in range(15):
 
 # draw the segment into the cadre and display it
 display_preparation_time = datetime.now()
-seg = segments[2]
+seg = segments[display_segment]
 print('Total border pixels:', len(s_border[seg.id]))
 arr: list[list[list[int]]] = []
 for y in range(s_boundaries[seg.id][0], s_boundaries[seg.id][2] + 1):
