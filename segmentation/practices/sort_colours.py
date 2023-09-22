@@ -78,7 +78,7 @@ colours.sort(key=cmp_to_key(sort_by_saturation))
 bw_colours: list[list[int]] = list()
 bw_min = len(colours)
 for i in range(0, bw_min, -1):
-    print(i)  # TODO
+    print(i)  # TO-DO
     if colours[i][1] < MIN_S:
         bw_min -= 1
 bw_colours = colours[bw_min:]
@@ -86,7 +86,7 @@ colour = colours[:bw_min]
 # now you have to separate the coloured pixels from the black/white one.
 # the former represents a circle, the latter is just a gradient line.
 
-# TODO it must be a circular clustering not linear, so H:0 and H:255 must be in a single cluster.
+# TO-DO it must be a circular clustering not linear, so H:0 and H:255 must be in a single cluster.
 # But when S is low, high V means white and low V means black!!
 # Think of Hue as a circle of 360 degrees and then multiply it. But deal with the other 2 values as linear.
 # If there are only varieties of green colours, the boundaries of the cluster must not get out

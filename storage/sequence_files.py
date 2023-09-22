@@ -5,7 +5,10 @@ from datetime import datetime
 
 from config import bitmap
 
-# prepare output folders
+# make sure it's not trigger unintentionally
+if input('Are you sure? (y/any): ') != 'y': quit()
+
+# prepare the output folders
 output_dir = os.path.join('storage', 'output')
 dir_y, dir_u, dir_v = os.path.join(output_dir, 'y'), os.path.join(output_dir, 'u'), os.path.join(output_dir, 'v')
 dir_ratio, dir_shapes = os.path.join(output_dir, 'ratio'), os.path.join(output_dir, 'shapes')
@@ -30,7 +33,7 @@ next_id = len(os.listdir(dir_shapes))
 # load data from the /tracing/ section
 load_and_save_time = datetime.now()
 input_dir, ext_json = os.path.join('tracing', 'output', bitmap), '.json'
-for o in sorted(os.listdir(input_dir)[1:], key=lambda fn: int(fn[:-5])):
+for o in sorted(os.listdir(input_dir), key=lambda fn: int(fn[:-5])):
     seg = json.loads(open(os.path.join(input_dir, o), 'r').read())
     y, u, v = seg['mean']
     w, h = seg['dimensions']

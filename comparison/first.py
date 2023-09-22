@@ -4,11 +4,14 @@ from datetime import datetime
 
 from config import subject
 
-# we must find shapes similar to `subject`, which is a shape that we're trying to identify.
+# prepare the input folders
+input_dir = os.path.join('storage', 'output')
+dir_y, dir_u, dir_v = os.path.join(input_dir, 'y'), os.path.join(input_dir, 'u'), os.path.join(input_dir, 'v')
+dir_ratio, dir_shapes = os.path.join(input_dir, 'ratio'), os.path.join(input_dir, 'shapes')
 
 # load the shape
 loading_time = datetime.now()
-shf_path = os.path.join('storage', 'output', 'shapes', str(subject))
+shf_path = os.path.join(dir_shapes, str(subject))
 with open(shf_path, 'rb') as shf:
     y: int = struct.unpack('>B', shf.read(1))[0]
     u: int = struct.unpack('>B', shf.read(1))[0]
@@ -22,6 +25,14 @@ with open(shf_path, 'rb') as shf:
         ))
 print('Loading time:', datetime.now() - loading_time)
 
+# TODO find candidates
+
 print('Colour:', y, u, v)
-print('Dimensions:', w, h)
-print('Path:', path)
+print('Dimensions:', w, h, w / h)
+# print('Path:', path)
+
+# 2  : (74 119 171), 1.959016393442623
+# 12 : (75 119 172), 1.9833333333333334
+# 21 : (71 119 169), 2.0166666666666666
+# 32 : (72 119 170), 2.045325779036827
+
