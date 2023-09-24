@@ -73,7 +73,7 @@ https://en.wikipedia.org/wiki/Data_cube), but it was a bad idea. Then...
 
 ***
 
-### 5. /comparison/ (ongoing...)
+### 5. /comparison/
 
 It shall extract a shape from databases made in /storage/ and look for similar items.
 
