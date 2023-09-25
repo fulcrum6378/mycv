@@ -27,6 +27,8 @@ which outputs raw RGB streams without BMP metadata (*vis.rgb*).
       code! It takes **~22 seconds**.
     - [region_growing_3.py](segmentation/region_growing_3.py) : an improved and completed version of the 1st method;
       it takes **~7 to ~8 seconds**.
+    - [region_growing_3.py](segmentation/region_growing_3.py) : same as the 3rd method, but without recursion;
+      it takes **??? seconds**.
 - [Clustering methods](https://en.wikipedia.org/wiki/Cluster_analysis)
     - [clustering_1d.py](segmentation/clustering_1d.py) : clustering all pixels in a 1-dimensional way...
       left incomplete; not logically suitable!
