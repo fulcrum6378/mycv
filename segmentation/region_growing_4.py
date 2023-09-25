@@ -11,13 +11,13 @@ from config import bitmap, bitmap_folder, dim, min_seg
 
 # read the image
 loading_time = datetime.now()
-arr: np.ndarray = cv2.cvtColor(cv2.imread(os.path.join('vis', bitmap_folder, bitmap + '.bmp')), cv2.COLOR_BGR2YUV)
+arr: np.ndarray = cv2.cvtColor(cv2.imread(os.path.join('vis', bitmap_folder, bitmap + '.bmp')), cv2.COLOR_BGR2YCrCb)
 print('Loading time:', datetime.now() - loading_time)
 
 
 class Segment:
     def __init__(self):
-        self.id: int = len(segments) + 1
+        self.id: int = len(segments)  # + 1
         self.p: list[tuple[int, int]] = []  # pixels
         self.m: list[int] = []  # average colour
 
@@ -45,15 +45,15 @@ def find_a_segment_to_dissolve_in(seg_: Segment) -> Optional[tuple[int, int]]:
 
 # detect segments by single-pixel colour differences
 segmentation_time = datetime.now()
-status: np.ndarray = np.repeat([np.repeat(0, dim)], dim, 0)
+status: np.ndarray = np.repeat([np.repeat(-1, dim)], dim, 0)
 segments: list[Segment] = []
-stack: list[tuple[int, int]] = []
+stack: list[list[int, int, int]] = []
 thisY, thisX, found_sth_to_analyse = 0, 0, True
 while found_sth_to_analyse:
     found_sth_to_analyse = False
     for y in range(thisY, dim):
         for x in range(thisX if y == thisY else 0, dim):
-            if status[y, x] == 0:
+            if status[y, x] == -1:
                 found_sth_to_analyse = True
                 thisY = y
                 thisX = x
@@ -62,24 +62,34 @@ while found_sth_to_analyse:
     if not found_sth_to_analyse: break
 
     seg = Segment()
-    stack.append((thisY, thisX))
+    stack.append([thisY, thisX, 0])
     while len(stack) != 0:
-        yy, xx = stack[0]
-        stack.pop(0)
-        # if status[yy, xx] != 0: continue
-        # print(yy, xx)
-
-        seg.p.append((yy, xx))
-        status[yy, xx] = seg.id
-        if yy < (dim - 1) and status[yy + 1, xx] == 0 and compare_colours(arr[yy, xx], arr[yy + 1, xx]):  # bottom
-            stack.insert(0, (yy + 1, xx))
-        if xx < (dim - 1) and status[yy, xx + 1] == 0 and compare_colours(arr[yy, xx], arr[yy, xx + 1]):  # right
-            stack.insert(0, (yy, xx + 1))
-        if yy > 0 and status[yy - 1, xx] == 0 and compare_colours(arr[yy, xx], arr[yy - 1, xx]):  # top
-            stack.insert(0, (yy - 1, xx))
-        if xx > 0 and status[yy, xx - 1] == 0 and compare_colours(arr[yy, xx], arr[yy, xx - 1]):  # left
-            stack.insert(0, (yy, xx - 1))
-    print(len(seg.p))
+        l_ = len(stack) - 1
+        yy, xx, dr = stack[l_]
+        if dr == 0:
+            seg.p.append((yy, xx))
+            status[yy, xx] = seg.id
+        # if dr <= 0:  # left
+            stack[l_][2] += 1
+            if xx > 0 and status[yy, xx - 1] == -1 and compare_colours(arr[yy, xx], arr[yy, xx - 1]):
+                stack.append([yy, xx - 1, 0])
+                continue
+        if dr <= 1:  # top
+            stack[l_][2] += 1
+            if yy > 0 and status[yy - 1, xx] == -1 and compare_colours(arr[yy, xx], arr[yy - 1, xx]):
+                stack.append([yy - 1, xx, 0])
+                continue
+        if dr <= 2:  # right
+            stack[l_][2] += 1
+            if xx < (dim - 1) and status[yy, xx + 1] == -1 and compare_colours(arr[yy, xx], arr[yy, xx + 1]):
+                stack.append([yy, xx + 1, 0])
+                continue
+        if dr <= 3:  # bottom
+            stack[l_][2] += 1
+            if yy < (dim - 1) and status[yy + 1, xx] == -1 and compare_colours(arr[yy, xx], arr[yy + 1, xx]):
+                stack.append([yy + 1, xx, 0])
+                continue
+        stack.pop()
     segments.append(seg)
 
 # dissolve smaller segments
