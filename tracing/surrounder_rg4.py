@@ -40,10 +40,12 @@ def is_next_b(org_s: Segment, yy: int, xx: int) -> bool:
 
 def check_if_border(s_id: int, yy: int, xx: int) -> None:
     """ Checks if this pixel is in border. """
-    if (xx == (dim - 1) or s_id != status[yy, xx + 1] or  # right
-            yy == (dim - 1) or s_id != status[yy + 1, xx] or  # bottom
-            xx == 0 or s_id != status[yy, xx - 1] or  # left
-            yy == 0 or s_id != status[yy - 1, xx]):  # top
+    if s_id == 0: raise Exception("FUCK")  # is this version better than the 3rd one?
+    if b_status[yy, xx] is not None: return
+    if ((xx < (dim - 1) and s_id != status[yy, xx + 1]) or  # right
+            (yy < (dim - 1) and s_id != status[yy + 1, xx]) or  # bottom
+            (xx > 0 and s_id != status[yy, xx - 1]) or  # left
+            (yy > 0 and s_id != status[yy - 1, xx])):  # top
         b_status[yy, xx] = True
         if s_id not in s_border: s_border[s_id] = []
         s_border[s_id].append((

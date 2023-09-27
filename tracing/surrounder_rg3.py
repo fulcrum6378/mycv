@@ -70,6 +70,7 @@ def is_next_b(org_s: Segment, yy: int, xx: int) -> bool:
 
 def check_if_border(s_id: int, yy: int, xx: int) -> None:
     """ Checks if this pixel is in border. """
+    if s_id == 0: raise Exception("FUCK")
     if (xx == (dim - 1) or s_id != status[yy, xx + 1] or  # right
             yy == (dim - 1) or s_id != status[yy + 1, xx] or  # bottom
             xx == 0 or s_id != status[yy, xx - 1] or  # left
