@@ -18,35 +18,6 @@ class Segment:
         self.m: list[int] = []  # average colour
 
 
-def check_neighbours(s_: Segment, yy: int, xx: int, avoid_dir: int = -1):
-    """ Recursively checks if neighbours are border pixels. Directions range are 0..7. """
-
-    if avoid_dir != 0 and yy > 0:  # northern
-        n = (yy - 1, xx)
-        if is_next_b(s_, *n): check_neighbours(s_, n[0], n[1], 0)
-    if avoid_dir != 1 and yy > 0 and xx < (dim - 1):  # north-eastern
-        n = (yy - 1, xx + 1)
-        if is_next_b(s_, *n): check_neighbours(s_, n[0], n[1], 1)
-    if avoid_dir != 2 and xx < (dim - 1):  # eastern
-        n = (yy, xx + 1)
-        if is_next_b(s_, *n): check_neighbours(s_, n[0], n[1], 2)
-    if avoid_dir != 3 and yy < (dim - 1) and xx < (dim - 1):  # south-eastern
-        n = (yy + 1, xx + 1)
-        if is_next_b(s_, *n): check_neighbours(s_, n[0], n[1], 3)
-    if avoid_dir != 4 and yy < (dim - 1):  # southern
-        n = (yy + 1, xx)
-        if is_next_b(s_, *n): check_neighbours(s_, n[0], n[1], 4)
-    if avoid_dir != 5 and yy < (dim - 1) and xx > 0:  # south-western
-        n = (yy + 1, xx - 1)
-        if is_next_b(s_, *n): check_neighbours(s_, n[0], n[1], 5)
-    if avoid_dir != 6 and xx > 0:  # western
-        n = (yy, xx - 1)
-        if is_next_b(s_, *n): check_neighbours(s_, n[0], n[1], 6)
-    if avoid_dir != 7 and yy > 0 and xx > 0:  # north-western
-        n = (yy - 1, xx - 1)
-        if is_next_b(s_, *n): check_neighbours(s_, n[0], n[1], 7)
-
-
 # noinspection PyTypeChecker
 def is_next_b(org_s: Segment, yy: int, xx: int) -> bool:
     """ Checks if this is a border pixel and not detected before. """
@@ -113,17 +84,50 @@ for seg in segments:
         (s_boundaries[seg.id][2] + 1) - s_boundaries[seg.id][0],  # height
     )
 # it wouldn't be like this, if `is_next_b()` didn't permit foreign segments!
+stack: list[list[int, int, int]] = []
 for seg in segments:
     # find the first encountering border pixel as a checkpoint
-    border_checkpoint: Optional[tuple[int, int]] = None
+    y, x = 0, 0
     for p in seg.p:
         if b_status[*p] is None: check_if_border(seg.id, *p)
         if b_status[*p]:
-            border_checkpoint = p
+            y, x = p
             break
 
-    # now start collecting all border pixels using that checkpoint
-    check_neighbours(seg, *border_checkpoint)
+    # then start collecting all border pixels using that checkpoint
+    stack.append([y, x, 0])
+    while len(stack) != 0:
+        y, x, avoid_dir = stack[0]
+        ny, nx = y, x
+        if avoid_dir != 1 and y > 0:  # northern
+            ny = y - 1
+            if is_next_b(seg, ny, nx): stack.append([ny, nx, 1])
+        if avoid_dir != 2 and y > 0 and x < (dim - 1):  # north-eastern
+            ny = y - 1
+            nx = x + 1
+            if is_next_b(seg, ny, nx): stack.append([ny, nx, 2])
+        if avoid_dir != 3 and x < (dim - 1):  # eastern
+            nx = x + 1
+            if is_next_b(seg, ny, nx): stack.append([ny, nx, 3])
+        if avoid_dir != 4 and y < (dim - 1) and x < (dim - 1):  # south-eastern
+            ny = y + 1
+            nx = x + 1
+            if is_next_b(seg, ny, nx): stack.append([ny, nx, 4])
+        if avoid_dir != 5 and y < (dim - 1):  # southern
+            ny = y + 1
+            if is_next_b(seg, ny, nx): stack.append([ny, nx, 5])
+        if avoid_dir != 6 and y < (dim - 1) and x > 0:  # south-western
+            ny = y + 1
+            nx = x - 1
+            if is_next_b(seg, ny, nx): stack.append([ny, nx, 6])
+        if avoid_dir != 7 and x > 0:  # western
+            nx = x - 1
+            if is_next_b(seg, ny, nx): stack.append([ny, nx, 7])
+        if avoid_dir != 8 and y > 0 and x > 0:  # north-western
+            ny = y - 1
+            nx = x - 1
+            if is_next_b(seg, ny, nx): stack.append([ny, nx, 8])
+        stack.pop(0)
 print('+ Border time:', datetime.now() - border_time)
 
 # store 5 of largest segments
