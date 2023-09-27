@@ -34,10 +34,11 @@ def find_a_segment_to_dissolve_in(seg_: Segment) -> Optional[tuple[int, int]]:
         return seg_.p[0][0] - 1, seg_.p[0][1]
     if seg_.p[0][1] > 0:
         return seg_.p[0][0], seg_.p[0][1] - 1
-    if seg_.p[len(seg_.p) - 1][0] < dim - 1:
-        return seg_.p[len(seg_.p) - 1][0] + 1, seg_.p[len(seg_.p) - 1][1]
-    if seg_.p[len(seg_.p) - 1][1] < dim - 1:
-        return seg_.p[len(seg_.p) - 1][0], seg_.p[len(seg_.p) - 1][1] + 1
+    last = len(seg_.p) - 1
+    if seg_.p[last][0] < dim - 1:
+        return seg_.p[last][0] + 1, seg_.p[last][1]
+    if seg_.p[last][1] < dim - 1:
+        return seg_.p[last][0], seg_.p[last][1] + 1
     return None
 
 

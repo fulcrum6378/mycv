@@ -1,7 +1,6 @@
 import json
 import os
 import pickle
-import sys
 from datetime import datetime
 from typing import Optional
 
@@ -74,27 +73,22 @@ def check_if_border(s_id: int, yy: int, xx: int) -> None:
             yy == (dim - 1) or s_id != status[yy + 1, xx] or  # bottom
             xx == 0 or s_id != status[yy, xx - 1] or  # left
             yy == 0 or s_id != status[yy - 1, xx]):  # top
-        set_is_border(s_id, yy, xx)
-        return
-    b_status[yy, xx] = False
-
-
-def set_is_border(s_id: int, yy: int, xx: int):
-    b_status[yy, xx] = True
-    if s_id not in s_border: s_border[s_id] = []
-    s_border[s_id].append((
-        (100.0 / s_dimensions[seg.id][0]) * (s_boundaries[s_id][1] - xx),  # fractional X
-        (100.0 / s_dimensions[seg.id][1]) * (s_boundaries[s_id][0] - yy),  # fractional Y
-    ))
+        b_status[yy, xx] = True
+        if s_id not in s_border: s_border[s_id] = []
+        s_border[s_id].append((
+            (100.0 / s_dimensions[seg.id][0]) * (s_boundaries[s_id][1] - xx),  # fractional X
+            (100.0 / s_dimensions[seg.id][1]) * (s_boundaries[s_id][0] - yy),  # fractional Y
+        ))
+    else:
+        b_status[yy, xx] = False
 
 
 # load the segmentation output data
 loading_time = datetime.now()
 status: np.ndarray = pickle.load(open(os.path.join(
-    'segmentation', 'output', 'rg3_' + bitmap + '_status.pickle'), 'rb'))
+    'segmentation', 'output', 'rg4_' + bitmap + '_status.pickle'), 'rb'))
 segments: list[Segment] = pickle.load(open(os.path.join(
-    'segmentation', 'output', 'rg3_' + bitmap + '_segments.pickle'), 'rb'))
-sys.setrecursionlimit(dim * dim)
+    'segmentation', 'output', 'rg4_' + bitmap + '_segments.pickle'), 'rb'))
 print('Loading time:', datetime.now() - loading_time)
 
 # get a mean value of all colours in all segments, detect their border pixels and also their boundaries
