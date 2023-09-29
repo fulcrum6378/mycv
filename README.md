@@ -2,8 +2,8 @@
 
 This is a subproject of [**Mergen IV**](https://github.com/fulcrum6378/mergen_android)
 in Python which helps with faster debugging of computer vision algorithms.
-These algorithms are intended to be translated to C++ inside the main project.
-MyCV was initiated in 10 July 2023.
+These methods are translated to C++ for the main project.
+MyCV was initiated in 10 July 2023 and after a successful image analysis, translations began at 24 September.
 
 It contains the following parts (sorted by precedence of usage):
 
@@ -53,6 +53,9 @@ Methods used:
 - **Surrounder**: it finds a random border pixel, then navigates through its neighbours until it detects all border
   pixels of a segment.
 
+Because of C++ maximum stack restrictions (stack overflow), [surrounder_rg4.py](tracing/surrounder_rg4.py)
+was forked from [surrounder_rg3.py](tracing/surrounder_rg3.py) with no recursion.
+
 => Output: vector data in JSON files (good for debugging, instead of pickle dumps)
 
 ***
@@ -61,16 +64,23 @@ Methods used:
 
 Shapes and their details need to be temporarily stored in a [non-volatile memory](
 https://en.wikipedia.org/wiki/Non-volatile_memory) (SSD/hard disk/SD), in a way that it enables super-fast searching
-and easily finding similar shapes. First I wanted to put the data in a 4+ dimensional [datacubes](
-https://en.wikipedia.org/wiki/Data_cube), but it was a bad idea. Then...
+and easily finding similar shapes. This is actually some kind of [Short-Term Memory](
+https://en.wikipedia.org/wiki/Short-term_memory). First I wanted to put the data in a 4+ dimensional array, making a
+[Datacube](https://en.wikipedia.org/wiki/Data_cube), but it was a bad idea. Then...
 
 1. [feature_database.py](storage/feature_database.py) : I wanted to separate features/details of shapes into separate
    small databases and this code was intended to be a super-fast mini-DBMS, but due to limitations of writing/appending
    into files, I realised this method was not even practical!
-2. [**sequence_files.py**](storage/sequence_files.py) : in this method we save shapes and their details in storage,
+2. [sequence_files_1.py](storage/sequence_files_1.py) : in this method we save shapes and their details in storage,
    much more separately than the previous method. Each feature will have a folder (resembling a table in a database),
    and also shapes are stored in a separate folder. Quantities of feature are clustered and IDs of their shapes are
    put into separate files.
+3. [**sequence_files_2.py**](storage/sequence_files_2.py) : same as the previous, except that *ratio* index doesn't
+   store the exact float number anymore, it just stores mere shape IDs.
+
+- [datacube_1.py](storage/datacube_1.py) : I figured maybe the idea of a Datacube might be useful in terms of a
+  [Long-Term Memory](https://en.wikipedia.org/wiki/Long-term_memory) rather than in short-term. But this time,
+  our datacube is a 4-dimensional **dict/map** rather than an *array*.
 
 => Output: data properly and wisely structured and stored in a persistent memory
 
@@ -79,10 +89,11 @@ https://en.wikipedia.org/wiki/Data_cube), but it was a bad idea. Then...
 ### 5. /comparison/
 
 It shall extract a shape from databases made in /storage/ and look for similar items.
+Therefore, every database will have its own method of comparison.
 
 ***
 
-### 6. /grouping/ (to be implemented)
+### 6. /identification/ (to be implemented)
 
 Shapes related to an object will be stored in another kind of database as a **Visual Object**.
 Visual objects along with *auditory objects* and *touch patterns* will be related to an ultimate

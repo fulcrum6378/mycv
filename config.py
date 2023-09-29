@@ -13,5 +13,4 @@ max_export_segments: int = 10
 display_segment: int = 2
 
 # /comparison/
-subject: int = 2
 y_radius, u_radius, v_radius, rt_radius = 6, 2, 4, 2

@@ -2,18 +2,16 @@ import os
 import struct
 from datetime import datetime
 
-from config import rt_radius, subject, u_radius, v_radius, y_radius
+from config import rt_radius, u_radius, v_radius, y_radius
 
 # prepare the input folders
 input_dir = os.path.join('storage', 'output')
 dir_y, dir_u, dir_v = os.path.join(input_dir, 'y'), os.path.join(input_dir, 'u'), os.path.join(input_dir, 'v')
 dir_ratio, dir_shapes = os.path.join(input_dir, 'ratio'), os.path.join(input_dir, 'shapes')
 
-# FIXME not efficient in forgetting a large number of shapes
-
 # load the subject shape
 loading_time = datetime.now()
-shf_path = os.path.join(dir_shapes, str(subject))
+shf_path = os.path.join(dir_shapes, input('Enter the ID of the shape:\n'))
 with open(shf_path, 'rb') as shf:
     y: int = struct.unpack('>B', shf.read(1))[0]
     u: int = struct.unpack('>B', shf.read(1))[0]
