@@ -125,7 +125,7 @@ for seg in segments:
             ny = y - 1
             nx = x - 1
             if is_next_b(seg, ny, nx): stack.append([ny, nx, 8])
-# FIXME borders with shapes within another shape are not detected!
+# FIX-ME borders with shapes within another shape are not detected!
 #  and since the contrary is also true, that's why we face problems.
 #  Because sometimes the checkpoint is INSIDE a shape
 print('+ Border time:', datetime.now() - border_time)

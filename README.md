@@ -50,8 +50,9 @@ compared to others of their kind. It must:
 Since segmentation output is not always the same, each segmentation method must have its own tracing implementation.
 Methods used:
 
-- **Surrounder**: it finds a random border pixel, then navigates through its neighbours until it detects all border
-  pixels of a segment.
+- Surrounder: it finds a random border pixel, then navigates through its neighbours until it detects all border
+  pixels of a segment. It messes up when a shape has inner borders.
+- **Comprehensive**: it analyses all pixels if they are border ones.
 
 Because of C++ maximum stack restrictions (stack overflow), [surrounder_rg4.py](tracing/surrounder_rg4.py)
 was forked from [surrounder_rg3.py](tracing/surrounder_rg3.py) with no recursion.

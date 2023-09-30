@@ -5,8 +5,6 @@ import cv2
 import matplotlib.pyplot as plot
 import numpy as np
 
-# NOTE: ARM64 IS LITTLE-ENDIAN!!!
-
 # prepare the input folders
 input_dir = os.path.join('storage', 'output')
 dir_y, dir_u, dir_v = os.path.join(input_dir, 'y'), os.path.join(input_dir, 'u'), os.path.join(input_dir, 'v')
@@ -20,6 +18,7 @@ with open(shf_path, 'rb') as shf:
     v: int = struct.unpack('B', shf.read(1))[0]
     w: int = struct.unpack('<H', shf.read(2))[0]
     h: int = struct.unpack('<H', shf.read(2))[0]
+    # NOTE: ARM64 IS LITTLE-ENDIAN!!!
     path: list[tuple[float, float]] = []
     for b in range(7, os.path.getsize(shf_path), 8):
         path.append((
@@ -35,5 +34,6 @@ print(arr.shape)
 m = cv2.cvtColor(np.array([[[y, u, v]]], dtype=np.uint8), cv2.COLOR_YUV2RGB)[0, 0]
 for p in path:
     arr[int(p[1] / (100 / h)), int(p[0] / (100 / w))] = 0, 0, 0  # m[0], m[1], m[2]
+    # TODO INCOMPLETE
 plot.imshow(arr)
 plot.show()
