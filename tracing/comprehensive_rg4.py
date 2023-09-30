@@ -8,7 +8,7 @@ import cv2
 import matplotlib.pyplot as plot
 import numpy as np
 
-from config import bitmap, dim, display_segment, max_export_segments
+from config import bitmap, bitmap_folder, dim, display_segment, max_export_segments
 
 
 class Segment:
@@ -19,13 +19,20 @@ class Segment:
 
 
 def check_if_border(y1: int, x1: int, y2: int, x2: int):
-    set_as_border(y1, x1)
-    set_as_border(y2, x2)
-    # add to their Segments
+    if status[y1, x1] != status[y2, x2]:
+        set_as_border(y1, x1)
+        set_as_border(y2, x2)
 
 
+# noinspection PyTypeChecker,PyShadowingNames
 def set_as_border(y: int, x: int):
     b_status[y, x] = True
+    s_id = status[y, x]
+    if s_id not in s_border: s_border[s_id] = []
+    s_border[s_id].append((
+        (100.0 / s_dimensions[seg.id][0]) * (s_boundaries[s_id][1] - x),  # fractional X
+        (100.0 / s_dimensions[seg.id][1]) * (s_boundaries[s_id][0] - y),  # fractional Y
+    ))
 
 
 # load the segmentation output data
@@ -57,23 +64,23 @@ for seg in segments:
         (s_boundaries[seg.id][3] + 1) - s_boundaries[seg.id][1],  # width
         (s_boundaries[seg.id][2] + 1) - s_boundaries[seg.id][0],  # height
     )
-# TODO should pixels in border of an IMAGE be recognised as borders of that shape?
-#  After all shapes are cropped due to the limitation of sights.
-#  Should they be recognised in a separate loop BEFORE the main one?
 for y in range(dim):
-    for x in range(dim):
-        if b_status[y, x] is not None: continue
-        # 1. compare with eastern
-        if x < dim - 1:
+    if y == 0 or y == dim - 1:
+        for x in range(dim):
+            set_as_border(y, x)
+    else:
+        for x in range(dim):
+            if x == 0 or x == dim - 1:
+                set_as_border(y, x)
+                continue
+            if b_status[y, x] is not None: continue
+            # 1. compare with eastern
             check_if_border(y, x, y, x + 1)
-        if y == dim - 1: break
-        # 2. compare with south-eastern
-        if x < dim - 1:
+            # 2. compare with south-eastern
             check_if_border(y, x, y + 1, x + 1)
-        # 3. compare with southern
-        check_if_border(y, x, y + 1, x)
-        # 4. compare with south-western
-        if x > 0:
+            # 3. compare with southern
+            check_if_border(y, x, y + 1, x)
+            # 4. compare with south-western
             check_if_border(y, x, y + 1, x - 1)
 print('+ Border time:', datetime.now() - border_time)
 
@@ -89,20 +96,28 @@ for s in range(max_export_segments):
 
 # draw the segment into the cadre and display it
 display_preparation_time = datetime.now()
-seg = segments[display_segment]
-print('Total border pixels:', len(s_border[seg.id]))
-arr: list[list[list[int]]] = []
-for y in range(s_boundaries[seg.id][0], s_boundaries[seg.id][2] + 1):
-    xes: list[list[int]] = []
-    for x in range(s_boundaries[seg.id][1], s_boundaries[seg.id][3] + 1):
-        if status[y, x] == seg.id:
-            if not b_status[y, x]:
-                xes.append(seg.m)
+if display_segment is not None:
+    seg = segments[display_segment]
+    print('Total border pixels:', len(s_border[seg.id]))
+    arr: list[list[list[int]]] = []
+    for y in range(s_boundaries[seg.id][0], s_boundaries[seg.id][2] + 1):
+        xes: list[list[int]] = []
+        for x in range(s_boundaries[seg.id][1], s_boundaries[seg.id][3] + 1):
+            if status[y, x] == seg.id:
+                if not b_status[y, x]:
+                    xes.append(seg.m)
+                else:
+                    xes.append([0, 255, 200])
             else:
-                xes.append([0, 255, 200])
-        else:
-            xes.append([255, 127, 127])
-    arr.append(xes)
-plot.imshow(cv2.cvtColor(np.array(arr, dtype=np.uint8), cv2.COLOR_YUV2RGB))
+                xes.append([255, 127, 127])
+        arr.append(xes)
+    plot.imshow(cv2.cvtColor(np.array(arr, dtype=np.uint8), cv2.COLOR_YUV2RGB))
+else:
+    arr: np.ndarray = cv2.cvtColor(cv2.imread(os.path.join('vis', bitmap_folder, bitmap + '.bmp')), cv2.COLOR_BGR2RGB)
+    for y in range(dim):
+        for x in range(dim):
+            if b_status[y, x]:
+                arr[y, x] = 255, 0, 0
+    plot.imshow(arr)
 print('Display preparation time:', datetime.now() - display_preparation_time)
 plot.show()
