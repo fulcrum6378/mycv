@@ -19,19 +19,10 @@ class Segment:
 
 
 # noinspection PyTypeChecker
-def is_next_b(org_s: Segment, yy: int, xx: int) -> bool:
+def is_next_b(org_s: Segment, yy: int, xx: int) -> bool:  # TODO , dead_end: bool ?
     """ Checks if this is a border pixel and not detected before. """
-
-    # WORKS FINE ONLY WITHOUT DISSOLUTION!
-    # if b_status[yy, xx] is None:
-    #    s_ = status[yy, xx]
-    #    check_if_border(s_, yy, xx)
-    #    if b_status[yy, xx] and s_ == org_s.id:
-    #        return True
-    # return False
-    # DOESN'T WORK FINE IN THE TEST!!! FIXME but it's not urgent
     s_ = status[yy, xx]
-    if s_ == org_s.id: return False  # AS MUCH AS I THINK, IT SHOULD BE `s_ != org_s.id`, BUT THE OPPOSITE WORKS!
+    # if s_ == org_s.id and not dead_end: return False
     if b_status[yy, xx] is None:
         check_if_border(s_, yy, xx)
         return b_status[yy, xx]
@@ -41,11 +32,17 @@ def is_next_b(org_s: Segment, yy: int, xx: int) -> bool:
 def check_if_border(s_id: int, yy: int, xx: int) -> None:
     """ Checks if this pixel is in border. """
     if s_id == 0: raise Exception("FUCK")  # is this version better than the 3rd one?
-    if b_status[yy, xx] is not None: return
-    if ((xx < (dim - 1) and s_id != status[yy, xx + 1]) or  # right
-            (yy < (dim - 1) and s_id != status[yy + 1, xx]) or  # bottom
-            (xx > 0 and s_id != status[yy, xx - 1]) or  # left
-            (yy > 0 and s_id != status[yy - 1, xx])):  # top
+    # if b_status[yy, xx] is not None: return
+    if (  # do NOT use "&&"!
+            (yy == 0 or s_id != status[yy - 1, xx]) or  # northern
+            ((yy > 0 and xx < (dim - 1)) and s_id != status[yy - 1, xx + 1]) or  # north-eastern
+            (xx == (dim - 1) or s_id != status[yy, xx + 1]) or  # eastern
+            ((yy < (dim - 1) and xx < (dim - 1)) and s_id != status[yy + 1, xx + 1]) or  # south-eastern
+            (yy == (dim - 1) or s_id != status[yy + 1, xx]) or  # southern
+            ((yy < (dim - 1) and xx > 0) and s_id != status[yy + 1, xx - 1]) or  # south-western
+            (xx == 0 or s_id != status[yy, xx - 1]) or  # western
+            ((yy > 0 and xx > 0) and s_id != status[yy - 1, xx - 1])  # north-western
+    ):
         b_status[yy, xx] = True
         if s_id not in s_border: s_border[s_id] = []
         s_border[s_id].append((

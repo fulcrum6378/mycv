@@ -13,28 +13,27 @@ dir_y, dir_u, dir_v = os.path.join(input_dir, 'y'), os.path.join(input_dir, 'u')
 dir_ratio, dir_shapes = os.path.join(input_dir, 'r'), os.path.join(input_dir, 'shapes')
 
 # load the subject shape
-shf_path = os.path.join(dir_shapes, input('Enter the ID of the shape:\n'))
+shf_path = os.path.join(dir_shapes, input('Enter the ID of the shape: '))
 with open(shf_path, 'rb') as shf:
     y: int = struct.unpack('B', shf.read(1))[0]
     u: int = struct.unpack('B', shf.read(1))[0]
     v: int = struct.unpack('B', shf.read(1))[0]
     w: int = struct.unpack('<H', shf.read(2))[0]
     h: int = struct.unpack('<H', shf.read(2))[0]
-    # rt = int((w / h) * 10)
-    print(y, u, v, w, h)
-    # quit()
     path: list[tuple[float, float]] = []
     for b in range(7, os.path.getsize(shf_path), 8):
         path.append((
             struct.unpack('<f', shf.read(4))[0], struct.unpack('<f', shf.read(4))[0]
         ))
+print(y, u, v, w, h)
+print("Points:", len(path))
 
 # draw the segment into the cadre and display it
-arr: list[list[list[int]]] = []
-for y in range(100):
-    xes: list[list[int]] = []
-    for x in range(100):
-        xes.append([y, u, v])
-    arr.append(xes)
-plot.imshow(cv2.cvtColor(np.array(arr, dtype=np.uint8), cv2.COLOR_YUV2RGB))
+# arr = np.repeat([np.repeat(np.repeat([255], 3, 0), w, 0)], h, 0)
+arr = np.repeat(255, h * w * 3).reshape(h, w, 3)
+print(arr.shape)
+m = cv2.cvtColor(np.array([[[y, u, v]]], dtype=np.uint8), cv2.COLOR_YUV2RGB)[0, 0]
+for p in path:
+    arr[int(p[1] / (100 / h)), int(p[0] / (100 / w))] = 0, 0, 0  # m[0], m[1], m[2]
+plot.imshow(arr)
 plot.show()
