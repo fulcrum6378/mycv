@@ -19,10 +19,10 @@ class Segment:
 
 
 # noinspection PyTypeChecker
-def is_next_b(org_s: Segment, yy: int, xx: int) -> bool:  # TODO , dead_end: bool ?
+def is_next_b(org_s: Segment, yy: int, xx: int) -> bool:
     """ Checks if this is a border pixel and not detected before. """
     s_ = status[yy, xx]
-    # if s_ == org_s.id and not dead_end: return False
+    if s_ != org_s.id: return False
     if b_status[yy, xx] is None:
         check_if_border(s_, yy, xx)
         return b_status[yy, xx]
@@ -31,9 +31,7 @@ def is_next_b(org_s: Segment, yy: int, xx: int) -> bool:  # TODO , dead_end: boo
 
 def check_if_border(s_id: int, yy: int, xx: int) -> None:
     """ Checks if this pixel is in border. """
-    if s_id == 0: raise Exception("FUCK")  # is this version better than the 3rd one?
-    # if b_status[yy, xx] is not None: return
-    if (  # do NOT use "&&"!
+    if (  # do NOT use "&&" for straight neighbours!
             (yy == 0 or s_id != status[yy - 1, xx]) or  # northern
             ((yy > 0 and xx < (dim - 1)) and s_id != status[yy - 1, xx + 1]) or  # north-eastern
             (xx == (dim - 1) or s_id != status[yy, xx + 1]) or  # eastern
@@ -96,37 +94,40 @@ for seg in segments:
     # then start collecting all border pixels using that checkpoint
     stack.append([y, x, 0])
     while len(stack) != 0:
-        y, x, avoid_dir = stack[0]
+        y, x, avoid_dir = stack[len(stack) - 1]
+        stack.pop()
         ny, nx = y, x
-        if avoid_dir != 1 and y > 0:  # northern
+        if avoid_dir != 5 and y > 0:  # northern
             ny = y - 1
             if is_next_b(seg, ny, nx): stack.append([ny, nx, 1])
-        if avoid_dir != 2 and y > 0 and x < (dim - 1):  # north-eastern
+        if avoid_dir != 6 and y > 0 and x < (dim - 1):  # north-eastern
             ny = y - 1
             nx = x + 1
             if is_next_b(seg, ny, nx): stack.append([ny, nx, 2])
-        if avoid_dir != 3 and x < (dim - 1):  # eastern
+        if avoid_dir != 7 and x < (dim - 1):  # eastern
             nx = x + 1
             if is_next_b(seg, ny, nx): stack.append([ny, nx, 3])
-        if avoid_dir != 4 and y < (dim - 1) and x < (dim - 1):  # south-eastern
+        if avoid_dir != 8 and y < (dim - 1) and x < (dim - 1):  # south-eastern
             ny = y + 1
             nx = x + 1
             if is_next_b(seg, ny, nx): stack.append([ny, nx, 4])
-        if avoid_dir != 5 and y < (dim - 1):  # southern
+        if avoid_dir != 1 and y < (dim - 1):  # southern
             ny = y + 1
             if is_next_b(seg, ny, nx): stack.append([ny, nx, 5])
-        if avoid_dir != 6 and y < (dim - 1) and x > 0:  # south-western
+        if avoid_dir != 2 and y < (dim - 1) and x > 0:  # south-western
             ny = y + 1
             nx = x - 1
             if is_next_b(seg, ny, nx): stack.append([ny, nx, 6])
-        if avoid_dir != 7 and x > 0:  # western
+        if avoid_dir != 3 and x > 0:  # western
             nx = x - 1
             if is_next_b(seg, ny, nx): stack.append([ny, nx, 7])
-        if avoid_dir != 8 and y > 0 and x > 0:  # north-western
+        if avoid_dir != 4 and y > 0 and x > 0:  # north-western
             ny = y - 1
             nx = x - 1
             if is_next_b(seg, ny, nx): stack.append([ny, nx, 8])
-        stack.pop(0)
+# FIXME borders with shapes within another shape are not detected!
+#  and since the contrary is also true, that's why we face problems.
+#  Because sometimes the checkpoint is INSIDE a shape
 print('+ Border time:', datetime.now() - border_time)
 
 # store 5 of largest segments
