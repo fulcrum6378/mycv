@@ -80,7 +80,6 @@ for seg in segments:
         (s_boundaries[seg.id][3] + 1) - s_boundaries[seg.id][1],  # width
         (s_boundaries[seg.id][2] + 1) - s_boundaries[seg.id][0],  # height
     )
-# it wouldn't be like this, if `is_next_b()` didn't permit foreign segments!
 stack: list[list[int, int, int]] = []
 for seg in segments:
     # find the first encountering border pixel as a checkpoint
