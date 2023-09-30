@@ -12,7 +12,7 @@ for y_ in sorted(os.listdir(dir_y), key=sk):
     with open(f_path, 'rb') as y_f:
         a_y: list[int] = []
         for bid in range(0, os.path.getsize(f_path), 2):
-            a_y.append(struct.unpack('>H', y_f.read(2))[0])
+            a_y.append(struct.unpack('<H', y_f.read(2))[0])
         print(y_, ':', a_y)
 print()
 print('U:')
@@ -21,7 +21,7 @@ for u_ in sorted(os.listdir(dir_u), key=sk):
     with open(f_path, 'rb') as u_f:
         a_u: list[int] = []
         for bid in range(0, os.path.getsize(f_path), 2):
-            a_u.append(struct.unpack('>H', u_f.read(2))[0])
+            a_u.append(struct.unpack('<H', u_f.read(2))[0])
         print(u_, ':', a_u)
 print()
 print('V:')
@@ -30,7 +30,7 @@ for v_ in sorted(os.listdir(dir_v), key=sk):
     with open(f_path, 'rb') as v_f:
         a_v: list[int] = []
         for bid in range(0, os.path.getsize(f_path), 2):
-            a_v.append(struct.unpack('>H', v_f.read(2))[0])
+            a_v.append(struct.unpack('<H', v_f.read(2))[0])
         print(v_, ':', a_v)
 print()
 print('RATIO:')
@@ -39,5 +39,5 @@ for rt_ in sorted(os.listdir(dir_ratio), key=sk):
     with open(f_path, 'rb') as rtf:
         a_rt: list[int] = []
         for bid in range(0, os.path.getsize(f_path), 2):
-            a_rt.append(struct.unpack('>H', rtf.read(2))[0])
+            a_rt.append(struct.unpack('<H', rtf.read(2))[0])
         print(rt_, ':', a_rt)

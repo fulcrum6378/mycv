@@ -13,16 +13,16 @@ dir_ratio, dir_shapes = os.path.join(input_dir, 'ratio'), os.path.join(input_dir
 loading_time = datetime.now()
 shf_path = os.path.join(dir_shapes, input('Enter the ID of the shape:\n'))
 with open(shf_path, 'rb') as shf:
-    y: int = struct.unpack('>B', shf.read(1))[0]
-    u: int = struct.unpack('>B', shf.read(1))[0]
-    v: int = struct.unpack('>B', shf.read(1))[0]
-    w: int = struct.unpack('>H', shf.read(2))[0]
-    h: int = struct.unpack('>H', shf.read(2))[0]
+    y: int = struct.unpack('B', shf.read(1))[0]
+    u: int = struct.unpack('B', shf.read(1))[0]
+    v: int = struct.unpack('B', shf.read(1))[0]
+    w: int = struct.unpack('<H', shf.read(2))[0]
+    h: int = struct.unpack('<H', shf.read(2))[0]
     rt = int((w / h) * 10)
     path: list[tuple[float, float]] = []
     for b in range(7, os.path.getsize(shf_path), 8):
         path.append((
-            struct.unpack('>f', shf.read(4))[0], struct.unpack('>f', shf.read(4))[0]
+            struct.unpack('<f', shf.read(4))[0], struct.unpack('<f', shf.read(4))[0]
         ))
 print('Loading time:', datetime.now() - loading_time)
 
@@ -42,28 +42,28 @@ for y_ in range(y - y_radius, y + y_radius):
     if not os.path.isfile(f_path): continue
     with open(f_path, 'rb') as y_f:
         for _ in range(0, os.path.getsize(f_path), 8):
-            a_y.append(struct.unpack('>Q', y_f.read(8))[0])
+            a_y.append(struct.unpack('<Q', y_f.read(8))[0])
 for u_ in range(u - u_radius, u + u_radius):
     f_path = os.path.join(dir_u, str(u_))
     if not os.path.isfile(f_path): continue
     with open(f_path, 'rb') as u_f:
         for _ in range(0, os.path.getsize(f_path), 8):
-            a_u.append(struct.unpack('>Q', u_f.read(8))[0])
+            a_u.append(struct.unpack('<Q', u_f.read(8))[0])
 for v_ in range(v - v_radius, v + v_radius):
     f_path = os.path.join(dir_v, str(v_))
     if not os.path.isfile(f_path): continue
     with open(f_path, 'rb') as v_f:
         for _ in range(0, os.path.getsize(f_path), 8):
-            a_v.append(struct.unpack('>Q', v_f.read(8))[0])
+            a_v.append(struct.unpack('<Q', v_f.read(8))[0])
 for rt_ in range(rt - rt_radius, rt + rt_radius):
     f_path = os.path.join(dir_ratio, str(rt_))
     if not os.path.isfile(f_path): continue
     with open(f_path, 'rb') as rtf:
         for _ in range(0, os.path.getsize(f_path), 12):
             # a_rt.append((
-            #    struct.unpack('>Q', rtf.read(8))[0], struct.unpack('>f', rtf.read(4))[0]
+            #    struct.unpack('<Q', rtf.read(8))[0], struct.unpack('<f', rtf.read(4))[0]
             # ))
-            a_rt.append(struct.unpack('>Q', rtf.read(8))[0])
+            a_rt.append(struct.unpack('<Q', rtf.read(8))[0])
             rtf.seek(4, os.SEEK_CUR)
 
 # exclude candidates

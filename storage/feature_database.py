@@ -23,8 +23,8 @@ class FeatureDB:
             for b in range(1, len(raw_index), self._key_length + 16):
                 val2 = b + self._key_length
                 self._index[struct.unpack(self._key_type, raw_index[b:val2])[0]] = (
-                    struct.unpack('>Q', raw_index[val2:val2 + 8])[0],
-                    struct.unpack('>Q', raw_index[val2 + 8:val2 + 16])[0]
+                    struct.unpack('<Q', raw_index[val2:val2 + 8])[0],
+                    struct.unpack('<Q', raw_index[val2 + 8:val2 + 16])[0]
                 )
 
     def _define_structure(self):
@@ -37,7 +37,7 @@ class FeatureDB:
             data = fdb.read(self._index[key][1] * 8)
         ret = set()
         for b in range(0, len(data), 8):
-            ret.add(struct.unpack('>Q', data[b:b + 8])[0])
+            ret.add(struct.unpack('<Q', data[b:b + 8])[0])
         return ret
 
     def begin_transaction(self):
@@ -76,16 +76,16 @@ class FeatureDB:
         self._index[key] = (this_offset, len(value))
         with open(self._path, 'ab') as fdb:  # sometimes it needs to bs `ab`, sometimes `wb` and sometimes THE BOTH!!!
             fdb.seek(this_offset)
-            for sid in value: fdb.write(struct.pack('>Q', sid))
+            for sid in value: fdb.write(struct.pack('<Q', sid))
         return dif_items != 0
 
     def save_index(self):
         with open(self._index_path, 'wb') as idx:
-            idx.write(struct.pack('>B', self._key_length))
+            idx.write(struct.pack('B', self._key_length))
             for k, v in self._index.items():
                 idx.write(struct.pack(self._key_type, k))
-                idx.write(struct.pack('>Q', v[0]))
-                idx.write(struct.pack('>Q', v[1]))
+                idx.write(struct.pack('<Q', v[0]))
+                idx.write(struct.pack('<Q', v[1]))
 
 
 # WE MIGHT NOT NEED `SORTING` THOUGH!
@@ -107,8 +107,8 @@ class FractionalFeatureDB(FeatureDB):
         ret = list()
         for b in range(0, len(data), 12):
             ret.append((
-                struct.unpack('>Q', data[b:b + 8])[0],
-                struct.unpack('>f', data[b + 8:b + 12])[0]
+                struct.unpack('<Q', data[b:b + 8])[0],
+                struct.unpack('<f', data[b + 8:b + 12])[0]
             ))
         return ret
 
@@ -120,8 +120,8 @@ class FractionalFeatureDB(FeatureDB):
                 offset = fdb.tell()
                 self._index[k] = (offset, len(ids_and_values))
                 for sid, val in ids_and_values:
-                    fdb.write(struct.pack('>Q', sid))
-                    fdb.write(struct.pack('>f', val))
+                    fdb.write(struct.pack('<Q', sid))
+                    fdb.write(struct.pack('<f', val))
 
 
 # open().truncate() MIGHT BE USEFUL TOO, but it just resizes the whole file not a specific portion of it!.

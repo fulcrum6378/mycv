@@ -40,24 +40,24 @@ for o in sorted(os.listdir(input_dir), key=lambda fn: int(fn[:-5])):
 
     # write the shape file
     with open(os.path.join(dir_shapes, str(next_id)), 'wb') as shf:
-        shf.write(struct.pack('>B', y) + struct.pack('>B', u) + struct.pack('>B', v))
-        shf.write(struct.pack('>H', w))
-        shf.write(struct.pack('>H', h))
+        shf.write(struct.pack('B', y) + struct.pack('B', u) + struct.pack('B', v))
+        shf.write(struct.pack('<H', w))
+        shf.write(struct.pack('<H', h))
         for point in seg['path']:
-            shf.write(struct.pack('>f', point[0]) + struct.pack('>f', point[1]))
+            shf.write(struct.pack('<f', point[0]) + struct.pack('<f', point[1]))
 
     # write to colour sequence files
     with open(os.path.join(dir_y, str(y)), 'ab') as y_f:
-        y_f.write(struct.pack('>Q', next_id))
+        y_f.write(struct.pack('<Q', next_id))
     with open(os.path.join(dir_u, str(u)), 'ab') as u_f:
-        u_f.write(struct.pack('>Q', next_id))
+        u_f.write(struct.pack('<Q', next_id))
     with open(os.path.join(dir_v, str(v)), 'ab') as v_f:
-        v_f.write(struct.pack('>Q', next_id))
+        v_f.write(struct.pack('<Q', next_id))
 
     # write to other sequence files (fractional ones do not require sorting!)
     ratio = w / h
     with open(os.path.join(dir_ratio, str(int(ratio * 10))), 'ab') as rtf:
-        rtf.write(struct.pack('>Q', next_id) + struct.pack('>f', ratio))
+        rtf.write(struct.pack('<Q', next_id) + struct.pack('<f', ratio))
 
     next_id += 1
 print('Loading + saving time:', datetime.now() - load_and_save_time)
