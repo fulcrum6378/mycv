@@ -74,14 +74,10 @@ for y in range(dim):
                 set_as_border(y, x)
                 continue
             if b_status[y, x] is not None: continue
-            # 1. compare with eastern
-            check_if_border(y, x, y, x + 1)
-            # 2. compare with south-eastern
-            check_if_border(y, x, y + 1, x + 1)
-            # 3. compare with southern
-            check_if_border(y, x, y + 1, x)
-            # 4. compare with south-western
-            check_if_border(y, x, y + 1, x - 1)
+            check_if_border(y, x, y, x + 1)  # eastern
+            check_if_border(y, x, y + 1, x + 1)  # south-eastern
+            check_if_border(y, x, y + 1, x)  # southern
+            check_if_border(y, x, y + 1, x - 1)  # south-western
 print('+ Border time:', datetime.now() - border_time)
 
 # store 5 of largest segments

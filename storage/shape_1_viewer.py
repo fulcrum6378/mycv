@@ -24,16 +24,11 @@ with open(shf_path, 'rb') as shf:
         path.append((
             struct.unpack('<f', shf.read(4))[0], struct.unpack('<f', shf.read(4))[0]
         ))
-print(y, u, v, w, h)
-print("Points:", len(path))
+print('(', y, u, v, ')', w, 'x', h, '-', len(path), 'points')
 
 # draw the segment into the cadre and display it
-# arr = np.repeat([np.repeat(np.repeat([255], 3, 0), w, 0)], h, 0)
-arr = np.repeat(255, h * w * 3).reshape(h, w, 3)
-print(arr.shape)
-m = cv2.cvtColor(np.array([[[y, u, v]]], dtype=np.uint8), cv2.COLOR_YUV2RGB)[0, 0]
+arr = np.repeat(np.repeat(np.array([[[y, u, v]]]), w, 1), h, 0)
 for p in path:
-    arr[int(p[1] / (100 / h)), int(p[0] / (100 / w))] = 0, 0, 0  # m[0], m[1], m[2]
-    # TODO INCOMPLETE
-plot.imshow(arr)
+    arr[int(p[1] / (100 / h)), int(p[0] / (100 / w))] = 0, 128, 128  # m[0], m[1], m[2]
+plot.imshow(cv2.cvtColor(np.array(arr, dtype=np.uint8), cv2.COLOR_YUV2RGB))
 plot.show()
