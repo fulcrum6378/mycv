@@ -84,8 +84,8 @@ void Segmentation::CheckIfBorder(Segment *seg, uint16_t y, uint16_t x) {
             ) {
         arr[y][x] |= 1 << 24;
         seg->border.push_back(pair(
-                (100.0 / seg->w) * (seg->min_x - x), // fractional X
-                (100.0 / seg->h) * (seg->min_y - y)  // fractional Y
+                (100.0 / seg->w) * (x - seg->min_x), // fractional X
+                (100.0 / seg->h) * (y - seg->min_y)  // fractional Y
         ));
     } else arr[y][x] |= 2 << 24;
 }

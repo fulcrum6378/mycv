@@ -82,7 +82,7 @@ class Pixel:
     def set_is_border(self):
         self.b = True
         _s = segments[self.s]
-        _s.border.append([(100 / _s.w) * _s.min_x - self.x, (100 / _s.h) * _s.min_y - self.y])
+        _s.border.append([(100 / _s.w) * (self.x - _s.min_x), (100 / _s.h) * (self.y - _s.min_y)])
 
 
 class Segment:
