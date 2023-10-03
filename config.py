@@ -8,7 +8,7 @@ bitmap: str = '1689005849386887'
 dim: int = 1088
 
 # /segmentation/
-min_seg: int = 100
+min_seg: int = 40
 
 # /tracing/
 max_export_segments: int = 10

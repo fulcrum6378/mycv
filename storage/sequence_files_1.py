@@ -19,7 +19,7 @@ for folder in [dir_y, dir_u, dir_v, dir_ratio, dir_shapes]:
 next_id = len(os.listdir(dir_shapes))
 # The last ID should be read from a config file later. After reaching the maximum 64-bit length,
 # it can restart from 0, while having the previous shapes forgotten.
-# TODO: Another problem is that UNIX/LINUX (&Android) filesystems support directories
+# TO-DO: Another problem is that UNIX/LINUX (&Android) filesystems support directories
 #  of only maximum 2pow(16) - 1 (65,535) number of files!
 # https://unix.stackexchange.com/questions/239146/linux-folder-size-limit
 

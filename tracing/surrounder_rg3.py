@@ -59,7 +59,7 @@ def is_next_b(org_s: Segment, yy: int, xx: int) -> bool:
     #    if b_status[yy, xx] and s_ == org_s.id:
     #        return True
     # return False
-    # DOESN'T WORK FINE IN THE TEST!!! FIXME but it's not urgent
+    # DOESN'T WORK FINE IN THE TEST!!! FIX-ME but it's not urgent
     s_ = status[yy, xx]
     if s_ == org_s.id: return False  # AS MUCH AS I THINK, IT SHOULD BE `s_ != org_s.id`, BUT THE OPPOSITE WORKS!
     if b_status[yy, xx] is None:

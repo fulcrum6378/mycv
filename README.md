@@ -94,14 +94,6 @@ Therefore, every database will have its own method of comparison.
 
 ***
 
-### 6. /identification/ (to be implemented)
-
-Shapes related to an object will be stored in another kind of database as a **Visual Object**.
-Visual objects along with *auditory objects* and *touch patterns* will be related to an ultimate
-**Object** which the brain addresses as an entity.
-
-***
-
 ### License
 
 ```
