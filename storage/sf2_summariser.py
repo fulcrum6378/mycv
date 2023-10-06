@@ -3,9 +3,18 @@ import struct
 
 input_dir = os.path.join('storage', 'output')
 dir_y, dir_u, dir_v = os.path.join(input_dir, 'y'), os.path.join(input_dir, 'u'), os.path.join(input_dir, 'v')
-dir_ratio = os.path.join(input_dir, 'r')
+dir_ratio, dir_frame = os.path.join(input_dir, 'r'), os.path.join(input_dir, 'f')
 sk = lambda fn: int(fn)
 
+print('Frame:')
+for f_ in sorted(os.listdir(dir_frame), key=sk):
+    f_path = os.path.join(dir_frame, str(f_))
+    with open(f_path, 'rb') as f_f:
+        a_f: list[int] = []
+        for bid in range(0, os.path.getsize(f_path), 2):
+            a_f.append(struct.unpack('<H', f_f.read(2))[0])
+        print(f_, ':', a_f)
+print()
 print('Y:')
 for y_ in sorted(os.listdir(dir_y), key=sk):
     f_path = os.path.join(dir_y, str(y_))

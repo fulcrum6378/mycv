@@ -8,23 +8,24 @@ import numpy as np
 # prepare the input folders
 input_dir = os.path.join('storage', 'output')
 dir_y, dir_u, dir_v = os.path.join(input_dir, 'y'), os.path.join(input_dir, 'u'), os.path.join(input_dir, 'v')
-dir_ratio, dir_shapes = os.path.join(input_dir, 'r'), os.path.join(input_dir, 'shapes')
+dir_ratio, dir_frame = os.path.join(input_dir, 'r'), os.path.join(input_dir, 'f')
+dir_shapes = os.path.join(input_dir, 'shapes')
 
 # load the subject shape
 shf_path = os.path.join(dir_shapes, input('Enter the ID of the shape: '))
-with open(shf_path, 'rb') as shf:
+with open(shf_path, 'rb') as shf:  # NOTE: ARM64 IS LITTLE-ENDIAN!!!
+    f: int = struct.unpack('<Q', shf.read(8))[0]
     y: int = struct.unpack('B', shf.read(1))[0]
     u: int = struct.unpack('B', shf.read(1))[0]
     v: int = struct.unpack('B', shf.read(1))[0]
     w: int = struct.unpack('<H', shf.read(2))[0]
     h: int = struct.unpack('<H', shf.read(2))[0]
-    # NOTE: ARM64 IS LITTLE-ENDIAN!!!
     path: list[tuple[float, float]] = []
-    for b in range(7, os.path.getsize(shf_path), 8):
+    for b in range(shf.tell(), os.path.getsize(shf_path), 8):
         path.append((
             struct.unpack('<f', shf.read(4))[0], struct.unpack('<f', shf.read(4))[0]
         ))
-print('(', y, u, v, ')', w, 'x', h, '-', len(path), 'points')
+print('Frame', f, ':', '(', y, u, v, ')', w, 'x', h, '-', len(path), 'points')
 
 # draw the segment into the cadre and display it
 arr = np.repeat(np.repeat(np.array([[[y, u, v]]]), w, 1), h, 0)

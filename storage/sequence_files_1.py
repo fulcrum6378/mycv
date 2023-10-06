@@ -23,7 +23,7 @@ next_id = len(os.listdir(dir_shapes))
 #  of only maximum 2pow(16) - 1 (65,535) number of files!
 # https://unix.stackexchange.com/questions/239146/linux-folder-size-limit
 
-# Shape File (structure of bytes):
+# Shape File v1 (structure of bytes):
 # 3 | average colour (YUV)
 # 2 | width
 # 2 | height
