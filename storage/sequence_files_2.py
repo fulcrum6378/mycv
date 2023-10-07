@@ -20,8 +20,9 @@ for folder in [dir_y, dir_u, dir_v, dir_ratio, dir_frame, dir_shapes]:
 next_id = len(os.listdir(dir_shapes))
 
 # Shape File v2 (structure of bytes):
-# 8 | Frame ID
 # 3 | average colour (YUV)
+# 2 | ratio
+# 8 | Frame ID
 # 2 | width
 # 2 | height
 # N | path points in double 32-bit (both 64-bit)
@@ -35,11 +36,13 @@ for o in sorted(os.listdir(input_dir), key=lambda fn: int(fn[:-5])):
     seg = json.loads(open(os.path.join(input_dir, o), 'r').read())
     y, u, v = seg['mean']
     w, h = seg['dimensions']
-    ratio = w / h
+    ratio = int((w / h) * 10)
 
     # write to shape file
     with open(os.path.join(dir_shapes, str(next_id)), 'wb') as shf:
         shf.write(struct.pack('B', y) + struct.pack('B', u) + struct.pack('B', v))
+        shf.write(struct.pack('<H', ratio))
+        shf.write(struct.pack('<Q', 0))
         shf.write(struct.pack('<H', w))
         shf.write(struct.pack('<H', h))
         for point in seg['path']:
@@ -53,7 +56,7 @@ for o in sorted(os.listdir(input_dir), key=lambda fn: int(fn[:-5])):
         u_f.write(struct.pack('<H', next_id))
     with open(os.path.join(dir_v, str(v)), 'ab') as v_f:
         v_f.write(struct.pack('<H', next_id))
-    with open(os.path.join(dir_ratio, str(int(ratio * 10))), 'ab') as rtf:
+    with open(os.path.join(dir_ratio, str(ratio)), 'ab') as rtf:
         rtf.write(struct.pack('<H', next_id))
 
     next_id += 1

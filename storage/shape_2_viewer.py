@@ -14,10 +14,11 @@ dir_shapes = os.path.join(input_dir, 'shapes')
 # load the subject shape
 shf_path = os.path.join(dir_shapes, input('Enter the ID of the shape: '))
 with open(shf_path, 'rb') as shf:  # NOTE: ARM64 IS LITTLE-ENDIAN!!!
-    f: int = struct.unpack('<Q', shf.read(8))[0]
     y: int = struct.unpack('B', shf.read(1))[0]
     u: int = struct.unpack('B', shf.read(1))[0]
     v: int = struct.unpack('B', shf.read(1))[0]
+    r: int = struct.unpack('<H', shf.read(2))[0]
+    f: int = struct.unpack('<Q', shf.read(8))[0]
     w: int = struct.unpack('<H', shf.read(2))[0]
     h: int = struct.unpack('<H', shf.read(2))[0]
     path: list[tuple[float, float]] = []
@@ -25,7 +26,7 @@ with open(shf_path, 'rb') as shf:  # NOTE: ARM64 IS LITTLE-ENDIAN!!!
         path.append((
             struct.unpack('<f', shf.read(4))[0], struct.unpack('<f', shf.read(4))[0]
         ))
-print('Frame', f, ':', '(', y, u, v, ')', w, 'x', h, '-', len(path), 'points')
+print('Frame', f, ':', '(', y, u, v, ')', w, 'x', h, '(', r, ')', '-', len(path), 'points')
 
 # draw the segment into the cadre and display it
 arr = np.repeat(np.repeat(np.array([[[y, u, v]]]), w, 1), h, 0)
