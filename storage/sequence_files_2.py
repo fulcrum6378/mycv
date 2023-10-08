@@ -6,7 +6,7 @@ from datetime import datetime
 from config import bitmap
 
 # make sure it's not trigger unintentionally
-if input('Are you sure? (y/any): ') != 'y': quit()
+if input('Are you sure? (any/n): ') == 'n': quit()
 
 # prepare the output folders
 output_dir = os.path.join('storage', 'output')
@@ -31,7 +31,7 @@ next_id = len(os.listdir(dir_shapes))
 # load data from the /tracing/ section
 load_and_save_time = datetime.now()
 input_dir, ext_json = os.path.join('tracing', 'output', bitmap), '.json'
-f_f = open(os.path.join(dir_frame, str(0)), 'ab')
+f_f = open(os.path.join(dir_frame, str(int(bitmap))), 'ab')
 for o in sorted(os.listdir(input_dir), key=lambda fn: int(fn[:-5])):
     seg = json.loads(open(os.path.join(input_dir, o), 'r').read())
     y, u, v = seg['mean']
@@ -42,7 +42,7 @@ for o in sorted(os.listdir(input_dir), key=lambda fn: int(fn[:-5])):
     with open(os.path.join(dir_shapes, str(next_id)), 'wb') as shf:
         shf.write(struct.pack('B', y) + struct.pack('B', u) + struct.pack('B', v))
         shf.write(struct.pack('<H', ratio))
-        shf.write(struct.pack('<Q', 0))
+        shf.write(struct.pack('<Q', int(bitmap)))
         shf.write(struct.pack('<H', w))
         shf.write(struct.pack('<H', h))
         for point in seg['path']:

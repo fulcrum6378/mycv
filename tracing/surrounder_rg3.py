@@ -84,8 +84,8 @@ def set_is_border(s_id: int, yy: int, xx: int):
     b_status[yy, xx] = True
     if s_id not in s_border: s_border[s_id] = []
     s_border[s_id].append((
-        (100.0 / s_dimensions[seg.id][0]) * (xx - s_boundaries[s_id][1]),  # fractional X
-        (100.0 / s_dimensions[seg.id][1]) * (yy - s_boundaries[s_id][0]),  # fractional Y
+        (100.0 / s_dimensions[s_id][0]) * (xx - s_boundaries[s_id][1]),  # fractional X
+        (100.0 / s_dimensions[s_id][1]) * (yy - s_boundaries[s_id][0]),  # fractional Y
     ))
 
 
