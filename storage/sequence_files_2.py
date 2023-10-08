@@ -3,7 +3,7 @@ import os
 import struct
 from datetime import datetime
 
-from config import bitmap
+from config import bitmap, shape_path_type
 
 # make sure it's not trigger unintentionally
 if input('Are you sure? (any/n): ') == 'n': quit()
@@ -22,10 +22,10 @@ next_id = len(os.listdir(dir_shapes))
 # Shape File v2 (structure of bytes):
 # 3 | average colour (YUV)
 # 2 | ratio
-# 8 | Frame ID
+# 8 | frame ID
 # 2 | width
 # 2 | height
-# N | path points in double 32-bit (both 64-bit)
+# N | path points in 8/16-bit maxima (together 16/32-bits)
 
 
 # load data from the /tracing/ section
@@ -36,7 +36,7 @@ for o in sorted(os.listdir(input_dir), key=lambda fn: int(fn[:-5])):
     seg = json.loads(open(os.path.join(input_dir, o), 'r').read())
     y, u, v = seg['mean']
     w, h = seg['dimensions']
-    ratio = int((w / h) * 10)
+    ratio = int((float(w) / float(h)) * 10.0)
 
     # write to shape file
     with open(os.path.join(dir_shapes, str(next_id)), 'wb') as shf:
@@ -46,10 +46,10 @@ for o in sorted(os.listdir(input_dir), key=lambda fn: int(fn[:-5])):
         shf.write(struct.pack('<H', w))
         shf.write(struct.pack('<H', h))
         for point in seg['path']:
-            shf.write(struct.pack('<f', point[0]) + struct.pack('<f', point[1]))
+            shf.write(struct.pack(shape_path_type, point[0]) + struct.pack(shape_path_type, point[1]))
 
     # write to sequence files
-    f_f.write(struct.pack('<Q', next_id))
+    f_f.write(struct.pack('<H', next_id))
     with open(os.path.join(dir_y, str(y)), 'ab') as y_f:
         y_f.write(struct.pack('<H', next_id))
     with open(os.path.join(dir_u, str(u)), 'ab') as u_f:
@@ -62,4 +62,4 @@ for o in sorted(os.listdir(input_dir), key=lambda fn: int(fn[:-5])):
     next_id += 1
 f_f.close()
 print('Loading + saving time:', datetime.now() - load_and_save_time)
-print('Note: the time delta above includes reading from JSON files too!')
+# Note: the time delta above includes reading from JSON files too!

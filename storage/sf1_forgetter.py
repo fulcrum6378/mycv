@@ -17,7 +17,7 @@ for ssid in input('What to forget? (0,1,2,3): ').split(','):
         print('Invalid ID:', ssid)
         quit()
 
-# FIXME not efficient in forgetting a large number of shapes
+# FIX-ME not efficient in forgetting a large number of shapes
 
 for sid in forget_about:
     # open the shape file and read its details, then move it to the trash directory

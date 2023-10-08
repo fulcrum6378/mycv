@@ -8,7 +8,7 @@ import cv2
 import matplotlib.pyplot as plot
 import numpy as np
 
-from config import bitmap, bitmap_folder, dim, display_segment, max_export_segments
+from config import bitmap, bitmap_folder, dim, display_segment, max_export_segments, shape_path_max
 
 
 class Segment:
@@ -28,10 +28,10 @@ def check_if_border(y1: int, x1: int, y2: int, x2: int):
 def set_as_border(y: int, x: int):
     b_status[y, x] = True
     s_id = status[y, x]
-    if s_id not in s_border: s_border[s_id] = []
-    s_border[s_id].append((
-        (100.0 / s_dimensions[s_id][0]) * (x - s_boundaries[s_id][1]),  # fractional X
-        (100.0 / s_dimensions[s_id][1]) * (y - s_boundaries[s_id][0]),  # fractional Y
+    if s_id not in s_border: s_border[s_id] = set()
+    s_border[s_id].add((
+        int((shape_path_max / s_dimensions[s_id][0]) * (x - s_boundaries[s_id][1])),  # fractional X
+        int((shape_path_max / s_dimensions[s_id][1]) * (y - s_boundaries[s_id][0])),  # fractional Y
     ))
 
 
@@ -47,7 +47,7 @@ print('Loading time:', datetime.now() - loading_time)
 border_time = datetime.now()
 # noinspection PyTypeChecker
 b_status: np.ndarray[Optional[bool]] = np.repeat([np.repeat(None, dim)], dim, 0)
-s_border: dict[int, list[tuple[float, float]]] = {}
+s_border: dict[int, set[tuple[int, int]]] = {}
 s_boundaries: dict[int, list[int, int, int, int]] = {}  # min_y, min_x, max_y, max_x
 s_dimensions: dict[int, tuple[int, int]] = {}  # width, height
 for seg in segments:
@@ -86,7 +86,7 @@ if not os.path.isdir(branch): os.mkdir(branch)
 for s in range(max_export_segments):
     open(os.path.join(branch, str(s) + '.json'), 'w').write(json.dumps({
         'mean': segments[s].m,
-        'path': s_border[segments[s].id],
+        'path': list(s_border[segments[s].id]),
         'dimensions': [s_dimensions[segments[s].id][0], s_dimensions[segments[s].id][1]],
     }))
 
