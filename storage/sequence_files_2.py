@@ -25,6 +25,8 @@ next_id = len(os.listdir(dir_shapes))
 # 8 | frame ID
 # 2 | width
 # 2 | height
+# 2 | central point X
+# 2 | central point Y
 # N | path points in 8/16-bit maxima (together 16/32-bits)
 
 
@@ -36,6 +38,7 @@ for o in sorted(os.listdir(input_dir), key=lambda fn: int(fn[:-5])):
     seg = json.loads(open(os.path.join(input_dir, o), 'r').read())
     y, u, v = seg['mean']
     w, h = seg['dimensions']
+    cx, cy = seg['centre']
     ratio = int((float(w) / float(h)) * 10.0)
 
     # write to shape file
@@ -45,6 +48,8 @@ for o in sorted(os.listdir(input_dir), key=lambda fn: int(fn[:-5])):
         shf.write(struct.pack('<Q', int(bitmap)))
         shf.write(struct.pack('<H', w))
         shf.write(struct.pack('<H', h))
+        shf.write(struct.pack('<H', cx))
+        shf.write(struct.pack('<H', cy))
         for point in seg['path']:
             shf.write(struct.pack(shape_path_type, point[0]) + struct.pack(shape_path_type, point[1]))
 

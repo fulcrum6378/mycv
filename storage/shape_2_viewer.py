@@ -20,20 +20,23 @@ with open(shf_path, 'rb') as shf:  # NOTE: ARM64 IS LITTLE-ENDIAN!!!
     u: int = struct.unpack('B', shf.read(1))[0]
     v: int = struct.unpack('B', shf.read(1))[0]
     r: int = struct.unpack('<H', shf.read(2))[0]
-    f: int = struct.unpack('<Q', shf.read(8))[0]
+    frame: int = struct.unpack('<Q', shf.read(8))[0]
     w: int = struct.unpack('<H', shf.read(2))[0]
     h: int = struct.unpack('<H', shf.read(2))[0]
-    path: list[tuple[float, float]] = []
+    cx: int = struct.unpack('<H', shf.read(2))[0]
+    cy: int = struct.unpack('<H', shf.read(2))[0]
+    path: list[tuple[int, int]] = []
     for b in range(shf.tell(), os.path.getsize(shf_path), 8):
         path.append((
             struct.unpack(shape_path_type, shf.read(shape_path_bytes))[0],
             struct.unpack(shape_path_type, shf.read(shape_path_bytes))[0]
         ))
-print('Frame', f, ':', '(', y, u, v, ')', w, 'x', h, '(', r, ')', '-', len(path), 'points')
+print('Frame', frame, ':', '(', y, u, v, ')', w, 'x', h, '(', r, ')')
+print(len(path), 'points; centre:', cx, 'x', cy)
 
 # draw the segment into the cadre and display it
-w *= 1.0 - (0.45 * (3 - shape_path_bytes))
-h *= 1.0 - (0.45 * (3 - shape_path_bytes))
+w *= 1.0 - (0.25 * (3 - shape_path_bytes))
+h *= 1.0 - (0.25 * (3 - shape_path_bytes))
 arr = np.repeat(np.repeat(np.array([[[y, u, v]]]), w + 1, 1), h + 1, 0)
 for p in path:
     arr[int(p[1] / (shape_path_max / h)), int(p[0] / (shape_path_max / w))] = \

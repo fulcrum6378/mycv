@@ -88,6 +88,10 @@ for s in range(max_export_segments):
         'mean': segments[s].m,
         'path': list(s_border[segments[s].id]),
         'dimensions': [s_dimensions[segments[s].id][0], s_dimensions[segments[s].id][1]],
+        'centre': [
+            round((s_boundaries[segments[s].id][1] + s_boundaries[segments[s].id][3] + 1) / 2),  # X
+            round((s_boundaries[segments[s].id][0] + s_boundaries[segments[s].id][2] + 1) / 2),  # Y
+        ],
     }))
 
 # draw the segment into the cadre and display it
