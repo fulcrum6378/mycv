@@ -78,23 +78,42 @@ del sh, sh_id
 
 # 3. Check if the indexes contain no unavailable shape
 
+ukf: list[tuple[int, int]] = []
 for f_ in f_keys:
     if len(f[f_]) != 0:
-        for sid in f[f_]:
-            print("Index Frames contains an unavailable shape {0}!".format(sid))
+        for sid in sorted(f[f_]):
+            ukf.append((sid, f_))
+for sid, f_ in ukf:
+    print("Index Frames contains an unavailable shape {0}!".format(f_))
+
+uky: list[tuple[int, int]] = []
 for y_ in y_keys:
     if len(y[y_]) != 0:
-        for sid in y[y_]:
-            print("Index Y contains an unavailable shape {0}!".format(sid))
+        for sid in sorted(y[y_]):
+            uky.append((sid, y_))
+for sid, y_ in sorted(uky):
+    print("Index Y contains an unavailable shape {0} of value {1}!".format(sid, y_))
+
+uku: list[tuple[int, int]] = []
 for u_ in u_keys:
     if len(u[u_]) != 0:
-        for sid in u[u_]:
-            print("Index U contains an unavailable shape {0}!".format(sid))
+        for sid in sorted(u[u_]):
+            uku.append((sid, u_))
+for sid, u_ in sorted(uku):
+    print("Index U contains an unavailable shape {0} of value {1}!".format(sid, u_))
+
+ukv: list[tuple[int, int]] = []
 for v_ in v_keys:
     if len(v[v_]) != 0:
-        for sid in v[v_]:
-            print("Index V contains an unavailable shape {0}!".format(sid))
+        for sid in sorted(v[v_]):
+            ukv.append((sid, v_))
+for sid, v_ in sorted(ukv):
+    print("Index V contains an unavailable shape {0} of value {1}!".format(sid, v_))
+
+ukr: list[tuple[int, int]] = []
 for r_ in r_keys:
     if len(r[r_]) != 0:
-        for sid in r[r_]:
-            print("Index Ratio contains an unavailable shape {0}!".format(sid))
+        for sid in sorted(r[r_]):
+            ukr.append((sid, r_))
+for sid, r_ in sorted(ukr):
+    print("Index Ratio contains an unavailable shape {0} of value {1}!".format(sid, r_))
