@@ -30,8 +30,8 @@ def set_as_border(y: int, x: int):
     s_id = status[y, x]
     if s_id not in s_border: s_border[s_id] = set()
     s_border[s_id].add((
-        int((shape_path_max / s_dimensions[s_id][0]) * (x - s_boundaries[s_id][1])),  # fractional X
-        int((shape_path_max / s_dimensions[s_id][1]) * (y - s_boundaries[s_id][0])),  # fractional Y
+        int((shape_path_max / float(s_dimensions[s_id][0])) * float(x - s_boundaries[s_id][1])),  # fractional X
+        int((shape_path_max / float(s_dimensions[s_id][1])) * float(y - s_boundaries[s_id][0])),  # fractional Y
     ))
 
 
