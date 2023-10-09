@@ -7,7 +7,7 @@ for f_ in sorted(os.listdir(dir_frame), key=sk):
     l_ = read_sequence_file(dir_frame, f_)
     s_ = set(l_)
     dif = abs(len(l_) - len(s_))
-    if dif != 0: print("Found {0} duplicate items in Frames!".format(dif))
+    if dif != 0: print("Found {0} duplicate items in Frames:{1}!".format(dif, f_))
     f[int(f_)] = s_
 
 y: dict[int, set[int]] = {}
@@ -15,7 +15,7 @@ for y_ in sorted(os.listdir(dir_y), key=sk):
     l_ = read_sequence_file(dir_y, y_)
     s_ = set(l_)
     dif = abs(len(l_) - len(s_))
-    if dif != 0: print("Found {0} duplicate items in Y!".format(dif))
+    if dif != 0: print("Found {0} duplicate items in Y:{1}!".format(dif, y_))
     y[int(y_)] = s_
 
 u: dict[int, set[int]] = {}
@@ -23,7 +23,7 @@ for u_ in sorted(os.listdir(dir_u), key=sk):
     l_ = read_sequence_file(dir_u, u_)
     s_ = set(l_)
     dif = abs(len(l_) - len(s_))
-    if dif != 0: print("Found {0} duplicate items in U!".format(dif))
+    if dif != 0: print("Found {0} duplicate items in U:{1}!".format(dif, u_))
     u[int(u_)] = s_
 
 v: dict[int, set[int]] = {}
@@ -31,7 +31,7 @@ for v_ in sorted(os.listdir(dir_v), key=sk):
     l_ = read_sequence_file(dir_v, v_)
     s_ = set(l_)
     dif = abs(len(l_) - len(s_))
-    if dif != 0: print("Found {0} duplicate items in V!".format(dif))
+    if dif != 0: print("Found {0} duplicate items in V:{1}!".format(dif, v_))
     v[int(v_)] = s_
 
 r: dict[int, set[int]] = {}
@@ -39,7 +39,7 @@ for r_ in sorted(os.listdir(dir_ratio), key=sk):
     l_ = read_sequence_file(dir_ratio, r_)
     s_ = set(l_)
     dif = abs(len(l_) - len(s_))
-    if dif != 0: print("Found {0} duplicate items in Ratio!".format(dif))
+    if dif != 0: print("Found {0} duplicate items in Ratio:{1}!".format(dif, r_))
     r[int(r_)] = s_
 
 del f_, y_, u_, v_, r_, l_, s_, dif
