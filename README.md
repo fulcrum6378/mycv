@@ -15,7 +15,7 @@ https://github.com/fulcrum6378/mergen_android/blob/master/cpp/vis/camera.cpp)
 - [**rgb_to_bitmap.py**](vis/rgb_to_bitmap.py) : extracts RGB image frames from a single big file named "*vis.rgb*",
   and saves them in Bitmap (*.bmp) images with BMP metadata (from */vis/metadata*) at beginning of each file.
 
-@ [test_yuv.py](vis/test_yuv.py) : displays a raw YUV bitmap image (*test.yuv*) using OpenCV and MatPlotLib.
+@ [test_yuv.py](vis/test_yuv.py) : displays a raw YUV bitmap image (*test.yuv*) using OpenCV and Matplotlib.
 
 => Output: BMP image frames
 
@@ -105,6 +105,12 @@ https://en.wikipedia.org/wiki/Short-term_memory). First I wanted to put the data
 It shall extract a shape from /storage/output/ and look for similar items in the same directory,
 using the databases of the previous step.
 Therefore, every database will have its own implementation of comparison.
+
+***
+
+### /debug/
+
+This section provides you with a server-client tools for debugging C++ implementations.
 
 ***
 

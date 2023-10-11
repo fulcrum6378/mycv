@@ -19,3 +19,6 @@ shape_path_type: str = {1: 'B', 2: '<H', }[shape_path_bytes]
 
 # /comparison/
 y_radius, u_radius, v_radius, rt_radius = 6, 2, 4, 2
+
+# /debug/
+server_address = "192.168.1.20"
