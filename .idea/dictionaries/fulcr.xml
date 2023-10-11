@@ -2,6 +2,7 @@
   <dictionary name="fulcr">
     <words>
       <w>asarray</w>
+      <w>comprehender</w>
       <w>dtype</w>
       <w>forgetter</w>
       <w>fromarray</w>

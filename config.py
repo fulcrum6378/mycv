@@ -13,7 +13,7 @@ min_seg: int = 40
 # /tracing/
 max_export_segments: int = 10
 display_segment: Optional[int] = None
-shape_path_bytes: int = 2  # Byte=>1, Short=>2 - ONLY CHANGE THIS!
+shape_path_bytes: int = 1  # Byte=>1, Short=>2 - ONLY CHANGE THIS!
 shape_path_max: float = {1: 256.0, 2: 65535.0, }[shape_path_bytes]
 shape_path_type: str = {1: 'B', 2: '<H', }[shape_path_bytes]
 

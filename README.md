@@ -5,17 +5,23 @@ in Python which helps with faster debugging of computer vision algorithms.
 These methods are translated to C++ for the main project.
 MyCV was initiated in 10 July 2023 and after a successful image analysis, translations began at 24 September.
 
-It contains the following parts (sorted by precedence of usage):
+The project divides the process of image analysis to the following steps:
 
 ### 1. /vis/
 
-This section is dedicated to extraction of Bitmap (*.bmp) images from [**vis/camera.cpp**](
+Tools for reading output from [**vis/camera.cpp**](
 https://github.com/fulcrum6378/mergen_android/blob/master/cpp/vis/camera.cpp)
-which outputs raw RGB streams without BMP metadata (*vis.rgb*).
+
+- [**rgb_to_bitmap.py**](vis/rgb_to_bitmap.py) : extracts RGB image frames from a single big file named "*vis.rgb*",
+  and saves them in Bitmap (*.bmp) images with BMP metadata (from */vis/metadata*) at beginning of each file.
+
+@ [test_yuv.py](vis/test_yuv.py) : displays a raw YUV bitmap image (*test.yuv*) using OpenCV and MatPlotLib.
 
 => Output: BMP image frames
 
 ***
+
+> [**config.py**](config.py) defines tweaks used in most steps.
 
 ### 2. /segmentation/: [Image Segmentation](https://en.wikipedia.org/wiki/Image_segmentation)
 
@@ -27,9 +33,11 @@ which outputs raw RGB streams without BMP metadata (*vis.rgb*).
       code! It takes **~22 seconds**.
     - [region_growing_3.py](segmentation/region_growing_3.py) : an improved and completed version of the 1st method;
       it takes **~7 to ~8 seconds**.
-    - [region_growing_4.py](segmentation/region_growing_4.py) : same as the 3rd method, but without recursion because
-      of C++ restrictions, and segment IDs start from 0 not -1. It takes **~11 to ~15 seconds** here but **~2 seconds**
-      in C++ with a Samsung Galaxy A50 phone!
+    - [**region_growing_4.py**](segmentation/region_growing_4.py) : same as the 3rd method, but without recursion
+      because of C++ restrictions, and segment IDs start from 0 not -1. It takes **~11 to ~15 seconds** here
+      but **~2 seconds** in C++ with a Samsung Galaxy A50 phone!
+    - [region_growing_5.py](segmentation/region_growing_5.py) : same as the 4th method, but it compares colours of all
+      pixels of a segment with the very first pixel it finds. The results we like a KMeans filter, which I didn't like!
 - [Clustering methods](https://en.wikipedia.org/wiki/Cluster_analysis)
     - [clustering_1d.py](segmentation/clustering_1d.py) : clustering all pixels in a 1-dimensional way...
       left incomplete; not logically suitable!
@@ -42,22 +50,27 @@ which outputs raw RGB streams without BMP metadata (*vis.rgb*).
 
 Trying to interpret segments of images in terms of [vector graphics](https://en.wikipedia.org/wiki/Vector_graphics)
 instead of [raster images](https://en.wikipedia.org/wiki/Raster_graphics); but the vectors must be able to be easily
-compared to others of their kind. It must:
+compared to others of their kind. **It must**:
 
-- Detect Shapes
-- Detect Gradients: for now we get an average colour of all pixels.
+- **Detect Shapes**: it calculates path points in relative percentage-like numbers, just like a vector image.
+  Vector paths can be stored in 2 different types:
+    1. **8-bit**: position of each point will range from 0 to 256 (uint8_t, unsigned byte).
+    2. **16-bit**: position of each point will range from 0 to 65,535 (uint16_t, unsigned short).
+- **Detect Gradients**: it temporarily computes an average colour of all pixels.
 
-Since segmentation output is not always the same, each segmentation method must have its own tracing implementation.
-Methods used:
+Because outputs of each segmentation method is not the same, each method must have its own implementation of tracing,
+and those implementations will have the suffixes referring to those method (e.g. "*_rg4*").
 
-- Surrounder: it finds a random border pixel, then navigates through its neighbours until it detects all border
+#### Tracing methods:
+
+- *Surrounder*: finds a random border pixel, then navigates through its neighbours until it detects all border
   pixels of a segment. It messes up when a shape has inner borders.
-- **Comprehensive**: it analyses all pixels if they are border ones.
+- **Comprehender**: analyses all pixels if they are border ones.
 
 Because of C++ maximum stack restrictions (stack overflow), [surrounder_rg4.py](tracing/surrounder_rg4.py)
 was forked from [surrounder_rg3.py](tracing/surrounder_rg3.py) with no recursion.
 
-=> Output: vector data in JSON files (good for debugging, instead of pickle dumps)
+=> Output: vector data in JSON files (good for debugging, instead of unreadable pickle dumps)
 
 ***
 
@@ -89,8 +102,9 @@ https://en.wikipedia.org/wiki/Short-term_memory). First I wanted to put the data
 
 ### 5. /comparison/
 
-It shall extract a shape from databases made in /storage/ and look for similar items.
-Therefore, every database will have its own method of comparison.
+It shall extract a shape from /storage/output/ and look for similar items in the same directory,
+using the databases of the previous step.
+Therefore, every database will have its own implementation of comparison.
 
 ***
 
