@@ -26,7 +26,7 @@ while True:
 
     match mode:
         case Mode.SEGMENTATION.value | Mode.SEGMENTATION_TMP.value:
-            path = os.path.join('debug', 'temp', 'arr.bin')
+            path = os.path.join('debug', 'temp', 'arr')
         case Mode.STORAGE.value | Mode.STORAGE_TMP.value:
             path = os.path.join('debug', 'temp', 'memory.zip')
         case _:
@@ -54,15 +54,17 @@ while True:
     match mode:
         case Mode.SEGMENTATION.value | Mode.SEGMENTATION_TMP.value:
             arr: np.ndarray = np.zeros((dim, dim, 3), dtype=np.uint8)
-            for y in range(dim):
-                for x in range(dim):
+            for yy in range(dim):
+                for xx in range(dim):
                     v = struct.unpack('B', file.read(1))[0]
                     u = struct.unpack('B', file.read(1))[0]
                     y = struct.unpack('B', file.read(1))[0]
                     if struct.unpack('b', file.read(1))[0] == 0:
-                        arr[y, x] = y, u, v
+                        arr[yy, xx] = y, u, v  # y, u, v
                     else:
-                        arr[y, x] = 255, 0, 0
+                        arr[yy, xx] = 76, 84, 255
             plot.imshow(cv2.cvtColor(arr, cv2.COLOR_YUV2RGB))
             plot.show()
+        case Mode.STORAGE.value | Mode.STORAGE_TMP.value:
+            pass
     file.close()
