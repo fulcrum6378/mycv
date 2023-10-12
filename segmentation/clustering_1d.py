@@ -10,7 +10,8 @@ from config import bitmap, bitmap_folder
 
 whole_time = datetime.now()
 # noinspection PyTypeChecker
-arr: np.ndarray = np.asarray(Image.open(os.path.join('vis', bitmap_folder, bitmap + '.bmp')).convert('HSV')).copy()
+arr: np.ndarray = np.asarray(Image.open(os.path.join('vis', 'output', bitmap_folder, bitmap + '.bmp'))
+                             .convert('HSV')).copy()
 arr.setflags(write=True)
 # dim = 1088 (unused)
 MIN_S = 5

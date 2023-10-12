@@ -12,7 +12,8 @@ from config import bitmap, bitmap_folder, dim, min_seg
 
 # read the image
 loading_time = datetime.now()
-arr: np.ndarray = cv2.cvtColor(cv2.imread(os.path.join('vis', bitmap_folder, bitmap + '.bmp')), cv2.COLOR_BGR2YUV)
+arr: np.ndarray = cv2.cvtColor(cv2.imread(os.path.join('vis', 'output', bitmap_folder, bitmap + '.bmp')),
+                               cv2.COLOR_BGR2YUV)
 sys.setrecursionlimit(dim * dim)
 print('Loading time:', datetime.now() - loading_time)
 

@@ -5,7 +5,7 @@ import numpy as np
 from PIL import Image
 
 # noinspection PyTypeChecker
-arr: np.ndarray = np.asarray(Image.open('vis/2/1689005849386887.bmp'))
+arr: np.ndarray = np.asarray(Image.open('vis/output/2/1689005849386887.bmp'))
 dim = 1088
 maxDif = 20
 

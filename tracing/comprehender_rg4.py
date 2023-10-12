@@ -113,7 +113,8 @@ if display_segment is not None:
         arr.append(xes)
     plot.imshow(cv2.cvtColor(np.array(arr, dtype=np.uint8), cv2.COLOR_YUV2RGB))
 else:
-    arr: np.ndarray = cv2.cvtColor(cv2.imread(os.path.join('vis', bitmap_folder, bitmap + '.bmp')), cv2.COLOR_BGR2RGB)
+    arr: np.ndarray = cv2.cvtColor(cv2.imread(os.path.join('vis', 'output', bitmap_folder, bitmap + '.bmp')),
+                                   cv2.COLOR_BGR2RGB)
     for y in range(dim):
         for x in range(dim):
             if b_status[y, x]:

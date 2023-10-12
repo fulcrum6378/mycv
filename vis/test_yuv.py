@@ -8,7 +8,7 @@ from config import dim
 
 arr: list[list[list[int]]] = []
 
-with open('vis/test.yuv', 'rb') as f:
+with open('vis/temp/test.yuv', 'rb') as f:
     for y in range(dim):
         x_: list[list[int]] = []
         for x in range(dim):
