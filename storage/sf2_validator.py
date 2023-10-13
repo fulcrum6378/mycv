@@ -1,4 +1,4 @@
-from sf2_global import *
+from storage.sf2_global import *
 
 # 1. Read all indexes and see if no duplicate items are found
 

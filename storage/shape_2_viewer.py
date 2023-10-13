@@ -3,7 +3,7 @@ import matplotlib.pyplot as plot
 import numpy as np
 
 from config import shape_path_max
-from sf2_global import *
+from storage.sf2_global import *
 
 # load the subject shape
 sh = Shape(input('Enter the ID of the shape: '))

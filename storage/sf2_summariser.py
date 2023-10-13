@@ -1,4 +1,4 @@
-from sf2_global import *
+from storage.sf2_global import *
 
 print('Frame:')
 for f in sorted(os.listdir(dir_frame), key=sk):
