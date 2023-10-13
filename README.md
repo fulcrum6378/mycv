@@ -110,7 +110,7 @@ Therefore, every database will have its own implementation of comparison.
 
 ### /debug/
 
-This section provides you with a server-client tools for debugging C++ implementations.
+This section provides you with a server-client tools for easily debugging the C++ implementations.
 
 ***
 
