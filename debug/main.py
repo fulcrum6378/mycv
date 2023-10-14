@@ -15,6 +15,9 @@ from config import dim, server_address
 
 
 class Mode(Enum):
+    # shell execution actions
+    OPEN = 0
+
     # primary actions
     START = 1
     STOP = 2
@@ -31,13 +34,33 @@ class Mode(Enum):
     VISUAL_STM_TMP = 121  # validate the visual short-term memory from cache
 
 
+# Turns the app on or off.
+def turn_app(on: bool):
+    os.system(
+        'adb shell am start -n ir.mahdiparastesh.mergen/ir.mahdiparastesh.mergen.Main' if on else
+        'adb shell input keyevent 4'
+    )
+
+
+# miscellaneous tweaks
+power_optimisation_mode: bool = False  # when on, open the app only when needed to save battery of the phone
+
 while True:
     try:
         mode: int = int(input('Debug mode: '))
     except ValueError:
         break
 
-    if mode > 10:
+    path = ''
+    if mode <= 0:
+        match mode:
+            case Mode.OPEN.value:
+                turn_app(True)
+                power_optimisation_mode = True
+        continue
+    elif mode == Mode.EXIT.value:
+        power_optimisation_mode = True
+    elif mode > 10:
         match mode:
             case Mode.SEGMENTATION.value | Mode.SEGMENTATION_TMP.value:
                 path = os.path.join('debug', 'temp', 'arr')
@@ -47,9 +70,11 @@ while True:
                 print('Unknown (to client) debug mode', mode)
                 continue
         file: IO
-    else:
-        path = ''
 
+        if mode <= 20 and power_optimisation_mode:
+            turn_app(True)
+
+    # connect to Debug.java
     if mode < 100:
         connect_time = datetime.now()
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -92,6 +117,9 @@ while True:
         file.seek(0, os.SEEK_SET)
     else:
         file = open(path, 'rb')
+
+    if 10 < mode <= 20 and power_optimisation_mode:
+        turn_app(False)
 
     # process the downloaded file
     match mode:
