@@ -1,0 +1,119 @@
+# segmentation.h
+    std::unordered_map<uint32_t, Segment> segments;
+# this cost 3.3 seconds!!!
+
+
+# segmentation.cpp
+#include <set>
+
+    uint32_t thisP, nSeg, segmentOfAnyNeighbour = 0, chosenOne, removal = 1;
+    uint16_t ry, rx, by, bx, ly, lx, ty, tx;
+    bool anyQualified;
+    set<uint32_t> allowedRegions;
+    uint8_t nAllowedRegions = 0;
+    for (uint16_t y = 0; y < h; y++) {
+        for (uint16_t x = 0; x < w; x++) {
+            if (status[y][x] != 0) continue;
+
+            // analyse neighbours
+            thisP = arr[y][x];
+            nSeg = status[ry][rx];
+            if (x < (w - 1)) { // right
+                ry = y;
+                rx = x + 1;
+                if (CompareColours(thisP, arr[ry][rx])) {
+                    anyQualified = true;
+                    if (nSeg != 0) allowedRegions.insert(nSeg);
+                }
+                if (nSeg != 0 && segmentOfAnyNeighbour != 0) segmentOfAnyNeighbour = nSeg;
+            }
+            nSeg = status[by][bx] != 0;
+            if (y < (h - 1)) { // bottom
+                by = y + 1;
+                bx = x;
+                if (CompareColours(thisP, arr[by][bx])) {
+                    anyQualified = true;
+                    if (nSeg != 0) allowedRegions.insert(nSeg);
+                }
+                if (nSeg != 0 && segmentOfAnyNeighbour != 0) segmentOfAnyNeighbour = nSeg;
+            }
+            nSeg = status[ly][lx] != 0;
+            if (x > 0) { // left
+                ly = y;
+                lx = x - 1;
+                if (CompareColours(thisP, arr[ly][lx])) {
+                    anyQualified = true;
+                    if (nSeg != 0) allowedRegions.insert(nSeg);
+                }
+                if (nSeg != 0 && segmentOfAnyNeighbour != 0) segmentOfAnyNeighbour = nSeg;
+            }
+            nSeg = status[ty][tx] != 0;
+            if (y > 0) { // top
+                ty = y - 1;
+                tx = x;
+                if (CompareColours(thisP, arr[ty][tx])) {
+                    anyQualified = true;
+                    if (nSeg != 0) allowedRegions.insert(nSeg);
+                }
+                if (nSeg != 0 && segmentOfAnyNeighbour != 0) segmentOfAnyNeighbour = nSeg;
+            }
+
+            // determine the segment of this pixel
+            if (anyQualified) {
+                nAllowedRegions = allowedRegions.size();
+                if (nAllowedRegions == 0) {
+                    segments[nextSeg] = Segment{nextSeg};
+                    status[y][x] = nextSeg;
+                } else { // repair the pixels
+                    chosenOne = *allowedRegions.begin();
+                    for (uint32_t sid: allowedRegions)
+                        if (sid != chosenOne) {
+                            for (uint32_t changer: segments[sid].p) {
+                                segments[chosenOne].p.push_back(changer);
+                                status[changer >> 16][changer & 0xFFFF] = chosenOne;
+                            }
+                            segments.erase(sid);
+                        }
+                    status[y][x] = chosenOne;
+                }
+            } else {
+                if (segmentOfAnyNeighbour != 0)
+                    status[y][x] = segmentOfAnyNeighbour;
+                else {
+                    segments[nextSeg] = Segment{nextSeg};
+                    status[y][x] = nextSeg;
+                }
+            }
+            segments[nextSeg].p.push_back((y << 16) | x);
+
+            anyQualified = false;
+            allowedRegions.clear();
+            segmentOfAnyNeighbour = 0;
+            nextSeg++;
+        }
+    }
+
+    # 4. average colours + detect boundaries
+
+    for (auto &ss: segments) {
+        Segment seg = ss.second;
+        ...
+
+
+
+# log:
+12:34:03.124  I  Delta times: 11 + 5089 + 0 + 3612 + 907 + 0 => 9619
+12:34:03.124  I  ----------------------------------
+12:34:34.091  I  Delta times: 16 + 5078 + 0 + 3433 + 261 + 0 => 8788
+12:34:34.091  I  ----------------------------------
+12:34:43.530  I  Delta times: 40 + 4811 + 0 + 3317 + 110 + 0 => 8278
+12:34:43.530  I  ----------------------------------
+12:34:53.078  I  Delta times: 21 + 4790 + 0 + 3296 + 320 + 0 => 8427
+12:34:53.078  I  ----------------------------------
+12:35:03.143  I  Delta times: 29 + 4854 + 0 + 3429 + 624 + 0 => 8936
+12:35:03.143  I  ----------------------------------
+12:35:13.011  I  Delta times: 30 + 4780 + 0 + 3338 + 524 + 0 => 8672
+12:35:13.011  I  ----------------------------------
+12:35:22.693  I  Delta times: 26 + 4841 + 0 + 3334 + 301 + 0 => 8502
+12:35:22.693  I  ----------------------------------
+# I disabled STM

@@ -30,9 +30,10 @@ https://github.com/fulcrum6378/mergen_android/blob/master/cpp/vis/camera.cpp)
       neighbours, I left it incomplete and moved to the 2nd method, but then I realised this method was much better!
     - [region_growing_2.py](segmentation/region_growing_2.py) : this method focuses on a neighbour then determines
       if it fits in the same segment. It is more object-oriented than the previous one, and contains more boilerplate
-      code! It takes **~22 seconds**.
+      code! It takes **~22 seconds** here and ~5 seconds in C++ plus ~3.3 seconds in /tracing/ because data structure
+      of "*segments*" is a map rather than a vector, making **~9 seconds** totally!
     - [region_growing_3.py](segmentation/region_growing_3.py) : an improved and completed version of the 1st method;
-      it takes **~7 to ~8 seconds**.
+      it takes **~7 to ~8 seconds** here.
     - [**region_growing_4.py**](segmentation/region_growing_4.py) : same as the 3rd method, but without recursion
       because of C++ restrictions, and segment IDs start from 0 not -1. It takes **~11 to ~15 seconds** here
       but **~2 seconds** in C++ with a Samsung Galaxy A50 phone!
@@ -110,7 +111,7 @@ Therefore, every database will have its own implementation of comparison.
 
 ### /debug/
 
-This section provides you with a server-client tools for easily debugging the C++ implementations.
+This section provides you with server-client tools for easily debugging the C++ implementations.
 
 ***
 
