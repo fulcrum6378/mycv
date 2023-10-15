@@ -119,26 +119,27 @@ for seg in segments:
     seg.m = [round(aa / l_), round(bb / l_), round(cc / l_)]
 print('+ Average colours time:', datetime.now() - average_colours_time)
 
-# evaluate the segments
-segments.sort(key=lambda s: len(s.p), reverse=True)
-arr = cv2.cvtColor(cv2.cvtColor(arr, cv2.COLOR_YUV2RGB), cv2.COLOR_RGB2HSV)
-for big_sgm in range(25):  # colour the biggest ones
-    for px in segments[big_sgm].p:
-        arr[px[0], px[1]] = 5 + (10 * (big_sgm + 1)), 255, 255
-for seg in range(len(segments)):  # show the persisting small segments
-    if len(segments[seg].p) < min_seg:
-        for px in segments[seg].p:
-            arr[px[0], px[1]] = 0, 255, 255
-        continue
-arr = cv2.cvtColor(cv2.cvtColor(arr, cv2.COLOR_HSV2RGB), cv2.COLOR_RGB2YUV)
-print('Total segments:', len(segments))
+if __name__ == "__main__":
+    # evaluate the segments
+    segments.sort(key=lambda s: len(s.p), reverse=True)
+    arr = cv2.cvtColor(cv2.cvtColor(arr, cv2.COLOR_YUV2RGB), cv2.COLOR_RGB2HSV)
+    for big_sgm in range(25):  # colour the biggest ones
+        for px in segments[big_sgm].p:
+            arr[px[0], px[1]] = 5 + (10 * (big_sgm + 1)), 255, 255
+    for seg in range(len(segments)):  # show the persisting small segments
+        if len(segments[seg].p) < min_seg:
+            for px in segments[seg].p:
+                arr[px[0], px[1]] = 0, 255, 255
+            continue
+    arr = cv2.cvtColor(cv2.cvtColor(arr, cv2.COLOR_HSV2RGB), cv2.COLOR_RGB2YUV)
+    print('Total segments:', len(segments))
 
-# show the image
-plot.imshow(cv2.cvtColor(arr, cv2.COLOR_YUV2RGB))
-plot.show()
+    # show the image
+    plot.imshow(cv2.cvtColor(arr, cv2.COLOR_YUV2RGB))
+    plot.show()
 
-# save the output
-dumping_time = datetime.now()
-pickle.dump(status, open(os.path.join('segmentation', 'output', 'rg4_' + bitmap + '_status.pickle'), 'wb'))
-pickle.dump(segments, open(os.path.join('segmentation', 'output', 'rg4_' + bitmap + '_segments.pickle'), 'wb'))
-print('Dumping time:', datetime.now() - dumping_time)
+    # save the output
+    dumping_time = datetime.now()
+    pickle.dump(status, open(os.path.join('segmentation', 'output', 'rg4_' + bitmap + '_status.pickle'), 'wb'))
+    pickle.dump(segments, open(os.path.join('segmentation', 'output', 'rg4_' + bitmap + '_segments.pickle'), 'wb'))
+    print('Dumping time:', datetime.now() - dumping_time)

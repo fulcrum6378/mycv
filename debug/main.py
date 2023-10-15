@@ -24,22 +24,46 @@ class Mode(Enum):
     EXIT = 3
 
     # actions done requiring at least 1 frame to be captured
-    SEGMENTATION = 11  # capture 1 frame, process it and send segmentation results
+    SEGMENTATION = 11
 
     # actions involving storage
-    VISUAL_STM = 21  # export and validate the visual short-term memory
+    VISUAL_STM = 21
 
     # actions which do not require a connection
-    SEGMENTATION_TMP = 111  # display segmentation results from cache
-    VISUAL_STM_TMP = 121  # validate the visual short-term memory from cache
+    SEGMENTATION_TMP = 111  # from cache
+    VISUAL_STM_TMP = 121  # from cache
+
+
+print("""> Command codes:
+
+-- primary actions
+Open the app                  0 (requires ADB)
+Start recording               1
+Stop recording                2
+Close the app                 3
+
+-- capture a frame and...
+segmentate & send results     11 (to use cache: 111)
+
+-- actions involving storage
+extract visual STM & validate 21 (to use cache: 121)
+
+@ Note: if you use `open` or `close` actions, the
+power optimisation mode is automatically turned on
+and closes the app when not required for analysis
+to save power.
+""")
 
 
 # Turns the app on or off.
 def turn_app(on: bool):
-    os.system(
+    ret: int = os.system(
         'adb shell am start -n ir.mahdiparastesh.mergen/ir.mahdiparastesh.mergen.Main' if on else
         'adb shell input keyevent 4'
     )
+    if ret != 0:
+        global power_optimisation_mode
+        power_optimisation_mode = False
 
 
 # miscellaneous tweaks

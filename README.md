@@ -97,7 +97,7 @@ https://en.wikipedia.org/wiki/Short-term_memory). First I wanted to put the data
   [Long-Term Memory](https://en.wikipedia.org/wiki/Long-term_memory) rather than in short-term. But this time,
   our datacube is a 4-dimensional **dict/map** rather than an *array*.
 
-=> Output: data properly and wisely structured and stored in a persistent memory
+=> Output: data properly and efficiently structured and stored in a persistent memory
 
 ***
 
@@ -109,9 +109,20 @@ Therefore, every database will have its own implementation of comparison.
 
 ***
 
+### 6. /tracking/: Object Tracking
+
+Visual objects must be tracked across frames, this method is a continuity of Segmentation and must be integrated to it.
+Not to be mistaken with /tracing/, but like that, each method should have its own implementation of Segmentation.
+
+***
+
 ### /debug/
 
-This section provides you with server-client tools for easily debugging the C++ implementations.
+This section provides you with server-client tools for easily debugging the C++ implementations over a network.
+
+[**run.ps1**](debug/run.ps1) executes [*main.py*](debug/main.py) which accepts some command codes listed in its header.
+Most commands require your Android phone and your PC to be connected to the same network (like Wi-Fi).
+Few of them also require your phone to be listed in [*ADB*](https://developer.android.com/tools/adb) [`$ adb devices`].
 
 ***
 
