@@ -109,7 +109,7 @@ Therefore, every database will have its own implementation of comparison.
 
 ***
 
-### 6. /tracking/: Object Tracking
+### 6. /resegmentation/: Object Tracking
 
 Visual objects must be tracked across frames, this method is a continuity of Segmentation and must be integrated to it.
 Not to be mistaken with /tracing/, but like that, each method should have its own implementation of Segmentation.
