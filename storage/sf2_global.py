@@ -31,6 +31,8 @@ class Shape:
                     struct.unpack(shape_path_type, shf.read(shape_path_bytes))[0],
                     struct.unpack(shape_path_type, shf.read(shape_path_bytes))[0]
                 ))
+            if len(self.path) > (self.w * self.h):
+                print('Shape', sid, 'contains points whose number exceed its dimensions!')
 
 
 def read_sequence_file(directory: str, value: str) -> list[int]:
