@@ -21,7 +21,13 @@ class Segment:
     def __init__(self):
         self.id: int = len(segments) + 1
         self.p: list[tuple[int, int]] = []  # pixels
+        self.ys: int = 0  # sum of Y channel
+        self.us: int = 0  # sum of U channel
+        self.vs: int = 0  # sum of V channel
         self.m: list[int] = []  # average colour
+
+    def calculate_mean(self):
+        self.m = [round(self.ys / l_), round(self.us / l_), round(self.vs / l_)]
 
 
 def compare_colours(a: np.ndarray, b: np.ndarray) -> bool:
@@ -110,13 +116,12 @@ print('+ Segmentation time:', datetime.now() - segmentation_time)
 # it is actually a temporary part of tracing, but is done here for efficiency.
 average_colours_time = datetime.now()
 for seg in segments:
-    aa, bb, cc = 0, 0, 0
     for p in seg.p:
-        aa += arr[*p][0]
-        bb += arr[*p][1]
-        cc += arr[*p][2]
+        seg.ys += arr[*p][0]
+        seg.us += arr[*p][1]
+        seg.vs += arr[*p][2]
     l_ = len(seg.p)
-    seg.m = [round(aa / l_), round(bb / l_), round(cc / l_)]
+    seg.calculate_mean()
 print('+ Average colours time:', datetime.now() - average_colours_time)
 
 if __name__ == "__main__":
