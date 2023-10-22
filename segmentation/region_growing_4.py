@@ -55,7 +55,8 @@ def find_a_segment_to_dissolve_in(seg_: Segment) -> Optional[tuple[int, int]]:
 segmentation_time = datetime.now()
 status: np.ndarray = np.zeros((dim, dim), np.int32)
 segments: list[Segment] = []
-stack: list[list[int, int, int]] = []
+stack: dict[int, int] = {}
+stack_order: list[int] = []
 thisY, thisX, found_sth_to_analyse = 0, 0, True
 while found_sth_to_analyse:
     found_sth_to_analyse = False
@@ -70,34 +71,52 @@ while found_sth_to_analyse:
     if not found_sth_to_analyse: break
 
     seg = Segment()
-    stack.append([thisY, thisX, 0])
-    while len(stack) != 0:
-        l_ = len(stack) - 1
-        yy, xx, dr = stack[l_]
+    cor = (thisY << 16) | thisX
+    stack[cor] = 0
+    stack_order.append(cor)
+    while len(stack_order) != 0:
+        l_ = len(stack_order) - 1
+        cor = stack_order[l_]
+        yy, xx = cor >> 16, cor & 0xFFFF
+        dr = stack[cor]
         if dr == 0:
             seg.p.append((yy << 16) | xx)
             status[yy, xx] = seg.id
             # if dr <= 0:  # left
-            stack[l_][2] += 1
+            stack[cor] += 1
             if xx > 0 and status[yy, xx - 1] == 0 and compare_colours(arr[yy, xx], arr[yy, xx - 1]):
-                stack.append([yy, xx - 1, 0])
-                continue
+                cor_n = (yy << 16) | (xx - 1)
+                if cor_n in stack:
+                    stack[cor_n] = 0
+                    stack_order.append(cor_n)
+                    continue
+        # TODO recheck for status[yy, xx]
         if dr <= 1:  # top
-            stack[l_][2] += 1
+            stack[cor] += 1
             if yy > 0 and status[yy - 1, xx] == 0 and compare_colours(arr[yy, xx], arr[yy - 1, xx]):
-                stack.append([yy - 1, xx, 0])
-                continue
+                cor_n = ((yy - 1) << 16) | xx
+                if cor_n in stack:
+                    stack[cor_n] = 0
+                    stack_order.append(cor_n)
+                    continue
         if dr <= 2:  # right
-            stack[l_][2] += 1
+            stack[cor] += 1
             if xx < (dim - 1) and status[yy, xx + 1] == 0 and compare_colours(arr[yy, xx], arr[yy, xx + 1]):
-                stack.append([yy, xx + 1, 0])
-                continue
+                cor_n = (yy << 16) | (xx + 1)
+                if cor_n in stack:
+                    stack[cor_n] = 0
+                    stack_order.append(cor_n)
+                    continue
         if dr <= 3:  # bottom
-            stack[l_][2] += 1
+            stack[cor] += 1
             if yy < (dim - 1) and status[yy + 1, xx] == 0 and compare_colours(arr[yy, xx], arr[yy + 1, xx]):
-                stack.append([yy + 1, xx, 0])
-                continue
-        stack.pop()
+                cor_n = ((yy + 1) << 16) | xx
+                if cor_n in stack:
+                    stack[cor_n] = 0
+                    stack_order.append(cor_n)
+                    continue
+        stack.pop(cor)
+        stack_order.pop()
     segments.append(seg)
 
 # dissolve smaller segments

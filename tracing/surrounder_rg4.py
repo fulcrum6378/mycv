@@ -8,13 +8,13 @@ import cv2
 import matplotlib.pyplot as plot
 import numpy as np
 
-from config import bitmap, dim, display_segment, max_export_segments
+from config import bitmap, bitmap_folder, dim, display_segment, max_export_segments
 
 
 class Segment:
     def __init__(self):
         self.id: int = 0
-        self.p: list[tuple[int, int]] = []  # pixels
+        self.p: list[int] = []  # pixels
         self.m: list[int] = []  # average colour
 
 
@@ -69,13 +69,14 @@ s_dimensions: dict[int, tuple[int, int]] = {}  # width, height
 for seg in segments:
     # detect boundaries (min_y, min_x, max_y, max_x)
     for _p in seg.p:
+        y, x = _p >> 16, _p & 0xFFFF
         if seg.id not in s_boundaries:  # messed because Python has no do... while!
-            s_boundaries[seg.id] = [_p[0], _p[1], _p[0], _p[1]]
+            s_boundaries[seg.id] = [y, x, y, x]
             continue
-        if _p[0] < s_boundaries[seg.id][0]: s_boundaries[seg.id][0] = _p[0]
-        if _p[1] < s_boundaries[seg.id][1]: s_boundaries[seg.id][1] = _p[1]
-        if _p[0] > s_boundaries[seg.id][2]: s_boundaries[seg.id][2] = _p[0]
-        if _p[1] > s_boundaries[seg.id][3]: s_boundaries[seg.id][3] = _p[1]
+        if y < s_boundaries[seg.id][0]: s_boundaries[seg.id][0] = y
+        if x < s_boundaries[seg.id][1]: s_boundaries[seg.id][1] = x
+        if y > s_boundaries[seg.id][2]: s_boundaries[seg.id][2] = y
+        if x > s_boundaries[seg.id][3]: s_boundaries[seg.id][3] = x
     s_dimensions[seg.id] = (
         (s_boundaries[seg.id][3] + 1) - s_boundaries[seg.id][1],  # width
         (s_boundaries[seg.id][2] + 1) - s_boundaries[seg.id][0],  # height
@@ -85,9 +86,9 @@ for seg in segments:
     # find the first encountering border pixel as a checkpoint
     y, x = 0, 0
     for p in seg.p:
-        if b_status[*p] is None: check_if_border(seg.id, *p)
-        if b_status[*p]:
-            y, x = p
+        y, x = p >> 16, p & 0xFFFF
+        if b_status[y, x] is None: check_if_border(seg.id, y, x)
+        if b_status[y, x]:
             break
 
     # then start collecting all border pixels using that checkpoint
@@ -141,20 +142,29 @@ for s in range(max_export_segments):
 
 # draw the segment into the cadre and display it
 display_preparation_time = datetime.now()
-seg = segments[display_segment]
-print('Total border pixels:', len(s_border[seg.id]))
-arr: list[list[list[int]]] = []
-for y in range(s_boundaries[seg.id][0], s_boundaries[seg.id][2] + 1):
-    xes: list[list[int]] = []
-    for x in range(s_boundaries[seg.id][1], s_boundaries[seg.id][3] + 1):
-        if status[y, x] == seg.id:
-            if not b_status[y, x]:
-                xes.append(seg.m)
+if display_segment is not None:
+    seg = segments[display_segment]
+    print('Total border pixels:', len(s_border[seg.id]))
+    arr: list[list[list[int]]] = []
+    for y in range(s_boundaries[seg.id][0], s_boundaries[seg.id][2] + 1):
+        xes: list[list[int]] = []
+        for x in range(s_boundaries[seg.id][1], s_boundaries[seg.id][3] + 1):
+            if status[y, x] == seg.id:
+                if not b_status[y, x]:
+                    xes.append(seg.m)
+                else:
+                    xes.append([0, 255, 200])
             else:
-                xes.append([0, 255, 200])
-        else:
-            xes.append([255, 127, 127])
-    arr.append(xes)
-plot.imshow(cv2.cvtColor(np.array(arr, dtype=np.uint8), cv2.COLOR_YUV2RGB))
+                xes.append([255, 127, 127])
+        arr.append(xes)
+    plot.imshow(cv2.cvtColor(np.array(arr, dtype=np.uint8), cv2.COLOR_YUV2RGB))
+else:
+    arr: np.ndarray = cv2.cvtColor(cv2.imread(os.path.join('vis', 'output', bitmap_folder, bitmap + '.bmp')),
+                                   cv2.COLOR_BGR2RGB)
+    for y in range(dim):
+        for x in range(dim):
+            if b_status[y, x]:
+                arr[y, x] = 255, 0, 0
+    plot.imshow(arr)
 print('Display preparation time:', datetime.now() - display_preparation_time)
 plot.show()
