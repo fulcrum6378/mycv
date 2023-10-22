@@ -84,7 +84,7 @@ and easily finding similar shapes. This is actually some kind of [Short-Term Mem
 https://en.wikipedia.org/wiki/Short-term_memory). First I wanted to put the data in a 4+ dimensional array, making a
 [Datacube](https://en.wikipedia.org/wiki/Data_cube), but it was a bad idea. Then...
 
-1. [feature_database.py](storage/feature_database.py) : I wanted to separate features/details of shapes into separate
+1. [~~feature_database.py~~](storage/feature_database.py) : I wanted to separate features/details of shapes into separate
    small databases and this code was intended to be a super-fast mini-DBMS, but due to limitations of writing/appending
    into files, I realised this method was not even practical!
 2. [sequence_files_1.py](storage/sequence_files_1.py) : in this method we save shapes and their details in storage,
@@ -115,6 +115,10 @@ Therefore, every database will have its own implementation of comparison.
 ~~Visual objects must be tracked across frames, this method is a continuity of Segmentation and must be integrated to
 it.
 Each method should have its own implementation of Segmentation.~~
+
+***
+
+### 7. /perception/
 
 ***
 

@@ -1,3 +1,3 @@
-Set-Location D:\Programming\MyCV
+Set-Location ..\
 $env:PYTHONPATH = "."
-venv/Scripts/python debug/main.py
+python debug/main.py

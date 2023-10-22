@@ -6,12 +6,7 @@
     </facet>
   </component>
   <component name="NewModuleRootManager">
-    <content url="file://$MODULE_DIR$">
-      <excludeFolder url="file://$MODULE_DIR$/venv" />
-      <excludeFolder url="file://$MODULE_DIR$/vis/1" />
-      <excludeFolder url="file://$MODULE_DIR$/vis/2" />
-      <excludeFolder url="file://$MODULE_DIR$/vis/3" />
-    </content>
+    <content url="file://$MODULE_DIR$" />
     <orderEntry type="jdk" jdkName="Default" jdkType="Python SDK" />
     <orderEntry type="sourceFolder" forTests="false" />
     <orderEntry type="library" name="Default interpreter library" level="application" />
