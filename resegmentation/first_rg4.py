@@ -6,7 +6,11 @@ import cv2
 import matplotlib.pyplot as plot
 import numpy as np
 
-from config import bitmap, bitmap2, bitmap_folder, dim, just_render_differences, min_seg
+from config import bitmap, bitmap_folder, dim, min_seg
+
+# config:
+bitmap2: str = '1689005849796309'
+just_render_differences = False
 
 
 class Segment:
@@ -56,12 +60,12 @@ for y in range(dim):
         else:
             # noinspection PyTypeChecker
             seg = segments[s_index[status[y, x]]]
-            seg.p.pop(seg.p.index((y << 16) | x))  # FIXME so heavy operation!
+            seg.p.pop(seg.p.index((y << 16) | x))  # FIX-ME so heavy operation!
             seg.ys -= arr[y, x, 0]
             seg.us -= arr[y, x, 1]
-            seg.vs -= arr[y, x, 2]  # TODO calculate_mean() later
+            seg.vs -= arr[y, x, 2]  # TO-DO calculate_mean() later
             status[y, x] = 0
-            arr[y, x] = 76, 84, 255  # FIXME
+            arr[y, x] = 76, 84, 255  # FIX-ME
         # arr[y, x] = buf[y, x]
 del buf  # not necessary in C++
 print('+ Updating time:', datetime.now() - updating_time)

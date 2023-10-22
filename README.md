@@ -26,7 +26,7 @@ https://github.com/fulcrum6378/mergen_android/blob/master/cpp/vis/camera.cpp)
 ### 2. /segmentation/: [Image Segmentation](https://en.wikipedia.org/wiki/Image_segmentation)
 
 - **[Region-growing methods](https://en.wikipedia.org/wiki/Region_growing) (succeeded)**
-    - [region_growing_1.py](segmentation/region_growing_1.py) : this method focuses on a pixel and analysed its
+    - [~~region_growing_1.py~~](segmentation/region_growing_1.py) : this method focuses on a pixel and analysed its
       neighbours, I left it incomplete and moved to the 2nd method, but then I realised this method was much better!
     - [region_growing_2.py](segmentation/region_growing_2.py) : this method focuses on a neighbour then determines
       if it fits in the same segment. It is more object-oriented than the previous one, and contains more boilerplate
@@ -37,10 +37,11 @@ https://github.com/fulcrum6378/mergen_android/blob/master/cpp/vis/camera.cpp)
     - [**region_growing_4.py**](segmentation/region_growing_4.py) : same as the 3rd method, but without recursion
       because of C++ restrictions, and segment IDs start from 0 not -1. It takes **~30 seconds** here,
       but **~2 to ~4 seconds** in C++ with a Samsung Galaxy A50 phone!
-    - [region_growing_5.py](segmentation/region_growing_5.py) : same as the 4th method, but it compares colours of all
+    - [~~region_growing_5.py~~](segmentation/region_growing_5.py) : same as the 4th method, but it compares colours of
+      all
       pixels of a segment with the very first pixel it finds. The results we like a KMeans filter, which I didn't like!
 - [Clustering methods](https://en.wikipedia.org/wiki/Cluster_analysis)
-    - [clustering_1d.py](segmentation/clustering_1d.py) : clustering all pixels in a 1-dimensional way...
+    - [~~clustering_1d.py~~](segmentation/clustering_1d.py) : clustering all pixels in a 1-dimensional way...
       left incomplete; not logically suitable!
 
 => Output: segmentation data extracted using [pickle](https://docs.python.org/3/library/pickle.html) library
@@ -109,10 +110,11 @@ Therefore, every database will have its own implementation of comparison.
 
 ***
 
-### 6. /resegmentation/: Object Tracking
+### ~~6. /resegmentation/: Object Tracking~~
 
-Visual objects must be tracked across frames, this method is a continuity of Segmentation and must be integrated to it.
-Not to be mistaken with /tracing/, but like that, each method should have its own implementation of Segmentation.
+~~Visual objects must be tracked across frames, this method is a continuity of Segmentation and must be integrated to
+it.
+Each method should have its own implementation of Segmentation.~~
 
 ***
 
