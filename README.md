@@ -33,10 +33,10 @@ https://github.com/fulcrum6378/mergen_android/blob/master/cpp/vis/camera.cpp)
       code! It takes **~22 seconds** here and ~5 seconds in C++ plus ~3.3 seconds in /tracing/ because data structure
       of "*segments*" is a map rather than a vector, making **~9 seconds** totally!
     - [region_growing_3.py](segmentation/region_growing_3.py) : an improved and completed version of the 1st method;
-      it takes **~7 to ~8 seconds** here.
+      it takes **~20 seconds** here.
     - [**region_growing_4.py**](segmentation/region_growing_4.py) : same as the 3rd method, but without recursion
-      because of C++ restrictions, and segment IDs start from 0 not -1. It takes **~11 to ~15 seconds** here
-      but **~2 seconds** in C++ with a Samsung Galaxy A50 phone!
+      because of C++ restrictions, and segment IDs start from 0 not -1. It takes **~30 seconds** here,
+      but **~2 to ~4 seconds** in C++ with a Samsung Galaxy A50 phone!
     - [region_growing_5.py](segmentation/region_growing_5.py) : same as the 4th method, but it compares colours of all
       pixels of a segment with the very first pixel it finds. The results we like a KMeans filter, which I didn't like!
 - [Clustering methods](https://en.wikipedia.org/wiki/Cluster_analysis)

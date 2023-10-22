@@ -14,7 +14,7 @@ from config import bitmap, bitmap_folder, dim, display_segment, max_export_segme
 class Segment:
     def __init__(self):
         self.id: int = 0
-        self.p: list[tuple[int, int]] = []  # pixels
+        self.p: list[int] = []  # pixels
         self.m: list[int] = []  # average colour
 
 
@@ -53,13 +53,14 @@ s_dimensions: dict[int, tuple[int, int]] = {}  # width, height
 for seg in segments:
     # detect boundaries (min_y, min_x, max_y, max_x)
     for _p in seg.p:
+        y, x = _p >> 16, _p & 0xFFFF
         if seg.id not in s_boundaries:  # messed because Python has no do... while!
-            s_boundaries[seg.id] = [_p[0], _p[1], _p[0], _p[1]]
+            s_boundaries[seg.id] = [y, x, y, x]
             continue
-        if _p[0] < s_boundaries[seg.id][0]: s_boundaries[seg.id][0] = _p[0]
-        if _p[1] < s_boundaries[seg.id][1]: s_boundaries[seg.id][1] = _p[1]
-        if _p[0] > s_boundaries[seg.id][2]: s_boundaries[seg.id][2] = _p[0]
-        if _p[1] > s_boundaries[seg.id][3]: s_boundaries[seg.id][3] = _p[1]
+        if y < s_boundaries[seg.id][0]: s_boundaries[seg.id][0] = y
+        if x < s_boundaries[seg.id][1]: s_boundaries[seg.id][1] = x
+        if y > s_boundaries[seg.id][2]: s_boundaries[seg.id][2] = y
+        if x > s_boundaries[seg.id][3]: s_boundaries[seg.id][3] = x
     s_dimensions[seg.id] = (
         (s_boundaries[seg.id][3] + 1) - s_boundaries[seg.id][1],  # width
         (s_boundaries[seg.id][2] + 1) - s_boundaries[seg.id][0],  # height

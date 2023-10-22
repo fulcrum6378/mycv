@@ -20,7 +20,7 @@ print('Loading time:', datetime.now() - loading_time)
 class Segment:
     def __init__(self):
         self.id: int = len(segments) + 1
-        self.p: list[tuple[int, int]] = []  # pixels
+        self.p: list[int] = []  # pixels
         self.ys: int = 0  # sum of Y channel
         self.us: int = 0  # sum of U channel
         self.vs: int = 0  # sum of V channel
@@ -37,15 +37,17 @@ def compare_colours(a: np.ndarray, b: np.ndarray) -> bool:
 
 
 def find_a_segment_to_dissolve_in(seg_: Segment) -> Optional[tuple[int, int]]:
-    if seg_.p[0][0] > 0:
-        return seg_.p[0][0] - 1, seg_.p[0][1]
-    if seg_.p[0][1] > 0:
-        return seg_.p[0][0], seg_.p[0][1] - 1
+    y_, x_ = seg_.p[0] >> 16, seg_.p[0] & 0xFFFF
+    if y_ > 0:
+        return y_ - 1, x_
+    if x_ > 0:
+        return y_, x_ - 1
     last = len(seg_.p) - 1
-    if seg_.p[last][0] < dim - 1:
-        return seg_.p[last][0] + 1, seg_.p[last][1]
-    if seg_.p[last][1] < dim - 1:
-        return seg_.p[last][0], seg_.p[last][1] + 1
+    y_, x_ = seg_.p[last] >> 16, seg_.p[last] & 0xFFFF
+    if y_ < dim - 1:
+        return y_ + 1, x_
+    if x_ < dim - 1:
+        return y_, x_ + 1
     return None
 
 
@@ -73,7 +75,7 @@ while found_sth_to_analyse:
         l_ = len(stack) - 1
         yy, xx, dr = stack[l_]
         if dr == 0:
-            seg.p.append((yy, xx))
+            seg.p.append((yy << 16) | xx)
             status[yy, xx] = seg.id
             # if dr <= 0:  # left
             stack[l_][2] += 1
@@ -108,7 +110,7 @@ if min_seg > 1:
             absorber: Segment = segments[status[*absorber_index] - 1]  # `- 1` is because segment IDs start from 0!
             for p in segments[seg].p:
                 absorber.p.append(p)
-                status[*p] = absorber.id
+                status[p >> 16, p & 0xFFFF] = absorber.id
             segments.pop(seg)
     print('Dissolution time:', datetime.now() - dissolution_time)
 print('+ Segmentation time:', datetime.now() - segmentation_time)
@@ -117,9 +119,10 @@ print('+ Segmentation time:', datetime.now() - segmentation_time)
 average_colours_time = datetime.now()
 for seg in segments:
     for p in seg.p:
-        seg.ys += arr[*p][0]
-        seg.us += arr[*p][1]
-        seg.vs += arr[*p][2]
+        y, x = p >> 16, p & 0xFFFF
+        seg.ys += arr[y, x][0]
+        seg.us += arr[y, x][1]
+        seg.vs += arr[y, x][2]
     seg.calculate_mean(len(seg.p))
 print('+ Average colours time:', datetime.now() - average_colours_time)
 
@@ -128,11 +131,11 @@ segments.sort(key=lambda s: len(s.p), reverse=True)
 arr = cv2.cvtColor(cv2.cvtColor(arr, cv2.COLOR_YUV2RGB), cv2.COLOR_RGB2HSV)
 for big_sgm in range(25):  # colour the biggest ones
     for px in segments[big_sgm].p:
-        arr[px[0], px[1]] = 5 + (10 * (big_sgm + 1)), 255, 255
+        arr[px >> 16, px & 0xFFFF] = 5 + (10 * (big_sgm + 1)), 255, 255
 for seg in range(len(segments)):  # show the persisting small segments
     if len(segments[seg].p) < min_seg:
         for px in segments[seg].p:
-            arr[px[0], px[1]] = 0, 255, 255
+            arr[px >> 16, px & 0xFFFF] = 0, 255, 255
         continue
 arr = cv2.cvtColor(cv2.cvtColor(arr, cv2.COLOR_HSV2RGB), cv2.COLOR_RGB2YUV)
 print('Total segments:', len(segments))
