@@ -84,7 +84,8 @@ and easily finding similar shapes. This is actually some kind of [Short-Term Mem
 https://en.wikipedia.org/wiki/Short-term_memory). First I wanted to put the data in a 4+ dimensional array, making a
 [Datacube](https://en.wikipedia.org/wiki/Data_cube), but it was a bad idea. Then...
 
-1. [~~feature_database.py~~](storage/feature_database.py) : I wanted to separate features/details of shapes into separate
+1. [~~feature_database.py~~](storage/feature_database.py) : I wanted to separate features/details of shapes into
+   separate
    small databases and this code was intended to be a super-fast mini-DBMS, but due to limitations of writing/appending
    into files, I realised this method was not even practical!
 2. [sequence_files_1.py](storage/sequence_files_1.py) : in this method we save shapes and their details in storage,
@@ -94,8 +95,15 @@ https://en.wikipedia.org/wiki/Short-term_memory). First I wanted to put the data
 3. [**sequence_files_2.py**](storage/sequence_files_2.py) : same as the previous, except that *ratio* index doesn't
    store the exact float number anymore, it just stores mere shape IDs.
 
-- [datacube_1.py](storage/datacube_1.py) : I figured maybe the idea of a Datacube might be useful in terms of a
-  [Long-Term Memory](https://en.wikipedia.org/wiki/Long-term_memory) rather than in short-term. But this time,
+   Eventually I concluded that this method is most suited for a [Long-Term Memory](
+   https://en.wikipedia.org/wiki/Long-term_memory) rather than a *Short-Term Memory*!
+
+4. [**volatile_indices_1.py**](storage/volatile_indices_1.py) : The structure is the same as Sequence Files 2,
+   but all data except /shapes/ reside in the RAM, as *Short-Term Memory*.
+   It uses the `pickle` library in order export from volatile memory.
+
+- [datacube.cpp](storage/archive/datacube.cpp) : I figured maybe the idea of a Datacube might be useful in terms of a
+  *Long-Term Memory* rather than in short-term. But this time,
   our datacube is a 4-dimensional **dict/map** rather than an *array*.
 
 => Output: data properly and efficiently structured and stored in a persistent memory

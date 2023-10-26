@@ -3,7 +3,7 @@ import matplotlib.pyplot as plot
 import numpy as np
 
 from config import shape_path_max
-from storage.sf2_global import *
+from storage.shape_2 import *
 
 while True:
     # load the subject shape

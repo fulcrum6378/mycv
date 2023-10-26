@@ -5,7 +5,7 @@ from datetime import datetime
 
 from config import bitmap
 
-# make sure it's not trigger unintentionally
+# make sure it's not triggered unintentionally
 if input('Are you sure? (y/any): ') != 'y': quit()
 
 # prepare the output folders

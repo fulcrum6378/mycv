@@ -1,4 +1,5 @@
 from storage.sf2_global import *
+from storage.shape_2 import *
 
 # 1. Read all indexes and see if no duplicate items are found
 
