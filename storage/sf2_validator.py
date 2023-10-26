@@ -4,46 +4,61 @@ from storage.shape_2 import *
 # 1. Read all indexes and see if no duplicate items are found
 
 f: dict[int, set[int]] = {}
-for f_ in sorted(os.listdir(dir_frame), key=sk):
-    l_ = read_sequence_file(dir_frame, f_)
-    s_ = set(l_)
-    dif = abs(len(l_) - len(s_))
-    if dif != 0: print("Found {0} duplicate items in Frames:{1}!".format(dif, f_))
-    f[int(f_)] = s_
+s_: set[int] = set()
+prev_len = 0
+for fid, rng in read_frames_file().items():
+    l_ = list(rng)
+    s_.update(l_)
+    dif = abs((len(s_) - prev_len) - len(l_))
+    if dif != 0: print("Found {0} duplicate items in Frames:{1}!".format(dif, fid))
+    prev_len += len(l_)
+    f[int(fid)] = s_
 
 y: dict[int, set[int]] = {}
+s_ = set()
+prev_len = 0
 for y_ in sorted(os.listdir(dir_y), key=sk):
     l_ = read_sequence_file(dir_y, y_)
-    s_ = set(l_)
-    dif = abs(len(l_) - len(s_))
+    s_.update(l_)
+    dif = abs((len(s_) - prev_len) - len(l_))
     if dif != 0: print("Found {0} duplicate items in Y:{1}!".format(dif, y_))
+    prev_len += len(l_)
     y[int(y_)] = s_
 
 u: dict[int, set[int]] = {}
+s_ = set()
+prev_len = 0
 for u_ in sorted(os.listdir(dir_u), key=sk):
     l_ = read_sequence_file(dir_u, u_)
-    s_ = set(l_)
-    dif = abs(len(l_) - len(s_))
+    s_.update(l_)
+    dif = abs((len(s_) - prev_len) - len(l_))
     if dif != 0: print("Found {0} duplicate items in U:{1}!".format(dif, u_))
+    prev_len += len(l_)
     u[int(u_)] = s_
 
 v: dict[int, set[int]] = {}
+s_ = set()
+prev_len = 0
 for v_ in sorted(os.listdir(dir_v), key=sk):
     l_ = read_sequence_file(dir_v, v_)
-    s_ = set(l_)
-    dif = abs(len(l_) - len(s_))
+    s_.update(l_)
+    dif = abs((len(s_) - prev_len) - len(l_))
     if dif != 0: print("Found {0} duplicate items in V:{1}!".format(dif, v_))
+    prev_len += len(l_)
     v[int(v_)] = s_
 
 r: dict[int, set[int]] = {}
-for r_ in sorted(os.listdir(dir_ratio), key=sk):
-    l_ = read_sequence_file(dir_ratio, r_)
-    s_ = set(l_)
-    dif = abs(len(l_) - len(s_))
+s_ = set()
+prev_len = 0
+for r_ in sorted(os.listdir(dir_r), key=sk):
+    l_ = read_sequence_file(dir_r, r_)
+    s_.update(l_)
+    dif = abs((len(s_) - prev_len) - len(l_))
     if dif != 0: print("Found {0} duplicate items in Ratio:{1}!".format(dif, r_))
+    prev_len += len(l_)
     r[int(r_)] = s_
 
-del f_, y_, u_, v_, r_, l_, s_, dif
+del fid, rng, y_, u_, v_, r_, l_, s_, dif
 
 # 2. Check if indexes include all available shapes
 

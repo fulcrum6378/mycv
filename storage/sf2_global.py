@@ -1,10 +1,11 @@
 import os
 import struct
 
-# Input directories
+# Input directories and files
 input_dir = os.path.join('storage', 'output')
-dir_y, dir_u, dir_v = os.path.join(input_dir, 'y'), os.path.join(input_dir, 'u'), os.path.join(input_dir, 'v')
-dir_ratio, dir_frame = os.path.join(input_dir, 'r'), os.path.join(input_dir, 'f')
+dir_y, dir_u, dir_v, dir_r = os.path.join(input_dir, 'y'), os.path.join(input_dir, 'u'), \
+    os.path.join(input_dir, 'v'), os.path.join(input_dir, 'r')
+frames_file, numbers_file = os.path.join(input_dir, 'frames'), os.path.join(input_dir, 'numbers')
 
 
 # Reads all data from a Sequence File into a list.
@@ -15,6 +16,25 @@ def read_sequence_file(directory: str, value: str) -> list[int]:
         for bid in range(0, os.path.getsize(path), 2):
             seq.append(struct.unpack('<H', sf.read(2))[0])
     return seq
+
+
+# Reads the frame index into a dictionary.
+def read_frames_file() -> dict[int, range]:
+    data: dict[int, range] = {}
+    with open(frames_file, 'rb') as fif:
+        for bid in range(0, os.path.getsize(frames_file), 12):
+            fid = struct.unpack('<Q', fif.read(8))[0]
+            beg = struct.unpack('<H', fif.read(2))[0]
+            end = struct.unpack('<H', fif.read(2))[0]
+            data[fid] = range(beg, end)
+    return data
+
+
+def read_numbers_file() -> tuple[int, int, int]:
+    with open(numbers_file, 'rb') as n_f:
+        return (struct.unpack('<Q', n_f.read(8))[0],
+                struct.unpack('<Q', n_f.read(8))[0],
+                struct.unpack('<H', n_f.read(2))[0])
 
 
 # Sorting key for Sequence Files

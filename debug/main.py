@@ -28,10 +28,12 @@ class Mode(Enum):
 
     # actions involving storage
     VISUAL_STM = 21
+    VISUAL_LTM = 22
 
     # actions which do not require a connection
     SEGMENTATION_TMP = 111  # from cache
     VISUAL_STM_TMP = 121  # from cache
+    VISUAL_LTM_TMP = 122  # from cache
 
 
 print("""> Command codes:
@@ -47,6 +49,7 @@ segmentate & send results     11 (to use cache: 111)
 
 -- actions involving storage
 extract visual STM & validate 21 (to use cache: 121)
+extract visual LTM & validate 22 (to use cache: 122)
 
 @ Note: if you use `open` or `close` actions, the
 power optimisation mode is automatically turned on
@@ -89,7 +92,9 @@ while True:
             case Mode.SEGMENTATION.value | Mode.SEGMENTATION_TMP.value:
                 path = os.path.join('debug', 'temp', 'arr')
             case Mode.VISUAL_STM.value | Mode.VISUAL_STM_TMP.value:
-                path = os.path.join('debug', 'temp', 'memory.zip')
+                path = os.path.join('debug', 'temp', 'stm.zip')
+            case Mode.VISUAL_LTM.value | Mode.VISUAL_LTM_TMP.value:
+                path = os.path.join('debug', 'temp', 'ltm.zip')
             case _:
                 print('Unknown (to client) debug mode', mode)
                 continue
@@ -123,6 +128,8 @@ while True:
                 print('Already stopped!')
             elif mode == Mode.EXIT.value and data[0] == 1:
                 print('Still got work to do!')
+            elif mode == Mode.VISUAL_STM.value and data[0] == 1:
+                print('Cannot export visual STM while Mergen is on.')
             else:
                 print('Error code', int(data[0]))
             continue
@@ -168,7 +175,7 @@ while True:
                 path = os.path.join(dest, f)
                 if os.path.isdir(path):
                     shutil.rmtree(path)
-            with zipfile.ZipFile(os.path.join('debug', 'temp', 'memory.zip'), 'r') as zip_ref:
+            with zipfile.ZipFile(os.path.join('debug', 'temp', 'stm.zip'), 'r') as zip_ref:
                 zip_ref.extractall(dest)
             print('Visual short-term memory in /storage/ was replaced.')
             try:
@@ -176,4 +183,18 @@ while True:
                 import storage.sf2_validator
             except FileNotFoundError:
                 print('Visual short-term memory is incomplete!')
+        case Mode.VISUAL_LTM.value | Mode.VISUAL_LTM_TMP.value:
+            dest = os.path.join('storage', 'output')
+            for f in os.listdir(dest):
+                path = os.path.join(dest, f)
+                if os.path.isdir(path):
+                    shutil.rmtree(path)
+            with zipfile.ZipFile(os.path.join('debug', 'temp', 'ltm.zip'), 'r') as zip_ref:
+                zip_ref.extractall(dest)
+            print('Visual long-term memory in /storage/ was replaced.')
+            try:
+                # noinspection PyUnresolvedReferences
+                import storage.sf2_validator
+            except FileNotFoundError:
+                print('Visual long-term memory is incomplete!')
     file.close()
