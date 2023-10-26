@@ -141,7 +141,7 @@ while True:
         file = open(path, 'wb+')
         download_time = datetime.now()
         while True:
-            data = s.recv(4096)  # 4734976
+            data = s.recv(4096)
             if not data: break
             file.write(data)
         print(file.tell(), 'bytes downloaded...', datetime.now() - download_time)
@@ -157,15 +157,18 @@ while True:
         case Mode.SEGMENTATION.value | Mode.SEGMENTATION_TMP.value:
             render_time = datetime.now()
             arr: np.ndarray = np.zeros((dim, dim, 3), dtype=np.uint8)
+            b_status = open(path, 'rb')
+            b_status.seek(3551232)  # out of 4734976
             for yy in range(dim):
                 for xx in range(dim):
-                    v = struct.unpack('B', file.read(1))[0]
-                    u = struct.unpack('B', file.read(1))[0]
                     y = struct.unpack('B', file.read(1))[0]
-                    if struct.unpack('b', file.read(1))[0] == 0:
+                    u = struct.unpack('B', file.read(1))[0]
+                    v = struct.unpack('B', file.read(1))[0]
+                    if struct.unpack('B', b_status.read(1))[0] == 0:
                         arr[yy, xx] = y, u, v
                     else:
                         arr[yy, xx] = 76, 84, 255
+            b_status.close()
             plot.imshow(cv2.cvtColor(arr, cv2.COLOR_YUV2RGB))
             print('Rendering time:', datetime.now() - render_time)
             plot.show()
