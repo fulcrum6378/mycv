@@ -6,4 +6,5 @@ for fid, rng in read_frames_file_with_ranges().items():
     i = 0
     for sid in rng:
         print(sid, ':', pif[i])
+        # TODO IDENTIFY/TRACK SHAPES
         i += 1

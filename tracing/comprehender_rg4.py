@@ -97,7 +97,7 @@ for s in range(max_export_segments):
 
 # draw the segment into the cadre and display it
 display_preparation_time = datetime.now()
-if display_segment is not None:
+if display_segment != -1:
     seg = segments[display_segment]
     print('Total border pixels:', len(s_border[seg.id]))
     arr: list[list[list[int]]] = []
