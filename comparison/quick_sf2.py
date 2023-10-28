@@ -71,4 +71,4 @@ del a_y, a_u, a_v, a_rt
 print('Searching time:', datetime.now() - searching_time)
 print('Candidates:', candidates)  # [2, 12, 21, 32]
 
-# TODO advanced comparison of the candidates
+# TO-DO advanced comparison of the candidates

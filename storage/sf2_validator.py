@@ -1,12 +1,33 @@
 from storage.sf2_global import *
 from storage.shape_2 import *
 
+# 0. Check if things exist
+
+if not os.path.isdir(dir_shapes):
+    print('Shapes directory is missing!')
+    quit()
+if not os.path.isdir(dir_y):
+    print('Y indices are missing!')
+    quit()
+if not os.path.isdir(dir_u):
+    print('U indices are missing!')
+    quit()
+if not os.path.isdir(dir_v):
+    print('V indices are missing!')
+    quit()
+if not os.path.isdir(dir_r):
+    print('Ratio indices are missing!')
+    quit()
+if not os.path.isfile(frames_file):
+    print('Frames index is missing!')
+    quit()
+
 # 1. Read all indexes and see if no duplicate items are found
 
 f: dict[int, set[int]] = {}
 s_: set[int] = set()
 prev_len = 0
-for fid, rng in read_frames_file().items():
+for fid, rng in read_frames_file_with_ranges().items():
     l_ = list(rng)
     s_.update(l_)
     dif = abs((len(s_) - prev_len) - len(l_))
@@ -90,7 +111,8 @@ for sid in sorted(os.listdir(dir_shapes), key=sk):
         r[sh.r].remove(sh_id)
     else:
         print("Shape {0} is not indexed in Ratio!".format(sid))
-del sh, sh_id
+else:
+    del sh, sh_id
 
 # 3. Check if the indexes contain no unavailable shape
 

@@ -17,7 +17,7 @@ for r in sorted(os.listdir(dir_r), key=sk):
     print(r, ':', read_sequence_file(dir_r, r))
 
 print('\nFrame:')
-for fid, rng in read_frames_file().items():
+for fid, rng in read_frames_file_with_ranges().items():
     print(fid, ':', rng.start, 'until', rng.stop - 1)
 
 print('\nNumbers:')

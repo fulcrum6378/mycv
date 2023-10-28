@@ -12,10 +12,11 @@ The project divides the process of image analysis to the following steps:
 Tools for reading output from [**vis/camera.cpp**](
 https://github.com/fulcrum6378/mergen_android/blob/master/cpp/vis/camera.cpp)
 
-- [**rgb_to_bitmap.py**](vis/rgb_to_bitmap.py) : extracts RGB image frames from a single big file named "*vis.rgb*",
+- [rgb_to_bitmap.py](vis/rgb_to_bitmap.py) : extracts RGB image frames from a single big file named "*vis.rgb*",
   and saves them in Bitmap (*.bmp) images with BMP metadata (from */vis/metadata*) at beginning of each file.
 
-@ [test_yuv.py](vis/test_yuv.py) : displays a raw YUV bitmap image (*test.yuv*) using OpenCV and Matplotlib.
+- [test_yuv.py](vis/test_yuv.py) : displays a raw YUV bitmap image (*test.yuv*) using OpenCV and Matplotlib.
+  (not to be mistaken with YUYV *.yuv image)
 
 => Output: BMP image frames
 
@@ -106,11 +107,22 @@ https://en.wikipedia.org/wiki/Short-term_memory). First I wanted to put the data
   *Long-Term Memory* rather than in short-term. But this time,
   our datacube is a 4-dimensional **dict/map** rather than an *array*.
 
+Helper files:
+
+- *xxx_global.py* : holds important codes for all implementations of this storage method.
+- *xxx_extractor.py* : extract indexes from volatile mode (pickle) to non-volatile mode (e.g. Sequence Files).
+- *~~xxx_forgetter.py~~* : forgets some shapes from storage. (it's now implemented only in C++)
+- *xxx_summariser.py* : reads all indexes and displays a summary.
+- **xxx_validator.py** : validates current indexes.
+
+- *shape_x.py* : holds global tools for manipulating *x*th version of shape files.
+- **shape_x_viewer.py** : renders a shape file, plus a summary of its details.
+
 => Output: data properly and efficiently structured and stored in a persistent memory
 
 ***
 
-### 5. /comparison/
+### ~~5. /comparison/~~
 
 It shall extract a shape from /storage/output/ and look for similar items in the same directory,
 using the databases of the previous step.
@@ -120,13 +132,21 @@ Therefore, every database will have its own implementation of comparison.
 
 ### ~~6. /resegmentation/: Object Tracking~~
 
-~~Visual objects must be tracked across frames, this method is a continuity of Segmentation and must be integrated to
+Visual objects must be tracked across frames, this method is a continuity of Segmentation and must be integrated to
 it.
-Each method should have its own implementation of Segmentation.~~
+Each method should have its own implementation of Segmentation.
 
 ***
 
 ### 7. /perception/
+
+Trying to make sense of shapes/segments stored using /storage/, this section is a superset of the two previous sections.
+
+It **tracks** visual objects simply via their **positions** (central points) and also **comparing** them in a quick way.
+
+In its C++ implementation, it shall be executed in a thread separate from *Camera*'s.
+
+Output: visual objects in visual LTM, using [*Sequence Files 2*](https://github.com/fulcrum6378/mycv#4-storage).
 
 ***
 

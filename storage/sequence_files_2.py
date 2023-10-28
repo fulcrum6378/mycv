@@ -13,7 +13,7 @@ output_dir = os.path.join('storage', 'output')
 dir_shapes = os.path.join(output_dir, 'shapes')
 dir_y, dir_u, dir_v, dir_r = os.path.join(output_dir, 'y'), os.path.join(output_dir, 'u'), \
     os.path.join(output_dir, 'v'), os.path.join(output_dir, 'r')
-for folder in [dir_y, dir_u, dir_v, dir_r, dir_shapes]:
+for folder in [dir_shapes, dir_y, dir_u, dir_v, dir_r]:
     if not os.path.isdir(folder): os.mkdir(folder)
 
 # determine the next shape ID
@@ -55,12 +55,11 @@ for o in sorted(os.listdir(input_dir), key=lambda fn: int(fn[:-5])):
 
     next_id += 1
 
-# index this frame
-fif = open(os.path.join(output_dir, 'frames'), 'ab')
-fif.write(struct.pack('<Q', f))
-fif.write(struct.pack('<H', first_id))
-fif.write(struct.pack('<H', next_id))
-fif.close()
+# index this frame (not suited for LTM)
+with open(os.path.join(output_dir, 'frames'), 'ab') as fif:
+    fif.write(struct.pack('<Q', f))
+    fif.write(struct.pack('<H', first_id))
+    fif.write(struct.pack('<H', next_id))
 
 print('Loading + saving time:', datetime.now() - load_and_save_time)
 # Note: the time delta above includes reading from JSON files too!
