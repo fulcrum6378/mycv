@@ -2,7 +2,7 @@ import os
 import struct
 from datetime import datetime
 
-from config import rt_radius, u_radius, v_radius, y_radius
+from config import r_radius, u_radius, v_radius, y_radius
 
 # prepare the input folders
 input_dir = os.path.join('storage', 'output')
@@ -55,7 +55,7 @@ for v_ in range(v - v_radius, v + v_radius):
     with open(f_path, 'rb') as v_f:
         for _ in range(0, os.path.getsize(f_path), 8):
             a_v.append(struct.unpack('<Q', v_f.read(8))[0])
-for rt_ in range(rt - rt_radius, rt + rt_radius):
+for rt_ in range(rt - r_radius, rt + r_radius):
     f_path = os.path.join(dir_ratio, str(rt_))
     if not os.path.isfile(f_path): continue
     with open(f_path, 'rb') as rtf:
