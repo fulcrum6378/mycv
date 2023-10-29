@@ -1,5 +1,5 @@
 <component name="ProjectRunConfigurationManager">
-  <configuration default="false" name="7. First Perception (SF2)" type="PythonConfigurationType" factoryName="Python">
+  <configuration default="false" name="7. First Perception" type="PythonConfigurationType" factoryName="Python">
     <module name="MyCV" />
     <option name="INTERPRETER_OPTIONS" value="" />
     <option name="PARENT_ENVS" value="true" />
