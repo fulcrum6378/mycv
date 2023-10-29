@@ -24,16 +24,16 @@ b: dict[int, Shape] = {}
 ax: VolatileIndex = VolatileIndex()
 i = 0
 for sid in frames[frame_names[0]]:
-    sh = Shape(str(sid))
-    a[sid] = sh
-    if sh.m[0] not in ax.yi: ax.yi[sh.m[0]] = set()
-    ax.yi[sh.m[0]].add(sid)
-    if sh.m[1] not in ax.ui: ax.ui[sh.m[1]] = set()
-    ax.ui[sh.m[1]].add(sid)
-    if sh.m[2] not in ax.vi: ax.vi[sh.m[2]] = set()
-    ax.vi[sh.m[2]].add(sid)
-    if sh.r not in ax.ri: ax.ri[sh.r] = set()
-    ax.ri[sh.r].add(sid)
+    s = Shape(str(sid))
+    a[sid] = s
+    if s.m[0] not in ax.yi: ax.yi[s.m[0]] = set()
+    ax.yi[s.m[0]].add(sid)
+    if s.m[1] not in ax.ui: ax.ui[s.m[1]] = set()
+    ax.ui[s.m[1]].add(sid)
+    if s.m[2] not in ax.vi: ax.vi[s.m[2]] = set()
+    ax.vi[s.m[2]].add(sid)
+    if s.r not in ax.ri: ax.ri[s.r] = set()
+    ax.ri[s.r].add(sid)
     i += 1
 for sid in frames[frame_names[1]]:
     b[sid] = Shape(str(sid))
@@ -45,10 +45,33 @@ print('Loading time:', datetime.now() - loading_time)
 # Should we search a shape in the whole STM or just the previous one?
 # VisualSTM MIGHT be deprecated in its entirety then!!! (at least the indexes might be removed but not the /shapes/)
 
-# iterate (ALWAYS FIRST) on column B and for each of them, iterate on column A for their similar shapes
-for sid, sh_b in b.items():
-    for sid_a, sh_a in b.items():
-        pass
+# search through Volatile Indices
+searching_time = datetime.now()
+a_y, a_u, a_v, a_r = list(), list(), list(), list()
+candidates: list[int] = []
+for sid, s in b.items():
+    for y_ in range(s.m[0] - y_radius, s.m[0] + y_radius):
+        if y_ not in ax.yi: continue
+        a_y.extend(ax.yi[y_])
+    for u_ in range(s.m[1] - u_radius, s.m[1] + u_radius):
+        if u_ not in ax.ui: continue
+        a_u.extend(ax.ui[u_])
+    for v_ in range(s.m[2] - v_radius, s.m[2] + v_radius):
+        if v_ not in ax.vi: continue
+        a_v.extend(ax.vi[v_])
+    for r_ in range(s.r - r_radius, s.r + r_radius):
+        if r_ not in ax.ri: continue
+        a_r.extend(ax.ri[r_])
+    for can in a_y:
+        if can in a_y and can in a_v and can in a_r:
+            candidates.append(can)
+    a_y.clear()
+    a_u.clear()
+    a_v.clear()
+    a_r.clear()
+    print('Candidates of', sid, ':', candidates)
+    candidates.clear()
+print('+ Searching time:', datetime.now() - searching_time)
 
 # for fid, rng in read_frames_file_with_ranges().items():
 #    print('Frame', fid, ':')
