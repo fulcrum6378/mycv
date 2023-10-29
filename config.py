@@ -17,7 +17,7 @@ shape_path_max: float = {1: 256.0, 2: 65535.0, }[shape_path_bytes]
 shape_path_type: str = {1: 'B', 2: '<H', }[shape_path_bytes]
 
 # /comparison/
-y_radius, u_radius, v_radius, r_radius = 6, 2, 4, 5
+y_radius, u_radius, v_radius, r_radius = 8, 8, 8, 16
 
 # /debug/
 server_address = "192.168.1.20"

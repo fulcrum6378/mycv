@@ -49,6 +49,8 @@ print('Loading and indexing time:', datetime.now() - loading_time)
 
 # search through Volatile Indices and choose the most proximate candidate based on their position
 tracking_time = datetime.now()
+diff: dict[int, list] = {}  # 0=>sid_a, 1=>distance, 2=>dif_w, 3=>dif_h, 4=>dif_y, 5=>dif_u, 6=>dif_v, 7=>dif_r
+not_tracked: int = 0
 a_y, a_u, a_v, a_r = list(), list(), list(), list()
 # candidates: dict[int, float] = {}
 for sid, s in b.items():
@@ -67,7 +69,7 @@ for sid, s in b.items():
     nearest_dist: Optional[float] = None
     best: int = -1
     for can in a_y:
-        if can in a_y and can in a_v and can in a_r:
+        if can in a_u and can in a_v and can in a_r:
             dist = sqrt(pow(s.cx - a[can].cx, 2) + pow(s.cy - a[can].cy, 2))
             # candidates[can] = dist
             if nearest_dist is None:
@@ -80,17 +82,27 @@ for sid, s in b.items():
     a_u.clear()
     a_v.clear()
     a_r.clear()
-    print(sid, ':', best)
+    if best != -1:
+        diff[sid] = [best, int(nearest_dist)]
+    else:
+        not_tracked += 1
     # candidates.clear()
+print(not_tracked, 'shapes could not be tracked!')
 print('+ Tracking time:', datetime.now() - tracking_time)
 
 # We could also create a scoring system which includes both proximity and details,
 # but we better avoid that for both accuracy and performance.
 
-# for fid, rng in read_frames_file_with_ranges().items():
-#    print('Frame', fid, ':')
-#    pif: list[tuple[int, int]] = read_pif_index(fid)
-#    i = 0
-#    for sid in rng:
-#        print(sid, ':', pif[i])
-#        i += 1
+# Now see which details have changed
+other_diff_time = datetime.now()
+for sid in diff.keys():
+    s_a = a[diff[sid][0]]
+    s_b = b[sid]
+    diff[sid].append(s_a.w - s_b.w)
+    diff[sid].append(s_a.h - s_b.h)
+    diff[sid].append(s_a.m[0] - s_b.m[0])
+    diff[sid].append(s_a.m[1] - s_b.m[1])
+    diff[sid].append(s_a.m[2] - s_b.m[2])
+    diff[sid].append(s_a.r - s_b.r)
+    print(sid - 50, diff[sid])
+print('+ Measuring other differences:', datetime.now() - other_diff_time)
