@@ -1,4 +1,6 @@
 from datetime import datetime
+from math import sqrt
+from typing import Optional
 
 from config import r_radius, u_radius, v_radius, y_radius
 from storage.sf2_global import read_frames_file_with_ranges
@@ -38,17 +40,17 @@ for sid in frames[frame_names[0]]:
 for sid in frames[frame_names[1]]:
     b[sid] = Shape(str(sid))
     i += 1
-print('Loading time:', datetime.now() - loading_time)
+print('Loading and indexing time:', datetime.now() - loading_time)
 
 # Saving and reloading shapes in VisualSTM in UNNECESSARY! They can be directly passed to Perception for analysis.
 # But they must certainly be indexed before, BUT what if we first put them there and then save them?
 # Should we search a shape in the whole STM or just the previous one?
 # VisualSTM MIGHT be deprecated in its entirety then!!! (at least the indexes might be removed but not the /shapes/)
 
-# search through Volatile Indices
-searching_time = datetime.now()
+# search through Volatile Indices and choose the most proximate candidate based on their position
+tracking_time = datetime.now()
 a_y, a_u, a_v, a_r = list(), list(), list(), list()
-candidates: list[int] = []
+# candidates: dict[int, float] = {}
 for sid, s in b.items():
     for y_ in range(s.m[0] - y_radius, s.m[0] + y_radius):
         if y_ not in ax.yi: continue
@@ -62,16 +64,28 @@ for sid, s in b.items():
     for r_ in range(s.r - r_radius, s.r + r_radius):
         if r_ not in ax.ri: continue
         a_r.extend(ax.ri[r_])
+    nearest_dist: Optional[float] = None
+    best: int = -1
     for can in a_y:
         if can in a_y and can in a_v and can in a_r:
-            candidates.append(can)
+            dist = sqrt(pow(s.cx - a[can].cx, 2) + pow(s.cy - a[can].cy, 2))
+            # candidates[can] = dist
+            if nearest_dist is None:
+                nearest_dist = dist
+                best = can
+            elif dist < nearest_dist:
+                nearest_dist = dist
+                best = can
     a_y.clear()
     a_u.clear()
     a_v.clear()
     a_r.clear()
-    print('Candidates of', sid, ':', candidates)
-    candidates.clear()
-print('+ Searching time:', datetime.now() - searching_time)
+    print(sid, ':', best)
+    # candidates.clear()
+print('+ Tracking time:', datetime.now() - tracking_time)
+
+# We could also create a scoring system which includes both proximity and details,
+# but we better avoid that for both accuracy and performance.
 
 # for fid, rng in read_frames_file_with_ranges().items():
 #    print('Frame', fid, ':')
