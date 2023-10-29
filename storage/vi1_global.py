@@ -10,7 +10,7 @@ class VolatileIndex:
         self.vi: dict[int, set[int]] = {}
         self.ri: dict[int, set[int]] = {}
         # "Position [of a shape] In Frame"
-        self.pifi: dict[int, list[tuple[int, int]]] = {}
+        # self.pifi: dict[int, list[tuple[int, int]]] = {}
 
     def vi_write(self, path: str) -> None:
         pickle.dump(self, open(path, 'wb'))

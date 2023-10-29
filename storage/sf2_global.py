@@ -3,8 +3,8 @@ import struct
 
 # Input directories and files
 input_dir = os.path.join('storage', 'output')
-dir_y, dir_u, dir_v, dir_r, dir_pif = os.path.join(input_dir, 'y'), os.path.join(input_dir, 'u'), \
-    os.path.join(input_dir, 'v'), os.path.join(input_dir, 'r'), os.path.join(input_dir, 'pif')
+dir_y, dir_u, dir_v, dir_r = os.path.join(input_dir, 'y'), os.path.join(input_dir, 'u'), \
+    os.path.join(input_dir, 'v'), os.path.join(input_dir, 'r')  # dir_pif = os.path.join(input_dir, 'pif')
 frames_file, numbers_file = os.path.join(input_dir, 'frames'), os.path.join(input_dir, 'numbers')
 
 
@@ -51,13 +51,13 @@ def read_numbers_file() -> tuple[int, int, int]:
 
 
 # Reads "Position In Frame" indexes
-def read_pif_index(frame_id: int) -> list[tuple[int, int]]:
-    path = os.path.join(dir_pif, str(frame_id))
-    with open(path, 'rb') as sf:
-        pif: list[tuple[int, int]] = []
-        for bid in range(0, os.path.getsize(path), 4):
-            pif.append((struct.unpack('<H', sf.read(2))[0], struct.unpack('<H', sf.read(2))[0]))
-    return pif
+# def read_pif_index(frame_id: int) -> list[tuple[int, int]]:
+#    path = os.path.join(dir_pif, str(frame_id))
+#    with open(path, 'rb') as sf:
+#        pif: list[tuple[int, int]] = []
+#        for bid in range(0, os.path.getsize(path), 4):
+#            pif.append((struct.unpack('<H', sf.read(2))[0], struct.unpack('<H', sf.read(2))[0]))
+#    return pif
 
 
 # Sorting key for Sequence Files

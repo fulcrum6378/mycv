@@ -57,8 +57,8 @@ for o in sorted(os.listdir(input_dir), key=lambda fn: int(fn[:-5])):
     x.vi[v].add(next_id)
     if r not in x.ri: x.ri[r] = set()
     x.ri[r].add(next_id)
-    if f not in x.pifi: x.pifi[f] = list()
-    x.pifi[f].append((cx, cy))
+    # if f not in x.pifi: x.pifi[f] = list()
+    # x.pifi[f].append((cx, cy))
 
     next_id += 1
 x.fi[f] = first_id, next_id

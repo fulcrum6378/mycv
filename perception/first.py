@@ -106,3 +106,5 @@ for sid in diff.keys():
     diff[sid].append(s_a.r - s_b.r)
     print(sid - 50, diff[sid])
 print('+ Measuring other differences:', datetime.now() - other_diff_time)
+
+# TODO DEBUG THESE...

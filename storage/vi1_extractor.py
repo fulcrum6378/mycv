@@ -21,9 +21,9 @@ for f in os.listdir(output_dir):
         shutil.rmtree(path)
 
 # prepare the output folders
-dir_y, dir_u, dir_v, dir_r, dir_pif = os.path.join(output_dir, 'y'), os.path.join(output_dir, 'u'), \
-    os.path.join(output_dir, 'v'), os.path.join(output_dir, 'r'), os.path.join(output_dir, 'pif')
-for folder in [dir_y, dir_u, dir_v, dir_r, dir_pif]:
+dir_y, dir_u, dir_v, dir_r = os.path.join(output_dir, 'y'), os.path.join(output_dir, 'u'), \
+    os.path.join(output_dir, 'v'), os.path.join(output_dir, 'r')  # dir_pif = os.path.join(output_dir, 'pif')
+for folder in [dir_y, dir_u, dir_v, dir_r]:  # dir_pif
     if not os.path.isdir(folder): os.mkdir(folder)
 
 # write frame index
@@ -52,8 +52,8 @@ for k, v in x.ri.items():
             sqf.write(struct.pack('<H', sid))
 
 # write PIF index
-for fid, points in x.pifi.items():
-    with open(os.path.join(dir_pif, str(fid)), 'wb') as pif:
-        for point in points:
-            pif.write(struct.pack('<H', point[0]))
-            pif.write(struct.pack('<H', point[1]))
+# for fid, points in x.pifi.items():
+#    with open(os.path.join(dir_pif, str(fid)), 'wb') as pif:
+#        for point in points:
+#            pif.write(struct.pack('<H', point[0]))
+#            pif.write(struct.pack('<H', point[1]))

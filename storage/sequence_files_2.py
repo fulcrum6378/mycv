@@ -11,9 +11,9 @@ if input('Are you sure? (any/n): ') == 'n': quit()
 # prepare the output folders
 output_dir = os.path.join('storage', 'output')
 dir_shapes = os.path.join(output_dir, 'shapes')
-dir_y, dir_u, dir_v, dir_r, dir_pif = os.path.join(output_dir, 'y'), os.path.join(output_dir, 'u'), \
-    os.path.join(output_dir, 'v'), os.path.join(output_dir, 'r'), os.path.join(output_dir, 'pif')
-for folder in [dir_shapes, dir_y, dir_u, dir_v, dir_r, dir_pif]:
+dir_y, dir_u, dir_v, dir_r = os.path.join(output_dir, 'y'), os.path.join(output_dir, 'u'), \
+    os.path.join(output_dir, 'v'), os.path.join(output_dir, 'r')  # dir_pif = os.path.join(output_dir, 'pif')
+for folder in [dir_shapes, dir_y, dir_u, dir_v, dir_r]:  # dir_pif
     if not os.path.isdir(folder): os.mkdir(folder)
 
 # determine the next shape ID
@@ -23,7 +23,7 @@ f = int(bitmap)
 
 # load data from the /tracing/ section
 load_and_save_time = datetime.now()
-pif = open(os.path.join(dir_pif, str(f)), 'wb')
+# pif = open(os.path.join(dir_pif, str(f)), 'wb')
 input_dir, ext_json = os.path.join('tracing', 'output', bitmap), '.json'
 for o in sorted(os.listdir(input_dir), key=lambda fn: int(fn[:-5])):
     seg = json.loads(open(os.path.join(input_dir, o), 'r').read())
@@ -55,11 +55,11 @@ for o in sorted(os.listdir(input_dir), key=lambda fn: int(fn[:-5])):
         rtf.write(struct.pack('<H', next_id))
 
     # write to index "Position In Frame"
-    pif.write(struct.pack('<H', cx))
-    pif.write(struct.pack('<H', cy))
+    # pif.write(struct.pack('<H', cx))
+    # pif.write(struct.pack('<H', cy))
 
     next_id += 1
-pif.close()
+# pif.close()
 
 # index this frame (not suited for LTM)
 with open(os.path.join(output_dir, 'frames'), 'ab') as fif:
