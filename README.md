@@ -118,35 +118,28 @@ Helper files:
 - *shape_x.py* : holds global tools for manipulating *x*th version of shape files.
 - **shape_x_viewer.py** : renders a shape file, plus a summary of its details.
 
-=> Output: data properly and efficiently structured and stored in a persistent memory
+=> Output: data properly and efficiently structured and stored in memory
 
 ***
 
-### ~~5. /comparison/~~
+### 5. /perception/
 
-It shall extract a shape from /storage/output/ and look for similar items in the same directory,
-using the databases of the previous step.
-Therefore, every database will have its own implementation of comparison.
+Trying to make sense of the resulting segments:
 
-***
+1. [**tracking.py**](perception/tracking.py) : it tracks visual objects from a previous frame,
+   using their details and positions and measures their differences.
 
-### ~~6. /resegmentation/: Object Tracking~~
+There were also two discontinued approaches, but their works were either merged into this section or were unnecessary:
 
-Visual objects must be tracked across frames, this method is a continuity of Segmentation and must be integrated to
-it.
-Each method should have its own implementation of Segmentation.
+- /comparison/
+  It extracts a shape from /storage/output/ and looks for similar items in the same directory,
+  using the databases of the previous step.
+  Therefore, every database will have its own implementation of comparison.
 
-***
-
-### 7. /perception/
-
-Trying to make sense of shapes/segments stored using /storage/, this section is a superset of the two previous sections.
-
-It **tracks** visual objects simply via their **positions** (central points) and also **comparing** them in a quick way.
-
-In its C++ implementation, it shall be executed in a thread separate from *Camera*'s.
-
-Output: visual objects in visual LTM, using [*Sequence Files 2*](https://github.com/fulcrum6378/mycv#4-storage).
+- /resegmentation/: Object Tracking
+  Visual objects must be tracked across frames, this method is a continuity of Segmentation and must be integrated to
+  it.
+  Each method should have its own implementation of Segmentation.
 
 ***
 
