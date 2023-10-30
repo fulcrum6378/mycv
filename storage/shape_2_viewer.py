@@ -7,10 +7,15 @@ from storage.shape_2 import *
 
 while True:
     # load the subject shape
+    inp = input('Enter the ID of the shape: ')
     try:
-        sh = Shape(input('Enter the ID of the shape: '))
+        sh = Shape(inp)
     except:
-        break
+        if inp == '':
+            break
+        else:
+            print('Invalid shape ID!')
+            continue
     print('Frame', sh.frame, ':', sh.m, sh.w, 'x', sh.h, '(', sh.r, ')')
     print(len(sh.path), 'points; centre:', sh.cx, 'x', sh.cy)
 

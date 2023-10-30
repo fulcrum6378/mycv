@@ -34,7 +34,7 @@ class Shape:
             self.cx: int = struct.unpack('<H', shf.read(2))[0]
             self.cy: int = struct.unpack('<H', shf.read(2))[0]
             self.path: list[tuple[int, int]] = []
-            for b in range(shf.tell(), os.path.getsize(shf_path), 8):
+            for _ in range(shf.tell(), os.path.getsize(shf_path), shape_path_bytes * 2):
                 self.path.append((
                     struct.unpack(shape_path_type, shf.read(shape_path_bytes))[0],
                     struct.unpack(shape_path_type, shf.read(shape_path_bytes))[0]
