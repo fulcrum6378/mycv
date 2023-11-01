@@ -141,13 +141,15 @@ There were also two discontinued approaches, but their works were either merged 
   it.
   Each method should have its own implementation of Segmentation.
 
+=> A simple dict/map containing a shape's previous and current ID along with their differences
+
 ***
 
 ### /debug/
 
 This section provides you with server-client tools for easily debugging the C++ implementations over a network.
 
-[**run.ps1**](debug/run.ps1) executes [*main.py*](debug/main.py) which accepts some command codes listed in its header.
+[**run.ps1**](debug/run.ps1) executes [main.py](debug/main.py) which accepts some command codes listed in its header.
 Most commands require your Android phone and your PC to be connected to the same network (like Wi-Fi).
 Few of them also require your phone to be listed in [*ADB*](https://developer.android.com/tools/adb) [`$ adb devices`].
 

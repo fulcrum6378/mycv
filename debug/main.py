@@ -22,18 +22,19 @@ class Mode(Enum):
     START = 1
     STOP = 2
     EXIT = 3
+    WIPE_VISUAL_STM = 10
 
     # actions done requiring at least 1 frame to be captured
     SEGMENTATION = 11
 
-    # actions involving storage
+    # actions with file transfer
     VISUAL_STM = 21
-    VISUAL_LTM = 22
+    VISUAL_MEM = 22
 
     # actions which do not require a connection
     SEGMENTATION_TMP = 111  # from cache
     VISUAL_STM_TMP = 121  # from cache
-    VISUAL_LTM_TMP = 122  # from cache
+    VISUAL_MEM_TMP = 122  # from cache
 
 
 print("""> Command codes:
@@ -43,18 +44,18 @@ Open the app                  0 (requires ADB)
 Start recording               1
 Stop recording                2
 Close the app                 3
+Wipe visual STM               10
 
 -- capture a frame and...
-segmentate & send results     11 (to use cache: 111)
+Segmentate & send results     11 (to use cache: 111)
 
--- actions involving storage
-extract visual STM & validate 21 (to use cache: 121)
-extract visual LTM & validate 22 (to use cache: 122)
+-- actions with file transfer
+Extract visual STM & validate 21 (to use cache: 121)
+Extract visual MEM & validate 22 (to use cache: 122)
 
-@ Note: if you use `open` or `close` actions, the
-power optimisation mode is automatically turned on
-and closes the app when not required for analysis
-to save power.
+@ Note: if you use `open` or `close` actions, the power
+optimisation mode is automatically turned on and closes
+the app when not required for analysis to save power.
 """)
 
 
@@ -93,8 +94,8 @@ while True:
                 path = os.path.join('debug', 'temp', 'arr')
             case Mode.VISUAL_STM.value | Mode.VISUAL_STM_TMP.value:
                 path = os.path.join('debug', 'temp', 'stm.zip')
-            case Mode.VISUAL_LTM.value | Mode.VISUAL_LTM_TMP.value:
-                path = os.path.join('debug', 'temp', 'ltm.zip')
+            case Mode.VISUAL_MEM.value | Mode.VISUAL_MEM_TMP.value:
+                path = os.path.join('debug', 'temp', 'mem.zip')
             case _:
                 print('Unknown (to client) debug mode', mode)
                 continue
@@ -186,18 +187,18 @@ while True:
                 import storage.sf2_validator
             except FileNotFoundError:
                 print('Visual short-term memory is incomplete!')
-        case Mode.VISUAL_LTM.value | Mode.VISUAL_LTM_TMP.value:
+        case Mode.VISUAL_MEM.value | Mode.VISUAL_MEM_TMP.value:
             dest = os.path.join('storage', 'output')
             for f in os.listdir(dest):
                 path = os.path.join(dest, f)
                 if os.path.isdir(path):
                     shutil.rmtree(path)
-            with zipfile.ZipFile(os.path.join('debug', 'temp', 'ltm.zip'), 'r') as zip_ref:
+            with zipfile.ZipFile(os.path.join('debug', 'temp', 'mem.zip'), 'r') as zip_ref:
                 zip_ref.extractall(dest)
-            print('Visual long-term memory in /storage/ was replaced.')
+            print('Visual memory in /storage/ was replaced.')
             try:
                 # noinspection PyUnresolvedReferences
                 import storage.sf2_validator
             except FileNotFoundError:
-                print('Visual long-term memory is incomplete!')
+                print('Visual memory is incomplete!')
     file.close()
