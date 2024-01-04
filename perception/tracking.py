@@ -17,8 +17,8 @@ from storage.vi1_global import VolatileIndex
 #     Problem: similar/equal objects may be numerous.
 #         Solution: look for the nearest similar object via their proximity.
 
-# load columns A and B for tracking their shapes
-loading_time = datetime.now()
+# load columns A and B for tracking their shapes and index their properties
+load_n_index_time = datetime.now()
 frames: dict[int, range] = read_frames_file_with_ranges()
 frame_names = list(frames.keys())
 a: dict[int, Shape] = {}
@@ -40,12 +40,14 @@ for sid in frames[frame_names[0]]:
 for sid in frames[frame_names[1]]:
     b[sid] = Shape(str(sid))
     i += 1
-print('Loading and indexing time:', datetime.now() - loading_time)
+print('Loading and indexing time:', datetime.now() - load_n_index_time)
 
-# Saving and reloading shapes in VisualSTM in UNNECESSARY! They can be directly passed to Perception for analysis.
-# But they must certainly be indexed before, BUT what if we first put them there and then save them?
-# Should we search a shape in the whole STM or just the previous one?
-# VisualSTM MIGHT be deprecated in its entirety then!!! (at least the indexes might be removed but not the /shapes/)
+# accomplished note (memorial) {
+#   Saving and reloading shapes in VisualSTM in UNNECESSARY! They can be directly passed to Perception for analysis.
+#   But they must certainly be indexed before it, BUT what if we first put them there and then save them?
+#   Should we search a shape in the whole STM or just the previous one?
+#   VisualSTM MIGHT be deprecated in its entirety then!!! (at least the indexes might be removed but not the /shapes/)
+# }
 
 # search through Volatile Indices and choose the most proximate candidate based on their position
 tracking_time = datetime.now()

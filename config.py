@@ -1,5 +1,5 @@
 # GLOBAL
-bitmap_folder: str = '2'
+bitmap_folder: str = '1'
 # red pillow: 1689005849386887, 1689005849796309, 1689005850214842, 1689005850617867, 1689005851028798
 # shoes:      1689005891979733, 1689005892490340
 # 1689005850214842 is blurred and segments are not detected even with `min_seg = 1`
